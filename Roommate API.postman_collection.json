@@ -1,42 +1,452 @@
 {
 	"info": {
-		"_postman_id": "c500c7ed-c764-4dc4-8633-d464a5e6771f",
+		"_postman_id": "5d54dc6e-6dbc-4600-ab04-07dd60190ef3",
 		"name": "Roommate API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "41557500"
+		"_exporter_id": "45745407",
+		"_collection_link": "https://james-389807.postman.co/workspace/James's-Workspace~80a689a1-5128-41c0-891b-32cf04fe6ab1/collection/45745407-5d54dc6e-6dbc-4600-ab04-07dd60190ef3?action=share&source=collection_link&creator=45745407"
 	},
 	"item": [
 		{
-			"name": "Health check",
-			"request": {
-				"method": "GET",
-				"header": []
-			},
-			"response": []
+			"name": "SETUP",
+			"item": [
+				{
+					"name": "Health check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create-user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Authenticated User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				}
+			]
 		},
 		{
-			"name": "Create-user",
-			"request": {
-				"method": "GET",
-				"header": []
-			},
-			"response": []
+			"name": "Users",
+			"item": [
+				{
+					"name": "user_details",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/users/user_details/{{username}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"users",
+								"user_details",
+								"{{username}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_profile",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/users/update_profile",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"users",
+								"update_profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_profile",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/users/update_profile",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"users",
+								"update_profile"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		},
 		{
-			"name": "login",
-			"request": {
-				"method": "GET",
-				"header": []
-			},
-			"response": []
+			"name": "Room",
+			"item": [
+				{
+					"name": "get_rooms",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/rooms/get_rooms",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"get_rooms"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "room_invites",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/rooms/room_invites",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"room_invites"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_roommates",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/rooms/get_roommates/room_id",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"get_roommates",
+								"room_id"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_room",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/rooms/room_invites",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"room_invites"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add_user",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/rooms/add_user/<room_id>",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"add_user",
+								"<room_id>"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "join",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/rooms/join/<room_id>",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"join",
+								"<room_id>"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		},
 		{
-			"name": "Get Authenticated User",
-			"request": {
-				"method": "GET",
-				"header": []
-			},
-			"response": []
+			"name": "Tasks",
+			"item": [
+				{
+					"name": "list",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/tasks/list/<room_id>",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"tasks",
+								"list",
+								"<room_id>"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_task",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/tasks/create_task/<room_id>",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"tasks",
+								"create_task",
+								"<room_id>"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_task",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/tasks/create_task/<room_id>",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"tasks",
+								"create_task",
+								"<room_id>"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/tasks/<task_id>",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"tasks",
+								"<task_id>"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Finance",
+			"item": [
+				{
+					"name": "transaction_list",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/finance/transaction_list/<room_id>",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"finance",
+								"transaction_list",
+								"<room_id>"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_bill",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/finance/create_bill/<room_id>",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"finance",
+								"create_bill",
+								"<room_id>"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "pay_user",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/finance/pay_user/<room_id>",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"finance",
+								"pay_user",
+								"<room_id>"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }

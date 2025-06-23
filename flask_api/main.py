@@ -1,8 +1,12 @@
 from flask import Flask
 from dotenv import dotenv_values
+
 from models import db
 from auth import auth_bp
 from users import users_bp
+from rooms import rooms_bp
+from tasks import tasks_bp
+from finance import finance_bp
 
 # Load environment variables
 config = dotenv_values(".env.potential")
@@ -21,11 +25,14 @@ def create_app():
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(users_bp)
-    
+    app.register_blueprint(rooms_bp)
+    app.register_blueprint(tasks_bp)
+    app.register_blueprint(finance_bp)
+
     # Create tables
     with app.app_context():
         db.create_all()
-        print("✅ Database tables created successfully!")
+        # print("✅ Database tables created successfully!")
     
     # Health check endpoint
     @app.route('/health', methods=['GET'])
