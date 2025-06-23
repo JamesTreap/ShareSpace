@@ -28,13 +28,8 @@ class RoomMember(db.Model, TimestampMixin):
 class RoomInvitation(db.Model, TimestampMixin):
     __tablename__ = "room_invitations"
 
-    class InviteStatus(db.Enum):  # or use sqlalchemy.Enum below
-        waiting   = "waiting"
-        accepted  = "accepted"
-        declined  = "declined"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    room_id:       Mapped[int] = mapped_column(db.ForeignKey("rooms.id"))
+    id:              Mapped[int] = mapped_column(primary_key=True)
+    room_id:         Mapped[int] = mapped_column(db.ForeignKey("rooms.id"))
     inviter_user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
     invitee_user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
     status: Mapped[str] = mapped_column(
@@ -43,6 +38,14 @@ class RoomInvitation(db.Model, TimestampMixin):
     )
 
     room    = relationship("Room", back_populates="invites")
-    inviter = relationship("User", foreign_keys=[inviter_user_id])
-    invitee = relationship("User", back_populates="room_invitations",
-                            foreign_keys=[invitee_user_id])
+
+    inviter = relationship(
+        "User",
+        back_populates="invitations_sent",
+        foreign_keys=[inviter_user_id],
+    )
+    invitee = relationship(
+        "User",
+        back_populates="invitations_received",
+        foreign_keys=[invitee_user_id],
+    )
