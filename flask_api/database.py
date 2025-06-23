@@ -1,4 +1,4 @@
-from models import db, User
+from flask_api.entities.user import db, User
 from dotenv import dotenv_values
 
 # Load environment variables
