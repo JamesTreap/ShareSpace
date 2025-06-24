@@ -25,7 +25,7 @@ class UserIn(Schema):
 
     @post_load
     def make_user(self, data, **kwargs):
-        """Convert validated data → User model instance."""
+
         pw = data.pop("password")
         user = User(**data)
         user.set_password(pw)
