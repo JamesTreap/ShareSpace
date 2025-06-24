@@ -16,6 +16,10 @@ class RoomRepo:
         return room
 
     @staticmethod
+    def get_room(room_id: int) -> Optional[Room]:
+        return db.session.get(Room, room_id)
+
+    @staticmethod
     def add_member(room_id: int, user_id: int) -> RoomMember:
         member = RoomMember(room_id=room_id, user_id=user_id)
         db.session.add(member)
@@ -63,6 +67,29 @@ class RoomRepo:
     @staticmethod
     def get_invitation(invitation_id: int) -> Optional[RoomInvitation]:
         return db.session.get(RoomInvitation, invitation_id)
+
+    @staticmethod
+    def get_room_with_members(room_id: int) -> Optional[Room]:
+
+        stmt = (
+            select(Room)
+                .options(
+                joinedload(Room.members).joinedload(RoomMember.user)
+            )
+                .where(Room.id == room_id)
+        )
+        return db.session.scalar(stmt)
+
+    @staticmethod
+    def respond_to_invitation(
+            invitation_id: int, status: str
+    ) -> RoomInvitation:
+        inv = db.session.get(RoomInvitation, invitation_id)
+        if inv is None:
+            raise ValueError("Invitation not found")
+        inv.status = status
+        db.session.commit()
+        return inv
 
     @staticmethod
     def list_invitations_for_user_by_status(user_id: int, status: str) -> List[RoomInvitation]:

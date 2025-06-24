@@ -1,4 +1,4 @@
-# flask_api/entities/finance.py
+# flask_api/entities/finance_controller.py
 from sqlalchemy.dialects.postgresql import JSONB, NUMERIC
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from . import db, TimestampMixin
@@ -39,10 +39,7 @@ class Payment(db.Model, TimestampMixin):
                          foreign_keys=[payee_user_id])
 
 class FinanceSummary(db.Model):
-    """
-    One row per (user, room) summarising current owes / debts JSON blobs.
-    Re-computed by background job or DB triggers.
-    """
+
     __tablename__ = "finance_summaries"
     id: Mapped[int] = mapped_column(primary_key=True)
     room_id: Mapped[int] = mapped_column(db.ForeignKey("rooms.id"))

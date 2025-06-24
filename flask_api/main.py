@@ -2,11 +2,11 @@ from flask import Flask
 from dotenv import dotenv_values
 
 
-from flask_api.controllers.auth import auth_bp
-from flask_api.controllers.users import users_bp
-from flask_api.controllers.rooms import rooms_bp
-from flask_api.controllers.tasks import tasks_bp
-from flask_api.controllers.finance import finance_bp
+from flask_api.controllers.auth_controller import auth_bp
+from flask_api.controllers.user_controller import users_bp
+from flask_api.controllers.room_controller import rooms_bp
+from flask_api.controllers.task_controller import tasks_bp
+from flask_api.controllers.finance_controller import finance_bp
 from sqlalchemy import text
 from flask_api.entities import db
 from importlib import import_module

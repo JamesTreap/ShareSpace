@@ -1,5 +1,5 @@
 import jwt
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, g
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from flask_api.repository.user_repo import UserRepo
@@ -52,8 +52,14 @@ def login():
     if not check_password_hash(user['password'], data['password']):
         return jsonify({'error': 'Invalid username or password'}), 401
 
-    token = jwt.encode({
-        'username': user['username'] # no expiration
-    }, current_app.config['SECRET_KEY'], algorithm='HS256')
+    token = jwt.encode(
+        {
+        'username': user['username']
+    },
+        current_app.config['SECRET_KEY'],
+        algorithm='HS256'
+    )
 
     return jsonify({'token': f"{token}"}), 200
+
+
