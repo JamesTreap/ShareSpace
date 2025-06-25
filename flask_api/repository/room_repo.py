@@ -102,3 +102,15 @@ class RoomRepo:
                 .order_by(RoomInvitation.created_at.desc())
         )
         return db.session.scalars(stmt).all()
+
+    @staticmethod
+    def waiting_invitations_for_user_by_room(user_id: int, room_id: int) -> RoomInvitation:
+        stmt = (
+            select(RoomInvitation)
+                .where(
+                RoomInvitation.invitee_user_id == user_id,
+                RoomInvitation.room_id == room_id,
+            )
+                .order_by(RoomInvitation.created_at.desc())
+        )
+        return db.session.scalars(stmt).first()
