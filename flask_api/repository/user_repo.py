@@ -1,40 +1,25 @@
-# flask_api/repository/user_repo.py
+# flask_api/repos/user_repo.py
 from __future__ import annotations
 
-from typing import Optional, Dict, Any
-
-from werkzeug.security import generate_password_hash, check_password_hash
+from typing import Optional
+from sqlalchemy import select
+from werkzeug.security import generate_password_hash
 
 from flask_api.entities import db
 from flask_api.entities.user import User
 
 
 class UserRepo:
+
     @staticmethod
-    def find_by_username(
-        username: str,
-        exclude_id: bool = False,
-        include_password_hash: bool = False,
-    ) -> Optional[Dict[str, Any]]:
+    def find_by_id(user_id: int) -> Optional[User]:
+        return db.session.get(User, user_id)
 
-        user: User | None = User.query.filter_by(username=username).first()
-        if user is None:
-            return None
-
-        doc = {
-            "id":            user.id,
-            "username":      user.username,
-            "email":         user.email,
-            "name":          user.name,
-            "profile_pic":   user.profile_picture_url,
-            "created_at":    user.created_at,
-        }
-        if include_password_hash:
-            doc["password_hash"] = user.password_hash
-        if exclude_id:
-            doc.pop("id", None)
-        return doc
-
+    @staticmethod
+    def find_by_username(username: str) -> Optional[User]:
+        return db.session.scalar(
+            select(User).where(User.username == username)
+        )
 
     @staticmethod
     def create(
@@ -43,9 +28,8 @@ class UserRepo:
         email: str,
         name: str | None = None,
         profile_picture_url: str | None = None,
-    ) -> User | None:
-
-        if User.query.filter_by(username=username).first():
+    ) -> Optional[User]:
+        if UserRepo.find_by_username(username):
             return None
 
         user = User(
@@ -58,5 +42,4 @@ class UserRepo:
         db.session.add(user)
         db.session.commit()
         return user
-
 

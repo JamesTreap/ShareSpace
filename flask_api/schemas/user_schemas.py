@@ -1,32 +1,43 @@
-from marshmallow import Schema, fields, validate, post_load, EXCLUDE
+from marshmallow import validate, post_load, EXCLUDE
+from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
+from werkzeug.security import generate_password_hash
+
 from flask_api.entities.user import User
 
-class UserOut(Schema):
-    id          = fields.Int()
-    username    = fields.Str()
-    email       = fields.Email()
-    full_name   = fields.Str()
-    created_at  = fields.DateTime()
-    updated_at  = fields.DateTime()
 
-class UserIn(Schema):
-    # Validation rules on incoming JSON
-    username  = fields.Str(required=True,
-                           validate=validate.Length(min=3, max=50))
-    email     = fields.Email(required=True)
-    password  = fields.Str(required=True,
-                           load_only=True,
-                           validate=validate.Length(min=6))
-    full_name = fields.Str()
-    avatar_url = fields.Url(allow_none=True)
+class UserSchema(SQLAlchemySchema):
 
     class Meta:
-        unknown = EXCLUDE          # ignore extra fields
+        model = User
+        load_instance = True
+        include_fk = True
+        unknown = EXCLUDE
+
+    id          = auto_field(dump_only=True)
+    username    = auto_field(
+        required=True,
+        validate=validate.Length(min=3, max=50)
+    )
+    email       = auto_field(required=True)
+    name   = auto_field()
+    profile_picture_url  = auto_field()
+
+    password_hash    = auto_field(
+        load_only=True,
+        required=True,
+        validate=validate.Length(min=6)
+    )
+    created_at  = auto_field(dump_only=True)
+    updated_at  = auto_field(dump_only=True)
 
     @post_load
-    def make_user(self, data, **kwargs):
-
-        pw = data.pop("password")
+    def hash_password(self, data, **_):
+        raw = data.pop("password", None)
         user = User(**data)
-        user.set_password(pw)
+        if raw:
+            generate_password_hash(raw)
         return user
+
+class UserPublicSchema(UserSchema):
+    class Meta(UserSchema.Meta):
+        fields = ("id", "username", "name", "profile_url")

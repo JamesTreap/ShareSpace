@@ -45,16 +45,16 @@ def login():
     if not data or 'username' not in data or 'password' not in data:
         return jsonify({'error': 'Invalid input'}), 400
 
-    user = UserRepo.find_by_username({"username": data["username"]})
+    user = UserRepo.find_by_username(data["username"])
     if not user:
         return jsonify({'error': 'Invalid username or password'}), 401
 
-    if not check_password_hash(user['password'], data['password']):
+    if not check_password_hash(user.password_hash, data['password']):
         return jsonify({'error': 'Invalid username or password'}), 401
 
     token = jwt.encode(
         {
-        'username': user['username']
+        'username': user.username
     },
         current_app.config['SECRET_KEY'],
         algorithm='HS256'
