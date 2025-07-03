@@ -53,7 +53,7 @@ fun ShareSpaceApp(navController: NavHostController = rememberNavController()) {
                 onRoomClick = { navController.navigate(ShareSpaceScreens.RoomSummary.name) })
         }
         composable(route = ShareSpaceScreens.EditProfile.name) {
-            EditProfileScreen()
+            EditProfileScreen(onCreateRoomClick = { navController.navigate(ShareSpaceScreens.CreateRoom.name)})
         }
         composable(route = ShareSpaceScreens.RoomSummary.name) {
             RoomSummaryScreen(
