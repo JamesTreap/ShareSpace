@@ -48,15 +48,24 @@ import kotlinx.coroutines.flow.StateFlow
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
 import com.example.sharespace.ui.screens.room.SectionHeader
+import androidx.compose.foundation.shape.RoundedCornerShape
+
 
 
 data class User(
-    val id: String, val name: String, val photoUrl: String? = null
+    val id: String,
+    val name: String,
+    val photoUrl: String? = null
 )
 
 
 data class Room (
-    val id: String, val name: String, val members: Int, val due: Float, val photoUrl: String? = null
+    val id: String,
+    val name: String,
+    val members: Int,
+    val due: Float,
+    val notifications: Int = 0,
+    val photoUrl: String? = null,
 )
 
 
@@ -91,12 +100,14 @@ class ProfileScreenViewModel : ViewModel() {
                 name = "200 University Ave W.",
                 members = 4,
                 due = 2163f,
-                photoUrl = "https://.../goose.jpg"),
+                photoUrl = "https://.../goose.jpg",
+                notifications = 10),
             Room(id = "r2",
                 name = "3828 Piermont Dr",
                 members = 3,
                 due = 0f,
-                photoUrl = "https://.../walter.jpg")
+                photoUrl = "https://.../walter.jpg",
+                notifications = 20)
         )
 
         _invites.value = listOf(
@@ -140,7 +151,8 @@ fun EditProfileScreen(
             rooms.forEach { room ->
                 RoomCard(room = room, showAction = false,
                     acceptInvite = { viewModel.acceptInvite() },
-                    declineInvite = { viewModel.declineInvite() })
+                    declineInvite = { viewModel.declineInvite() },
+                    room.notifications)
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
@@ -155,7 +167,8 @@ fun EditProfileScreen(
             invites.forEach { room ->
                 RoomCard(room = room, showAction = true,
                     acceptInvite = { viewModel.acceptInvite() },
-                    declineInvite = { viewModel.declineInvite() })
+                    declineInvite = { viewModel.declineInvite() },
+                    room.notifications)
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
@@ -231,6 +244,7 @@ fun RoomCard(
     showAction: Boolean,
     acceptInvite: () -> Unit,
     declineInvite: () -> Unit,
+    numOfNotifications: Int
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -278,11 +292,19 @@ fun RoomCard(
             } else {
                 Box(
                     modifier = Modifier
-                        .border(1.dp, Color.Gray)
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .size(32.dp)
+                        .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(6.dp))
+                        .border(1.dp, Color.Gray, shape = RoundedCornerShape(6.dp))
+                        .padding(4.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("10") // TODO: I don't know why this is 10
+                    Text(
+                        text = numOfNotifications.toString(),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
+
             }
         }
     }
