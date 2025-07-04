@@ -1,8 +1,12 @@
 # flask_api/services/room_service.py
 from sqlalchemy.exc import IntegrityError
 from flask_api.entities import db
+from flask_api.entities.room import Room
 from flask_api.repository.room_repo import RoomRepo, RoomMember, RoomInvitation
-
+from typing import Optional
+from flask import abort
+from flask_api.repository.user_repo import UserRepo
+from flask_api.entities.user import User
 
 class RoomService:
     @staticmethod
@@ -20,3 +24,52 @@ class RoomService:
                 member = RoomRepo.find_member(inv.room_id, inv.invitee_user_id)
 
         return member
+
+    @staticmethod
+    def get_rooms_for_user(user_id: int):
+        return RoomRepo.list_rooms_for_user(user_id)
+
+    @staticmethod
+    def get_room_with_members_if_user_is_member(room_id: int, user: User) -> Room:
+        room = RoomRepo.get_room_with_members(room_id)
+        if room is None:
+            abort(404, "Room not found")
+        if user.id not in (m.user_id for m in room.members):
+            abort(403, "You are not a member of this room")
+        return room
+
+    @staticmethod
+    def create_room_for_user(name: str, picture_url: Optional[str], user: User) -> Room:
+        room = RoomRepo.create_room(name, picture_url)
+        RoomRepo.add_member(room.id, user.id)
+        return room
+
+    @staticmethod
+    def invite_user_to_room(room_id: int, inviter: User, invitee_username: str) -> RoomInvitation:
+        room = RoomRepo.get_room_with_members(room_id)
+        if room is None:
+            abort(404, "Room not found")
+
+        if inviter.id not in (m.user_id for m in room.members):
+            abort(403, "You are not a member of this room")
+
+        invitee = UserRepo.find_by_username(invitee_username)
+        if not invitee:
+            abort(404, "User not found")
+
+        return RoomRepo.create_invitation(room_id, inviter.id, invitee.id)
+
+    @staticmethod
+    def respond_to_invitation(room_id: int, user: User, status: str) -> RoomInvitation:
+        invitation = RoomRepo.waiting_invitations_for_user_by_room(user.id, room_id)
+        if invitation is None:
+            abort(404, "Invitation not found")
+
+        updated = RoomRepo.respond_to_invitation(invitation.id, status)
+        if status == "accepted":
+            RoomRepo.add_member(updated.room_id, user.id)
+        return updated
+
+    @staticmethod
+    def get_room_by_id_with_members(room_id: int):
+        return RoomRepo.get_room_with_members(room_id)
