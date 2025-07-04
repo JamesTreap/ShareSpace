@@ -143,6 +143,7 @@ class RoomSummaryViewModel : ViewModel() {
     }
 }
 
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RoomSummaryScreen(
@@ -163,7 +164,7 @@ fun RoomSummaryScreen(
             RoomSummaryTopAppBar(
                 address = "200 University Ave W.",
                 subtitle = "My amazing desc here",
-                onNavigateBack= onNavigateBack
+                onNavigateBack= onNa
             )
         }, modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
@@ -172,7 +173,6 @@ fun RoomSummaryScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-
             Button(
                 onClick = onFinanceManagerClick,
                 modifier =
@@ -193,7 +193,6 @@ fun RoomSummaryScreen(
                 onAdd = onAddTaskClick,
                 onViewAll = onViewTasksClick
             )
-
 //            CalendarSection( /*…*/ )
 //            Button(
 //                onClick = onViewBillsClick,
@@ -219,6 +218,46 @@ fun RoomSummaryScreen(
 //            ) {
 //                Text(text = "View all tasks")
 //            }
+        }
+    }
+}
+
+@Composable
+fun RoomSummaryTopAppBar(address: String, subtitle: String) {
+    TopAppBar(title = {
+        Column {
+            Text(text = address, style = MaterialTheme.typography.titleLarge)
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
+        }
+    }, navigationIcon = {
+        IconButton(onClick = { /* back */ }) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+        }
+    })
+}
+
+@Composable
+fun RecentBillsSection(
+    bills: List<Bill>, onPay: (Bill) -> Unit, onViewAll: () -> Unit
+) {
+    SectionHeader(title = "Recent Bills", actionText = "View All", onAction = onViewAll)
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        items(bills) { bill ->
+            ElevatedCard(modifier = Modifier.width(180.dp)) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(bill.title, style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(4.dp))
+                    Text("$${bill.amount}", style = MaterialTheme.typography.headlineSmall)
+                    Spacer(Modifier.height(8.dp))
+                    Text(bill.subtitle, style = MaterialTheme.typography.bodySmall)
+                    Spacer(Modifier.height(12.dp))
+                    Button(
+                        onClick = { onPay(bill) }, modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = "Pay User")
+                    }
+                }
+            }
         }
     }
 }
@@ -465,4 +504,3 @@ fun UpcomingTasksSection(
         }
     }
 }
-
