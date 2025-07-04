@@ -51,7 +51,6 @@ import com.example.sharespace.ui.components.NavigationHeader
 import com.example.sharespace.ui.components.SectionHeader
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.getValue
 
 data class User(
@@ -248,111 +247,6 @@ fun Avatar(
     }
 }
 
-
-@Composable
-fun RoomCard(
-    room: Room,
-    showAction: Boolean,
-    acceptInvite: () -> Unit,
-    declineInvite: () -> Unit,
-    numOfNotifications: Int
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        border = BorderStroke(1.dp, Color.Black),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Avatar(photoUrl = room.photoUrl, size = 48.dp)
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = room.name,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                )
-                Text(
-                    text = "${room.members} members | $${room.due} due",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            if (showAction) {
-                Column {
-                    Button(
-                        onClick = acceptInvite,
-                        shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B5998)) // deep blue
-                    ) {
-                        Icon(Icons.Default.Check, contentDescription = "Accept", tint = Color.White)
-                    }
-
-                    Button(
-                        onClick = declineInvite,
-                        shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB00020)) // red
-                    ) {
-                        Icon(Icons.Default.Close, contentDescription = "Decline", tint = Color.White)
-                    }
-                }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(6.dp))
-                        .border(1.dp, Color.Gray, shape = RoundedCornerShape(6.dp))
-                        .padding(4.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = numOfNotifications.toString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-            }
-        }
-    }
-    HorizontalDivider(color = Color.Black.copy(alpha = 0.8f), thickness = 1.dp,
-        modifier = Modifier.padding(horizontal = 18.dp))
-}
-
-@Composable
-fun Avatar(
-    photoUrl: String?, contentDescription: String? = null, size: Dp = 56.dp
-) {
-    Box(
-        modifier = Modifier
-            .size(size)
-            .clip(CircleShape)
-            .background(color = MaterialTheme.colorScheme.surfaceVariant) // subtle backdrop
-    ) {
-        if (photoUrl != null) {
-            AsyncImage(
-                model = photoUrl,
-                contentDescription = contentDescription,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .matchParentSize()
-                    .clip(CircleShape)
-            )
-        } else {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = contentDescription,
-                modifier = Modifier
-                    .matchParentSize()
-                    .padding(12.dp)
-            )
-        }
-    }
-}
 
 @Composable
 fun RoomCard(
