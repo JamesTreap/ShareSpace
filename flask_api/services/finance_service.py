@@ -1,9 +1,9 @@
 from flask_api.repository.finance_repo import FinanceRepo
-
+from typing import List, Optional
 
 class FinanceService:
     @staticmethod
-    def get_room_financial_activity(room_id: int) -> list[dict]:
+    def get_room_financial_activity(room_id: int) -> List[dict]:
         bills = FinanceRepo.get_bills_for_room(room_id)
         payments = FinanceRepo.get_payments_for_room(room_id)
 
