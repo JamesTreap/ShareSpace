@@ -1,5 +1,7 @@
 package com.example.sharespace
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -40,6 +42,7 @@ enum class ShareSpaceScreens(@StringRes val title: Int) {
     EditTask(title = R.string.edit_task_screen),
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ShareSpaceApp(navController: NavHostController = rememberNavController()) {
     NavHost(
@@ -56,7 +59,8 @@ fun ShareSpaceApp(navController: NavHostController = rememberNavController()) {
         }
         composable(route = ShareSpaceScreens.EditProfile.name) {
             EditProfileScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onCreateRoomClick = { navController.navigate(ShareSpaceScreens.CreateRoom.name)}
             )
         }
         composable(route = ShareSpaceScreens.RoomSummary.name) {

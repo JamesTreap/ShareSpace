@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.example.sharespace.ui.components.NavigationHeader
+import com.example.sharespace.ui.screens.room.SectionHeader
 
 @Composable
 fun FinanceManagerScreen(
@@ -32,9 +32,9 @@ fun FinanceManagerScreen(
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.surface) // Use theme surface color
         ) {
-
+            item { Spacer(modifier = Modifier.height(16.dp)) }
             // Bill summary circle and breakdown
             item {
                 BillSummarySection()
@@ -73,12 +73,12 @@ fun BillSummarySection() {
             modifier = Modifier
                 .size(140.dp)
                 .background(
-                    Color.Gray.copy(alpha = 0.3f),
+                    MaterialTheme.colorScheme.surfaceVariant, // Use theme color
                     CircleShape
                 )
                 .border(
                     width = 3.dp,
-                    color = Color.Gray.copy(alpha = 0.5f),
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), // Use theme color
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -90,12 +90,12 @@ fun BillSummarySection() {
                     text = "$993.12",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurfaceVariant // Use theme color
                 )
                 Text(
                     text = "Last 30d",
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f) // Use theme color
                 )
             }
         }
@@ -117,7 +117,7 @@ fun BillBreakdownItem(category: String, amount: String) {
     Text(
         text = "$category - $amount",
         fontSize = 16.sp,
-        color = Color.Black,
+        color = MaterialTheme.colorScheme.onSurface, // Use theme color
         modifier = Modifier.padding(vertical = 2.dp)
     )
 }
@@ -133,14 +133,14 @@ fun RoommatesSection() {
             text = "Roommates (3)",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         RoommateCard(
             name = "Roommate 1",
             amount = "$634",
-            amountColor = Color.Red,
+            amountColor = Color(0xFFB00020), // Standardized Red
             isOwed = true
         )
 
@@ -149,7 +149,7 @@ fun RoommatesSection() {
         RoommateCard(
             name = "Roommate 2",
             amount = "0",
-            amountColor = Color.Black,
+            amountColor = MaterialTheme.colorScheme.onSurface,
             isOwed = true
         )
 
@@ -158,7 +158,7 @@ fun RoommatesSection() {
         RoommateCard(
             name = "Roommate 3",
             amount = "$844",
-            amountColor = Color.Green,
+            amountColor = Color(0xFF4CAF50), // Standardized Green
             isOwed = false
         )
     }
@@ -175,7 +175,7 @@ fun RoommateCard(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                Color.Gray.copy(alpha = 0.1f),
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                 RoundedCornerShape(8.dp)
             )
             .padding(16.dp),
@@ -190,7 +190,7 @@ fun RoommateCard(
                 modifier = Modifier
                     .size(50.dp)
                     .background(
-                        Color.Gray.copy(alpha = 0.4f),
+                        MaterialTheme.colorScheme.surfaceVariant,
                         RoundedCornerShape(4.dp)
                     )
             )
@@ -202,7 +202,7 @@ fun RoommateCard(
                     text = name,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = if (isOwed) "Amount owed: $amount" else "Amount owing: $amount",
@@ -218,7 +218,7 @@ fun RoommateCard(
                 .size(40.dp)
                 .border(
                     width = 2.dp,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.outline,
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -227,7 +227,7 @@ fun RoommateCard(
                 text = "$",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -248,25 +248,13 @@ fun TransactionHistorySection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Transaction History (734)",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Black
+
+            SectionHeader(
+                title = "Transaction History (734)",
+                actionText = "+ Add Bill",
+                onAction = onAddBillClick
             )
 
-            OutlinedButton(
-                onClick = onAddBillClick,
-                border = BorderStroke(1.dp, Color.Black),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color.Black
-                )
-            ) {
-                Text(
-                    text = "+ Add Bill",
-                    fontSize = 14.sp
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -314,7 +302,7 @@ fun TransactionItem(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                Color.Gray.copy(alpha = 0.1f),
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                 RoundedCornerShape(8.dp)
             )
             .padding(16.dp),
@@ -329,7 +317,7 @@ fun TransactionItem(
                 modifier = Modifier
                     .size(50.dp)
                     .background(
-                        Color.Gray.copy(alpha = 0.4f),
+                        MaterialTheme.colorScheme.surfaceVariant,
                         RoundedCornerShape(4.dp)
                     )
             )
@@ -341,12 +329,12 @@ fun TransactionItem(
                     text = title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "$date | $amount",
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -357,7 +345,7 @@ fun TransactionItem(
                 .size(40.dp)
                 .border(
                     width = 2.dp,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.outline,
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -366,7 +354,7 @@ fun TransactionItem(
                 imageVector = Icons.Default.Delete,
                 contentDescription = "Delete",
                 modifier = Modifier.size(20.dp),
-                tint = Color.Gray
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -375,21 +363,15 @@ fun TransactionItem(
 @Composable
 fun ViewMoreButton() {
     Button(
-        onClick = { /* View more action */ },
+        onClick = { /* to be implemented */ },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .height(50.dp),
+            .height(48.dp)
+            .padding(horizontal = 12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Gray.copy(alpha = 0.2f),
-            contentColor = Color.Black
-        ),
-        shape = RoundedCornerShape(8.dp)
-    ) {
-        Text(
-            text = "View More",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+            containerColor = MaterialTheme.colorScheme.primary
         )
+    ) {
+        Text( "View More")
     }
 }
