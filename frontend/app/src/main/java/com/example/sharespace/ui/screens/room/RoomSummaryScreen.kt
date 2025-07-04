@@ -10,19 +10,31 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.sharespace.ui.components.NavigationHeader
+import com.example.sharespace.ui.screens.finance.FinanceManagerScreen
 
 @Composable
 fun RoomSummaryScreen(
+    onNavigateBack: (() -> Unit)? = null,
     onViewBillsClick: () -> Unit,
     onAddRoommateClick: () -> Unit,
     onAddTaskClick: () -> Unit,
-    onViewTasksClick: () -> Unit
+    onViewTasksClick: () -> Unit,
+    onFinanceManagerClick: () -> Unit
 ) {
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(
+        topBar = {
+            NavigationHeader(
+                title = "Room Summary",
+                onNavigateBack = onNavigateBack
+            )
+        },
+        modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
+
         ) {
             Text(
                 text = "Room summary screen"
@@ -50,6 +62,12 @@ fun RoomSummaryScreen(
                 modifier = Modifier.widthIn(min = 250.dp)
             ) {
                 Text(text = "View all tasks")
+            }
+            Button(
+                onClick = onFinanceManagerClick,
+                modifier = Modifier.widthIn(min = 250.dp)
+            ) {
+                Text(text = "Finance Manager")
             }
         }
     }

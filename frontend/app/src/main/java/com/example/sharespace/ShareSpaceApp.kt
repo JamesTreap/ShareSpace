@@ -1,6 +1,5 @@
 package com.example.sharespace
 
-
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -8,9 +7,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.sharespace.ui.screens.bills.AddBillScreen
-import com.example.sharespace.ui.screens.bills.BillsListScreen
-import com.example.sharespace.ui.screens.bills.EditBillScreen
+import com.example.sharespace.ui.screens.finance.AddBillScreen
+import com.example.sharespace.ui.screens.finance.BillsListScreen
+import com.example.sharespace.ui.screens.finance.EditBillScreen
+import com.example.sharespace.ui.screens.finance.FinanceManagerScreen
 import com.example.sharespace.ui.screens.profile.EditProfileScreen
 import com.example.sharespace.ui.screens.room.AddRoommateScreen
 import com.example.sharespace.ui.screens.room.CreateRoomScreen
@@ -34,6 +34,7 @@ enum class ShareSpaceScreens(@StringRes val title: Int) {
     BillsList(title = R.string.bills_list_screen),
     AddBill(title = R.string.add_bill_screen),
     EditBill(title = R.string.edit_bill_screen),
+    FinanceManager(title = R.string.finance_manager_screen),
     TasksList(title = R.string.tasks_list_screen),
     AddTask(title = R.string.add_task_screen),
     EditTask(title = R.string.edit_task_screen),
@@ -50,50 +51,82 @@ fun ShareSpaceApp(navController: NavHostController = rememberNavController()) {
             HomeOverviewScreen(
                 onUserProfileClick = { navController.navigate(ShareSpaceScreens.EditProfile.name) },
                 onCreateRoomClick = { navController.navigate(ShareSpaceScreens.CreateRoom.name) },
-                onRoomClick = { navController.navigate(ShareSpaceScreens.RoomSummary.name) })
+                onRoomClick = { navController.navigate(ShareSpaceScreens.RoomSummary.name) }
+            )
         }
         composable(route = ShareSpaceScreens.EditProfile.name) {
-            EditProfileScreen()
+            EditProfileScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
         composable(route = ShareSpaceScreens.RoomSummary.name) {
             RoomSummaryScreen(
+                onNavigateBack = { navController.popBackStack() },
                 onViewBillsClick = { navController.navigate(ShareSpaceScreens.BillsList.name) },
                 onAddRoommateClick = { navController.navigate(ShareSpaceScreens.AddRoommate.name) },
                 onAddTaskClick = { navController.navigate(ShareSpaceScreens.AddTask.name) },
                 onViewTasksClick = { navController.navigate(ShareSpaceScreens.TasksList.name) },
+                onFinanceManagerClick = { navController.navigate(ShareSpaceScreens.FinanceManager.name) }
             )
         }
         composable(route = ShareSpaceScreens.AddRoommate.name) {
-            AddRoommateScreen()
+            AddRoommateScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
         composable(route = ShareSpaceScreens.EditRoommate.name) {
-            EditRoommateScreen()
+            EditRoommateScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
         composable(route = ShareSpaceScreens.CreateRoom.name) {
-            CreateRoomScreen()
+            CreateRoomScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
         composable(route = ShareSpaceScreens.EditRoom.name) {
-            EditRoomScreen()
+            EditRoomScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
         composable(route = ShareSpaceScreens.BillsList.name) {
-            BillsListScreen(onAddBillClick = { navController.navigate(ShareSpaceScreens.AddBill.name) })
+            BillsListScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onAddBillClick = { navController.navigate(ShareSpaceScreens.AddBill.name) },
+                onFinanceManagerClick = { navController.navigate(ShareSpaceScreens.FinanceManager.name) }
+            )
+        }
+        composable(route = ShareSpaceScreens.FinanceManager.name) {
+            FinanceManagerScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onAddBillClick = { navController.navigate(ShareSpaceScreens.AddBill.name) }
+            )
         }
         composable(route = ShareSpaceScreens.AddBill.name) {
-            AddBillScreen()
+            AddBillScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
         composable(route = ShareSpaceScreens.EditBill.name) {
-            EditBillScreen()
+            EditBillScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
         composable(route = ShareSpaceScreens.TasksList.name) {
-            TasksListScreen(onAddTaskClick = { navController.navigate(ShareSpaceScreens.AddTask.name) })
+            TasksListScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onAddTaskClick = { navController.navigate(ShareSpaceScreens.AddTask.name) }
+            )
         }
         composable(route = ShareSpaceScreens.AddTask.name) {
-            AddTaskScreen()
+            AddTaskScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
         composable(route = ShareSpaceScreens.EditTask.name) {
-            EditTaskScreen()
+            EditTaskScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
-
-
 }
