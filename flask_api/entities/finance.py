@@ -44,8 +44,8 @@ class FinanceSummary(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     room_id: Mapped[int] = mapped_column(db.ForeignKey("rooms.id"))
     user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
-    owes:  Mapped[dict] = mapped_column(JSONB)   # {"<user_id>":  23.50, ...}
-    debts: Mapped[dict] = mapped_column(JSONB)   # {"<user_id>": -23.50, ...}
+    owes:  Mapped[dict] = mapped_column(JSONB)
+    debts: Mapped[dict] = mapped_column(JSONB)
     updated_at = mapped_column(db.DateTime, default=datetime.utcnow,
                                onupdate=datetime.utcnow)
 

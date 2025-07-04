@@ -12,9 +12,7 @@ class Task(db.Model, TimestampMixin):
     title: Mapped[str] = mapped_column(db.String(200))
     description: Mapped[Optional[str]] = mapped_column(db.Text)
     deadline: Mapped[Optional[date]] = mapped_column(db.Date)
-    status: Mapped[str] = mapped_column(
-        db.Enum("waiting", "created", name="task_status"), default="waiting"
-    )
+
     scheduled_date: Mapped[Optional[date]] = mapped_column(db.Date)
 
     room  = relationship("Room", back_populates="tasks")
