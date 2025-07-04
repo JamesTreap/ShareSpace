@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -32,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,15 +45,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.sharespace.ui.components.NavigationHeader 
+import com.example.sharespace.ui.components.SectionHeader
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
-import com.example.sharespace.ui.screens.room.SectionHeader
-import androidx.compose.foundation.shape.RoundedCornerShape
-
-
 
 data class User(
     val id: String,
@@ -120,33 +121,43 @@ class ProfileScreenViewModel : ViewModel() {
     }
 }
 
-
-
 @Composable
 fun EditProfileScreen(
     viewModel: ProfileScreenViewModel = viewModel(),
     onCreateRoomClick: () -> Unit,
+    onNavigateBack: () -> Unit
 ) {
     val user by viewModel.user
     val rooms by viewModel.rooms.collectAsState()
     val invites by viewModel.invites.collectAsState()
     val scrollState = rememberScrollState()
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            NavigationHeader(
+                title = "Profile",
+                onNavigateBack = onNavigateBack
+            )
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize().verticalScroll(scrollState)
+                .fillMaxSize()
+                .verticalScroll(scrollState)
         ) {
-            user?.let { UserHeader(name = it.name, photoUrl = user?.photoUrl) }
+            user?.let { UserHeader(name = it.name, photoUrl = it.photoUrl) }
             Spacer(modifier = Modifier.height(16.dp))
 
-            Box (modifier = Modifier.padding(horizontal = 4.dp)) {
-                SectionHeader(
-                    title = "Your Rooms",
-                    actionText = "+ Create Room",
-                    onAction = onCreateRoomClick
-                )
-            }
+            SectionHeader(
+                title = "Your Rooms",
+                actionText = "+ Create Room",
+                onAction = onCreateRoomClick,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
 
             rooms.forEach { room ->
                 RoomCard(room = room, showAction = false,
@@ -174,7 +185,6 @@ fun EditProfileScreen(
         }
     }
 }
-
 
 @Composable
 fun UserHeader(name: String, photoUrl: String?) {
@@ -247,7 +257,9 @@ fun RoomCard(
     numOfNotifications: Int
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         border = BorderStroke(1.dp, Color.Black),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -272,21 +284,29 @@ fun RoomCard(
             }
 
             if (showAction) {
-                Column {
+                Row { // Use Row for side-by-side buttons
                     Button(
                         onClick = acceptInvite,
                         shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B5998)) // deep blue
+                        modifier = Modifier.size(40.dp),
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)) // Green
                     ) {
                         Icon(Icons.Default.Check, contentDescription = "Accept", tint = Color.White)
                     }
-
+                    Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = declineInvite,
                         shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB00020)) // red
+                        modifier = Modifier.size(40.dp),
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB00020)) // Red
                     ) {
-                        Icon(Icons.Default.Close, contentDescription = "Decline", tint = Color.White)
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Decline",
+                            tint = Color.White
+                        )
                     }
                 }
             } else {

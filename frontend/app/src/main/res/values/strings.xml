@@ -10,6 +10,7 @@
     <string name="edit_room_screen">Edit Room</string>
     <string name="bills_list_screen">Bill Overview</string>
     <string name="add_bill_screen">Add Bill</string>
+    <string name="finance_manager_screen">Finance Manager</string>
     <string name="edit_bill_screen">Edit Bill</string>
     <string name="tasks_list_screen">Task Overview</string>
     <string name="add_task_screen">Add Task</string>

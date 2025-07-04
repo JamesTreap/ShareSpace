@@ -22,12 +22,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.example.sharespace.ui.components.NavigationHeader
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TasksListScreen(
-    onAddTaskClick: () -> Unit = {},
+    onNavigateBack: () -> Unit,
+    onAddTaskClick: () -> Unit = {}
 ) {
     val taskSummary = listOf(
         "Roommate 1 - 2/5 Complete",
@@ -54,8 +56,9 @@ fun TasksListScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("< Task Overview") }
+            NavigationHeader(
+                title = "Task Overview",
+                onNavigateBack = onNavigateBack
             )
         },
         floatingActionButton = {

@@ -3,6 +3,8 @@
 package com.example.sharespace.ui.screens.room
 
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -75,6 +78,7 @@ data class Task(
     val isDone: Boolean = false
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 class RoomSummaryViewModel : ViewModel() {
     // backing state
     private val _bills = MutableStateFlow<List<Bill>>(emptyList())
@@ -90,6 +94,7 @@ class RoomSummaryViewModel : ViewModel() {
         loadSampleData()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun loadSampleData() {
         _bills.value = listOf(
             Bill(id = "b1", title = "Rent", amount = 100.0, subtitle = "Owing to Roommate 1"),
@@ -138,13 +143,17 @@ class RoomSummaryViewModel : ViewModel() {
     }
 }
 
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RoomSummaryScreen(
     viewModel: RoomSummaryViewModel = viewModel(),
     onViewBillsClick: () -> Unit,
     onAddRoommateClick: () -> Unit,
     onAddTaskClick: () -> Unit,
-    onViewTasksClick: () -> Unit
+    onViewTasksClick: () -> Unit,
+    onFinanceManagerClick: () -> Unit,
+    onNavigateBack: () -> Unit
 ) {
     val bills by viewModel.bills.collectAsState()
     val roommates by viewModel.roommates.collectAsState()
@@ -153,7 +162,9 @@ fun RoomSummaryScreen(
     Scaffold(
         topBar = {
             RoomSummaryTopAppBar(
-                address = "200 University Ave W.", subtitle = "My amazing desc here"
+                address = "200 University Ave W.",
+                subtitle = "My amazing desc here",
+                onNavigateBack= onNavigateBack
             )
         }, modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
@@ -162,6 +173,15 @@ fun RoomSummaryScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
+            Button(
+                onClick = onFinanceManagerClick,
+                modifier =
+                    Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+            ) {
+                Text(text = "Finance Manager")
+            }
             RecentBillsSection(bills = bills, onPay = { /*…*/ }, onViewAll = onViewBillsClick)
             RoommatesSection(
                 roommates = roommates,
@@ -202,15 +222,16 @@ fun RoomSummaryScreen(
     }
 }
 
+
 @Composable
-fun RoomSummaryTopAppBar(address: String, subtitle: String) {
+fun RoomSummaryTopAppBar(address: String, subtitle: String,  onNavigateBack: () -> Unit ) {
     TopAppBar(title = {
         Column {
             Text(text = address, style = MaterialTheme.typography.titleLarge)
             Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
         }
     }, navigationIcon = {
-        IconButton(onClick = { /* back */ }) {
+        IconButton(onClick = onNavigateBack) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
         }
     })
@@ -391,6 +412,7 @@ fun Avatar(
 //}
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UpcomingTasksSection(
     tasks: List<Task>,
@@ -443,5 +465,3 @@ fun UpcomingTasksSection(
         }
     }
 }
-
-
