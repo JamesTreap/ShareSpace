@@ -8,48 +8,453 @@
 	},
 	"item": [
 		{
-			"name": "SETUP",
+			"name": "Auth",
 			"item": [
 				{
-					"name": "Health check",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": ""
+					"name": "create_account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Parse response JSON\r",
+									"let responseData;\r",
+									"try {\r",
+									"    responseData = pm.response.json();\r",
+									"} catch (e) {\r",
+									"    console.error(\"Failed to parse JSON response:\", e);\r",
+									"}\r",
+									"\r",
+									"// Check if token exists and set it to environment variable\r",
+									"if (responseData && responseData.token) {\r",
+									"    pm.environment.set(\"authToken\", responseData.token);\r",
+									"    console.log(\"Token set to environment variable 'authToken'\");\r",
+									"} else {\r",
+									"    console.warn(\"Token not found in the response.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
 						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create-user",
+					],
 					"request": {
-						"method": "GET",
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"{{username}}\",\r\n    \"password\": \"{{password}}\",\r\n    \"email\": \"{{user_email}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": ""
+							"raw": "{{baseURL}}/auth/create-user",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"create-user"
+							]
 						}
 					},
 					"response": []
 				},
 				{
 					"name": "login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Parse response JSON\r",
+									"let responseData;\r",
+									"try {\r",
+									"    responseData = pm.response.json();\r",
+									"} catch (e) {\r",
+									"    console.error(\"Failed to parse JSON response:\", e);\r",
+									"}\r",
+									"\r",
+									"// Check if token exists and set it to environment variable\r",
+									"if (responseData && responseData.token) {\r",
+									"    pm.environment.set(\"authToken\", responseData.token);\r",
+									"    console.log(\"Token set to environment variable 'authToken'\");\r",
+									"} else {\r",
+									"    console.warn(\"Token not found in the response.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"{{username}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/auth/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Room",
+			"item": [
+				{
+					"name": "get_room_overview",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{baseURL}}/rooms/rooms-and-invitations",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"rooms-and-invitations"
+							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get Authenticated User",
+					"name": "get_joined_rooms",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{baseURL}}/rooms",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_room_invites",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/rooms/invites",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"invites"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_room_members",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/rooms/{{room_id}}/members",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"{{room_id}}",
+								"members"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_room_info",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/rooms/{{room_id}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"{{room_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_room",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Parse response JSON\r",
+									"let responseData;\r",
+									"try {\r",
+									"    responseData = pm.response.json();\r",
+									"} catch (e) {\r",
+									"    console.error(\"Failed to parse JSON response:\", e);\r",
+									"}\r",
+									"\r",
+									"// Check if token exists and set it to environment variable\r",
+									"if (responseData && responseData.id) {\r",
+									"    pm.environment.set(\"room_id\", responseData.id);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"packages": {},
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{room_name}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/rooms/create",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "invite_user_to_room",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"invitee_username\": \"jamestest2\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/rooms/{{room_id}}/invite",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"{{room_id}}",
+								"invite"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "accept_room_invite",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"status\": \"accepted\"  // can also be \"rejected\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/rooms/invites/{{room_id}}/respond",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"invites",
+								"{{room_id}}",
+								"respond"
+							]
 						}
 					},
 					"response": []
@@ -69,17 +474,17 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+							"raw": ""
 						},
 						"url": {
-							"raw": "{{baseURL}}/users/user_details/{{username}}",
+							"raw": "{{baseURL}}/users/user_details/{{user_id}}",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
 								"users",
 								"user_details",
-								"{{username}}"
+								"{{user_id}}"
 							]
 						}
 					},
@@ -102,177 +507,6 @@
 							"path": [
 								"users",
 								"update_profile"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "update_profile",
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
-						},
-						"url": {
-							"raw": "{{baseURL}}/users/update_profile",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"users",
-								"update_profile"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Room",
-			"item": [
-				{
-					"name": "get_rooms",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
-						},
-						"url": {
-							"raw": "{{baseURL}}/rooms/get_rooms",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"rooms",
-								"get_rooms"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "room_invites",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
-						},
-						"url": {
-							"raw": "{{baseURL}}/rooms/room_invites",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"rooms",
-								"room_invites"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "get_roommates",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
-						},
-						"url": {
-							"raw": "{{baseURL}}/rooms/get_roommates/room_id",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"rooms",
-								"get_roommates",
-								"room_id"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "create_room",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
-						},
-						"url": {
-							"raw": "{{baseURL}}/rooms/room_invites",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"rooms",
-								"room_invites"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "add_user",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
-						},
-						"url": {
-							"raw": "{{baseURL}}/rooms/add_user/<room_id>",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"rooms",
-								"add_user",
-								"<room_id>"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "join",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
-						},
-						"url": {
-							"raw": "{{baseURL}}/rooms/join/<room_id>",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"rooms",
-								"join",
-								"<room_id>"
 							]
 						}
 					},
@@ -293,17 +527,17 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+							"raw": ""
 						},
 						"url": {
-							"raw": "{{baseURL}}/tasks/list/<room_id>",
+							"raw": "{{baseURL}}/tasks/list/{{room_id}}",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
 								"tasks",
 								"list",
-								"<room_id>"
+								"{{room_id}}"
 							]
 						}
 					},
@@ -316,30 +550,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
-						},
-						"url": {
-							"raw": "{{baseURL}}/tasks/create_task/<room_id>",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"tasks",
-								"create_task",
-								"<room_id>"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "create_task",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+							"raw": ""
 						},
 						"url": {
 							"raw": "{{baseURL}}/tasks/create_task/<room_id>",
@@ -362,7 +573,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+							"raw": ""
 						},
 						"url": {
 							"raw": "{{baseURL}}/tasks/<task_id>",
@@ -392,17 +603,17 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"alice2\",\r\n    \"password\": \"password\"\r\n}"
+							"raw": ""
 						},
 						"url": {
-							"raw": "{{baseURL}}/finance/transaction_list/<room_id>",
+							"raw": "{{baseURL}}/finance/transaction_list/{{room_id}}",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
 								"finance",
 								"transaction_list",
-								"<room_id>"
+								"{{room_id}}"
 							]
 						}
 					},
@@ -447,6 +658,38 @@
 					"response": []
 				}
 			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{authToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
 		}
 	]
 }

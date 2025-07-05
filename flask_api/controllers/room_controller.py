@@ -1,5 +1,6 @@
 # flask_api/controllers/rooms.py
 from __future__ import annotations
+from datetime import date, timedelta
 
 from flask import Blueprint, abort, g, jsonify, request
 
@@ -36,6 +37,44 @@ def room_invites():
     user: User = g.current_user
     joined = RoomService.get_rooms_for_user(user.id)
     return jsonify({"joinedRooms": rooms_schema.dump(joined)}), 200
+
+
+@rooms_bp.route("/rooms-and-invitations", methods=["GET"])
+@token_required
+def get_user_rooms_and_invitations():
+    user: User = g.current_user
+    joined_rooms = [member.room for member in user.rooms]
+    
+    pending_invitations = [
+        invitation for invitation in user.invitations_received 
+        if invitation.status == "waiting"
+    ]
+    
+    joined_rooms_data = room_schema.dump(joined_rooms, many=True)
+    invitations_data = invs_schema.dump(pending_invitations, many=True)
+    alert_window = date.today() + timedelta(days=1)
+   
+    for i, room_data in enumerate(joined_rooms_data):
+        room = joined_rooms[i]
+        user_task_count = sum(
+            1 for task in room.tasks 
+            for task_user in task.users 
+            if (task_user.user_id == user.id and
+                task.deadline is not None and 
+                task.deadline <= alert_window and
+                task_user.status != "complete")
+        )
+        room_data['alerts'] = user_task_count
+
+        # TO-DO: Implement owing logic
+        # ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+        room_data['balance_due'] = 0
+        # ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+
+    return jsonify({
+        "joined_rooms": joined_rooms_data,
+        "room_invitations": invitations_data,
+    }), 200
 
 
 @rooms_bp.route("/<int:room_id>/members", methods=["GET"])
