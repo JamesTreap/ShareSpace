@@ -55,6 +55,16 @@ class RoomRepo:
         return db.session.scalars(stmt).all()
 
     @staticmethod
+    def list_invites_for_user(user_id: int) -> List[Room]:
+        stmt = (
+            select(Room)
+            .join(RoomInvitation)
+            .where(RoomInvitation.invitee_user_id == user_id)
+            .order_by(Room.created_at.desc())
+        )
+        return db.session.scalars(stmt).all()
+
+    @staticmethod
     def list_members(room_id: int) -> List[User]:
         stmt = (
             select(User)

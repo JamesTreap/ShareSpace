@@ -30,6 +30,10 @@ class RoomService:
         return RoomRepo.list_rooms_for_user(user_id)
 
     @staticmethod
+    def get_invites_for_user(user_id: int):
+        return RoomRepo.list_invites_for_user(user_id)
+
+    @staticmethod
     def get_room_with_members_if_user_is_member(room_id: int, user: User) -> Room:
         room = RoomRepo.get_room_with_members(room_id)
         if room is None:

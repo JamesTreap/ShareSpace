@@ -35,8 +35,8 @@ def get_rooms():
 @token_required
 def room_invites():
     user: User = g.current_user
-    joined = RoomService.get_rooms_for_user(user.id)
-    return jsonify({"joinedRooms": rooms_schema.dump(joined)}), 200
+    joined = RoomService.get_invites_for_user(user.id)
+    return jsonify({"invitedRooms": rooms_schema.dump(joined)}), 200
 
 
 @rooms_bp.route("/rooms-and-invitations", methods=["GET"])
