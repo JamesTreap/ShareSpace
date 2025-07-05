@@ -2,7 +2,7 @@ from marshmallow import validate, post_load, EXCLUDE
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 from werkzeug.security import generate_password_hash
 
-from flask_api.entities.user import User
+from entities.user import User
 
 
 class UserSchema(SQLAlchemySchema):
@@ -40,4 +40,4 @@ class UserSchema(SQLAlchemySchema):
 
 class UserPublicSchema(UserSchema):
     class Meta(UserSchema.Meta):
-        fields = ("id", "username", "name", "profile_url")
+        fields = ("id", "username", "name", "profile_picture_url")

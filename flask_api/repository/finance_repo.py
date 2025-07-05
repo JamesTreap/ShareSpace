@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
-from flask_api.entities.finance import Bill, Payment
-from flask_api.entities import db
+from entities.finance import Bill, Payment
+from entities import db
 from typing import List, Optional
 
 

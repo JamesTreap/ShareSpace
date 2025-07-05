@@ -3,8 +3,8 @@ import jwt
 from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from typing import Optional, Tuple
-from flask_api.repository.user_repo import UserRepo
-from flask_api.entities.user import User
+from repository.user_repo import UserRepo
+from entities.user import User
 
 
 class AuthService:

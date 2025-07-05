@@ -1,8 +1,8 @@
 import jwt
 from flask import Blueprint, request, jsonify, current_app, g
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_api.repository.user_repo import UserRepo
-from flask_api.services.auth_service import AuthService
+from repository.user_repo import UserRepo
+from services.auth_service import AuthService
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 

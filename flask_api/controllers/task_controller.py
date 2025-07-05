@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 
-from flask_api.services.task_service import TaskService
+from services.task_service import TaskService
 
 tasks_bp = Blueprint('tasks', __name__, url_prefix='/tasks')
 

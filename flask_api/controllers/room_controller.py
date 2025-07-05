@@ -3,16 +3,16 @@ from __future__ import annotations
 
 from flask import Blueprint, abort, g, jsonify, request
 
-from flask_api.repository.user_repo import UserRepo
-from flask_api.schemas.user_schemas import UserPublicSchema
-from flask_api.services.room_service import RoomService
-from flask_api.utils import token_required
-from flask_api.repository.room_repo import RoomRepo
-from flask_api.schemas.room_schemas import (
+from repository.user_repo import UserRepo
+from schemas.user_schemas import UserPublicSchema
+from services.room_service import RoomService
+from utils import token_required
+from repository.room_repo import RoomRepo
+from schemas.room_schemas import (
     RoomSchema,
     RoomInvitationSchema,
 )
-from flask_api.entities.user import User
+from entities.user import User
 
 rooms_bp = Blueprint("room", __name__, url_prefix="/rooms")
 

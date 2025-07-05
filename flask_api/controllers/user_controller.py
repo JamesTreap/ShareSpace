@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, abort
 
-from flask_api.repository.user_repo import UserRepo
-from flask_api.schemas.user_schemas import UserPublicSchema
-from flask_api.services.user_service import UserService
-from flask_api.utils import token_required
+from repository.user_repo import UserRepo
+from schemas.user_schemas import UserPublicSchema
+from services.user_service import UserService
+from utils import token_required
 
 users_bp = Blueprint('users', __name__, url_prefix='/users')
 user_schema = UserPublicSchema(many=True)

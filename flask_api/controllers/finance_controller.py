@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 
-from flask_api.services.finance_service import FinanceService
+from services.finance_service import FinanceService
 
 finance_bp = Blueprint('finance', __name__, url_prefix='/finance')
 

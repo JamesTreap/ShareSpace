@@ -5,8 +5,8 @@ from typing import Optional
 from sqlalchemy import select
 from werkzeug.security import generate_password_hash
 
-from flask_api.entities import db
-from flask_api.entities.user import User
+from entities import db
+from entities.user import User
 
 
 class UserRepo:

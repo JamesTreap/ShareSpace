@@ -1,5 +1,5 @@
-from flask_api.repository.user_repo import UserRepo
-from flask_api.entities.user import User
+from repository.user_repo import UserRepo
+from entities.user import User
 from typing import Optional
 
 class UserService:

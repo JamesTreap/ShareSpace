@@ -1,12 +1,12 @@
 # flask_api/services/room_service.py
 from sqlalchemy.exc import IntegrityError
-from flask_api.entities import db
-from flask_api.entities.room import Room
-from flask_api.repository.room_repo import RoomRepo, RoomMember, RoomInvitation
+from entities import db
+from entities.room import Room
+from repository.room_repo import RoomRepo, RoomMember, RoomInvitation
 from typing import Optional
 from flask import abort
-from flask_api.repository.user_repo import UserRepo
-from flask_api.entities.user import User
+from repository.user_repo import UserRepo
+from entities.user import User
 
 class RoomService:
     @staticmethod
