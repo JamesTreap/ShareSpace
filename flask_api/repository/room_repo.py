@@ -2,9 +2,9 @@
 from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
-from flask_api.entities import db
-from flask_api.entities.room import Room, RoomMember, RoomInvitation
-from flask_api.entities.user import User
+from entities import db
+from entities.room import Room, RoomMember, RoomInvitation
+from entities.user import User
 
 
 class RoomRepo:

@@ -6,6 +6,6 @@ CS 446 App Repo
 
 1. Install python locally on your machine (version 3.10 or later)
 2. Set up virtual environment
-3. Pip install -r `requirements.txt`
-4. `cd .\flask_api\`
-5. python main.py
+3. Run `cd .\flask_api\`
+4. Run `Pip install -r requirements.txt`
+5. Run `python main.py`

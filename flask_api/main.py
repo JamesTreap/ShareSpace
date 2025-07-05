@@ -1,7 +1,7 @@
 # flask_api/main.py
 from flask import Flask
 from dotenv import dotenv_values
-from flask_api.entities import db
+from entities import db
 from importlib import import_module
 from sqlalchemy.orm import configure_mappers
 
@@ -24,16 +24,16 @@ def create_app() -> Flask:
     # ── Load all models while a context is active ─────
     with app.app_context():
         for m in ("user", "room", "task", "finance"):
-            import_module(f"flask_api.entities.{m}")
+            import_module(f"entities.{m}")
         configure_mappers()
         db.create_all()
 
     # ── NOW import & register blueprints ──────────────
-    from flask_api.controllers.auth_controller   import auth_bp
-    from flask_api.controllers.user_controller   import users_bp
-    from flask_api.controllers.room_controller   import rooms_bp
-    from flask_api.controllers.task_controller   import tasks_bp
-    from flask_api.controllers.finance_controller import finance_bp
+    from controllers.auth_controller   import auth_bp
+    from controllers.user_controller   import users_bp
+    from controllers.room_controller   import rooms_bp
+    from controllers.task_controller   import tasks_bp
+    from controllers.finance_controller import finance_bp
 
     app.register_blueprint(auth_bp,   url_prefix="/auth")
     app.register_blueprint(users_bp,  url_prefix="/users")

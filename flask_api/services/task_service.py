@@ -1,4 +1,4 @@
-from flask_api.repository.task_repo import TaskRepo
+from repository.task_repo import TaskRepo
 from typing import List, Optional
 
 class TaskService:

@@ -1,7 +1,7 @@
 from functools import wraps
 import jwt
 from flask import request, jsonify, current_app, g
-from flask_api.repository.user_repo import UserRepo
+from repository.user_repo import UserRepo
 
 def token_required(view_func):
     @wraps(view_func)

@@ -1,6 +1,6 @@
 from sqlalchemy import select
-from flask_api.entities.task import Task, TaskUser
-from flask_api.entities import db
+from entities.task import Task, TaskUser
+from entities import db
 from typing import List, Optional
 
 class TaskRepo:

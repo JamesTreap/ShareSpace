@@ -1,4 +1,4 @@
-from flask_api.repository.finance_repo import FinanceRepo
+from repository.finance_repo import FinanceRepo
 from typing import List, Optional
 
 class FinanceService:

@@ -2,8 +2,8 @@
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 from marshmallow.fields import Nested
 
-from flask_api.entities.room import Room, RoomMember, RoomInvitation
-from flask_api.entities.user import User
+from entities.room import Room, RoomMember, RoomInvitation
+from entities.user import User
 
 
 class RoomMemberSchema(SQLAlchemySchema):
