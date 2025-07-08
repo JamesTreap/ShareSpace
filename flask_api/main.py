@@ -1,4 +1,3 @@
-# flask_api/main.py
 from flask import Flask
 from dotenv import dotenv_values
 from entities import db
@@ -10,11 +9,23 @@ def create_app() -> Flask:
 
     # ── Config ─────────────────────────────────────────
     cfg = dotenv_values(".env.potential")
+    
+    # Determine which database to use
+    use_local = cfg.get("USE_LOCAL_DB", "false").lower() == "true"
+    
+    if use_local:
+        database_uri = cfg.get("LOCAL_DATABASE_URL", "sqlite:///local_shareSpace.db")
+        print("🔧 Using local database")
+    else:
+        database_uri = cfg.get("DATABASE_URL")
+        print("🌐 Using remote database")
+    
     app.config.update(
         SECRET_KEY                = cfg.get("SECRET_KEY", "dev-secret-key"),
-        SQLALCHEMY_DATABASE_URI   = cfg.get("DATABASE_URL"),
+        SQLALCHEMY_DATABASE_URI   = database_uri,
         SQLALCHEMY_TRACK_MODIFICATIONS = False,
     )
+    
     if not app.config["SQLALCHEMY_DATABASE_URI"]:
         raise RuntimeError("DATABASE_URL missing in .env")
 

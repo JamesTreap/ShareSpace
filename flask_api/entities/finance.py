@@ -1,5 +1,5 @@
 # flask_api/entities/finance_controller.py
-from sqlalchemy.dialects.postgresql import JSONB, NUMERIC
+from sqlalchemy.dialects.postgresql import JSON, NUMERIC
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from . import db, TimestampMixin
 from typing import Optional, List, Dict
@@ -14,7 +14,7 @@ class Bill(db.Model, TimestampMixin):
     title:    Mapped[str] = mapped_column(db.String(200))
     category: Mapped[str] = mapped_column(db.String(100))
     payer_user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
-    meta_data: Mapped[Optional[dict]] = mapped_column(JSONB)
+    meta_data: Mapped[Optional[dict]] = mapped_column(JSON)
     status: Mapped[str] = mapped_column(
         db.Enum("waiting", "created", name="bill_status"), default="waiting"
     )
@@ -44,8 +44,8 @@ class FinanceSummary(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     room_id: Mapped[int] = mapped_column(db.ForeignKey("rooms.id"))
     user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
-    owes:  Mapped[dict] = mapped_column(JSONB)
-    debts: Mapped[dict] = mapped_column(JSONB)
+    owes:  Mapped[dict] = mapped_column(JSON)
+    debts: Mapped[dict] = mapped_column(JSON)
     updated_at = mapped_column(db.DateTime, default=datetime.utcnow,
                                onupdate=datetime.utcnow)
 
