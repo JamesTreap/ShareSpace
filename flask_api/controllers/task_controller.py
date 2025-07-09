@@ -20,9 +20,7 @@ def task_details(room_id):
     if not user:
         abort(404, description="User not found")
 
-    print(room_id)
-    for room in user.rooms:
-        print(room.room_id)
+    
     if not any(room.room_id == int(room_id) for room in user.rooms):
         abort(404, description="User does not belong to the room")
     # Get the input data from the request
