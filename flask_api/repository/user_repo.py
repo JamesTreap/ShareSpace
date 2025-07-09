@@ -22,6 +22,14 @@ class UserRepo:
         )
 
     @staticmethod
+    def get_users_by_ids(user_ids: list[int]) -> list[User]:
+        if not user_ids:
+            return []
+        return db.session.scalars(
+            select(User).where(User.id.in_(user_ids))
+        ).all()
+
+    @staticmethod
     def create(
         username: str,
         raw_password: str,
@@ -43,3 +51,13 @@ class UserRepo:
         db.session.commit()
         return user
 
+    @staticmethod
+    def update_user_profile(user_id: int, username: str, password: str) -> Optional[User]:
+        user = db.session.get(User, user_id)
+        if not user:
+            return None
+
+        user.username = username
+        user.password_hash = generate_password_hash(password)
+        db.session.commit()
+        return user

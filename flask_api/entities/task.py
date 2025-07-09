@@ -7,7 +7,7 @@ from typing import Optional, List, Dict
 class Task(db.Model, TimestampMixin):
     __tablename__ = "tasks"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     room_id: Mapped[int] = mapped_column(db.ForeignKey("rooms.id"))
     title: Mapped[str] = mapped_column(db.String(200))
     description: Mapped[Optional[str]] = mapped_column(db.Text)
@@ -21,7 +21,7 @@ class Task(db.Model, TimestampMixin):
 class TaskUser(db.Model, TimestampMixin):
     __tablename__ = "task_users"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     task_id: Mapped[int] = mapped_column(db.ForeignKey("tasks.id"))
     user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
     status: Mapped[str] = mapped_column(
