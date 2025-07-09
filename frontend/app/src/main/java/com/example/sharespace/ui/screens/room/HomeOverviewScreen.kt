@@ -22,7 +22,8 @@ import com.example.sharespace.ui.components.NavigationHeader
 fun HomeOverviewScreen(
     onUserProfileClick: () -> Unit = {},
     onCreateRoomClick: () -> Unit = {},
-    onRoomClick: () -> Unit = {}
+    onRoomClick: () -> Unit = {},
+    onLoginClick: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -58,6 +59,13 @@ fun HomeOverviewScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("View My Room")
+            }
+
+            Button(
+                onClick = onLoginClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Log In")
             }
         }
     }
