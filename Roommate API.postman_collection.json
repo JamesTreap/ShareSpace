@@ -645,15 +645,24 @@
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"Walmart\",\r\n    \"category\": \"grocery\",\r\n    \"amount\": \"135\",\r\n    \"payer_id\": \"8\",\r\n    \"users\": [\r\n        {\"user_id\": \"9\", \"amount_due\": \"65\"},\r\n        {\"user_id\": \"10\", \"amount_due\": \"70\"}\r\n    ],\r\n    \"frequency\": \"1d\",\r\n    \"repeat\": \"2\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{baseURL}}/finance/create_bill/<room_id>",
+							"raw": "{{baseURL}}/finance/create_bill/7",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
 								"finance",
 								"create_bill",
-								"<room_id>"
+								"7"
 							]
 						}
 					},
@@ -664,15 +673,24 @@
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"Walmart\",\r\n    \"category\": \"grocery\",\r\n    \"amount\": \"135\",\r\n    \"payer_id\": \"8\",\r\n    \"payee_id\": \"9\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{baseURL}}/finance/pay_user/<room_id>",
+							"raw": "{{baseURL}}/finance/pay_user/7",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
 								"finance",
 								"pay_user",
-								"<room_id>"
+								"7"
 							]
 						}
 					},
