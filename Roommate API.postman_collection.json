@@ -546,43 +546,64 @@
 				{
 					"name": "create_task",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": ""
+							"raw": "{\r\n    \"title\": \"ooooooo\",\r\n    \"date\": \"2024-12-10T08:24\",\r\n    \"description\": \"Task description\",\r\n    \"assignees\": [\r\n        {\"user_id\": \"8\", \"status\": \"todo\"},\r\n        {\"user_id\": \"9\", \"status\": \"in-progress\"},\r\n        {\"user_id\": \"10\", \"status\": \"complete\"}\r\n    ],\r\n    \"frequency\": \"2w\",\r\n    \"repeat\": \"2\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
-							"raw": "{{baseURL}}/tasks/create_task/<room_id>",
+							"raw": "{{baseURL}}/tasks/create_task/{{room_id}}",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
 								"tasks",
 								"create_task",
-								"<room_id>"
+								"{{room_id}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "update_task",
 					"request": {
 						"method": "PATCH",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": ""
+							"raw": "{\r\n    \"title\": \"ooooooo\",\r\n    \"date\": \"2024-12-10T08:24\",\r\n    \"description\": \"Task description\",\r\n    \"assignees\": [\r\n        {\"user_id\": \"8\", \"status\": \"todo\"},\r\n        {\"user_id\": \"9\", \"status\": \"in-progress\"},\r\n        {\"user_id\": \"10\", \"status\": \"complete\"}\r\n    ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
-							"raw": "{{baseURL}}/tasks/<task_id>",
+							"raw": "{{baseURL}}/tasks/update_task/{{task_id}}",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
 								"tasks",
-								"<task_id>"
+								"update_task",
+								"{{task_id}}"
 							]
 						}
 					},
