@@ -48,3 +48,17 @@ class FinanceRepo:
         db.session.add(bill)
         db.session.commit()
         return bill
+
+    @staticmethod
+    def create_payment(room_id: int, title: str, category: str, amount: float, payer_user_id: int, payee_user_id: int) -> Payment:
+        payment = Payment(
+            room_id=room_id,  # Assuming room_id is passed or set elsewhere
+            title=title,
+            category=category,
+            amount=amount,
+            payer_user_id=payer_user_id,
+            payee_user_id=payee_user_id
+        )
+        db.session.add(payment)
+        db.session.commit()
+        return payment

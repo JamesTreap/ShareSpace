@@ -52,3 +52,41 @@ def create_bill(room_id):
                "message": "Bill created successfully",
                "bill_id": bill.id
            }, 200
+
+@finance_bp.route('/pay_user/<room_id>', methods=['POST'])
+@token_required
+def pay_user(room_id):
+    user: User = g.current_user
+    if not user:
+        abort(404, description="User not found")
+
+    # Check if the user belongs to the room
+    if not any(room.room_id == int(room_id) for room in user.rooms):
+        abort(404, description="User does not belong to the room")
+
+    # Get the input data from the request
+    data = request.get_json(silent=True) or {}
+    title = data.get("title")
+    category = data.get("category")
+    amount = data.get("amount")
+    payer_id = data.get("payer_id")
+    payee_id = data.get("payee_id")
+
+    try:
+        amount = float(amount)
+    except ValueError:
+        abort(400, "Amount must be a valid number.")
+
+    if amount <= 0:
+        abort(400, "Amount must be greater than 0.")
+
+    # Call the service to create the payment
+    payment = FinanceService.create_payment_service(
+        room_id=int(room_id), title=title, category=category, amount=amount,
+        payer_id=int(payer_id), payee_id=int(payee_id)
+    )
+
+    return {
+        "message": "Payment created successfully",
+        "payment_id": payment.id
+    }, 200

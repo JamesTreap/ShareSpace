@@ -135,3 +135,21 @@ class FinanceService:
                 scheduled_dates.append(now + timedelta(**{unit: freq_value * i}))
 
         return scheduled_dates
+
+    @staticmethod
+    def create_payment_service(room_id: int, title: str, category: str, amount: float, payer_id: int, payee_id: int):
+
+        if not RoomService.validate_room_users([payee_id, payer_id], room_id):
+            abort(404, "Not all users belong to the specified room.")
+
+        # Create the payment record
+        payment = FinanceRepo.create_payment(
+            room_id=room_id,
+            title=title,
+            category=category,
+            amount=amount,
+            payer_user_id=payer_id,
+            payee_user_id=payee_id,
+        )
+
+        return payment

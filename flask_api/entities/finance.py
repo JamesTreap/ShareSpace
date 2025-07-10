@@ -31,6 +31,8 @@ class Payment(db.Model, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     room_id:       Mapped[int] = mapped_column(db.ForeignKey("rooms.id"))
     amount:        Mapped[float] = mapped_column(NUMERIC(12, 2))
+    title: Mapped[str] = mapped_column(db.String(200))
+    category: Mapped[str] = mapped_column(db.String(100))
     payer_user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
     payee_user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
 
