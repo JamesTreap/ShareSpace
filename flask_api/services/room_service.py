@@ -3,10 +3,11 @@ from sqlalchemy.exc import IntegrityError
 from entities import db
 from entities.room import Room
 from repository.room_repo import RoomRepo, RoomMember, RoomInvitation
-from typing import Optional
+from typing import Optional, List
 from flask import abort
 from repository.user_repo import UserRepo
 from entities.user import User
+
 
 class RoomService:
     @staticmethod
@@ -77,3 +78,18 @@ class RoomService:
     @staticmethod
     def get_room_by_id_with_members(room_id: int):
         return RoomRepo.get_room_with_members(room_id)
+
+    @staticmethod
+    def validate_room_users(user_ids: List[int], room_id: int) -> bool:
+        users = UserRepo.get_users_by_ids(user_ids)
+        if not all(any(room_member.room_id == room_id for room_member in user.rooms) for user in users):
+            return False
+        return True
+
+    @staticmethod
+    def validate_room_user(user_id: int, room_id: int) -> bool:
+        user = UserRepo.find_by_id(user_id)
+
+        if not user:
+            return False
+        return any(room_member.room_id == room_id for room_member in user.rooms)

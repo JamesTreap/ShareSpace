@@ -3,6 +3,7 @@ from repository.user_repo import UserRepo
 from typing import List, Optional
 from datetime import datetime, timedelta
 from flask import abort
+from services.room_service import RoomService
 
 class TaskService:
     @staticmethod
@@ -37,6 +38,7 @@ class TaskService:
         if frequency and not repeat:
             abort(400, "Repeat is required and must be a number.")
 
+        freq_value, unit = None, None
         if frequency:
             try:
                 freq_value = int(frequency[:-1])
@@ -51,8 +53,6 @@ class TaskService:
                     raise ValueError("Invalid frequency unit")
             except ValueError:
                 abort(400, "Invalid frequency value or unit.")
-        else:
-            freq_value, unit = None, None
 
         return freq_value, unit
 
@@ -65,25 +65,16 @@ class TaskService:
 
         return deadline_obj
 
-    @staticmethod
-    def calculate_scheduled_dates(deadline_obj: datetime, repeat: int, freq_value: int, unit: str):
-        scheduled_dates = [deadline_obj]
-        for i in range(1, repeat + 1):
-            scheduled_dates.append(scheduled_dates[-1] + timedelta(**{unit: freq_value}))
-        return scheduled_dates
 
     @staticmethod
     def check_users(user_ids: List[int], room_id: int) -> List[int]:
         if not user_ids:
             abort(400, "At least one user ID is required.")
 
-        users = UserRepo.get_users_by_ids(user_ids)
-        if not users:
-            abort(404, "No users found with the provided IDs.")
-
-        if not all(any(room_member.room_id == room_id for room_member in user.rooms) for user in users):
+        if not RoomService.validate_room_users(user_ids, room_id):
             abort(404, "Not all users belong to the specified room.")
-        return [user.id for user in users]
+
+        return user_ids
 
     @staticmethod
     def validate_assignees(assignees: List[dict]) -> List[tuple]:
@@ -154,22 +145,23 @@ class TaskService:
         for user_id, status in assignee_data:
             TaskRepo.create_task_user(user_id, task.id, status)
 
-        for i in range(1, repeat + 1):
-            scheduled_date = scheduled_date + timedelta(**{unit: freq_value})
-            deadline_date = deadline_date + timedelta(**{unit: freq_value})
+        if repeat > 0:
+            for i in range(1, repeat + 1):
+                scheduled_date = scheduled_date + timedelta(**{unit: freq_value})
+                deadline_date = deadline_date + timedelta(**{unit: freq_value})
 
-            task = TaskRepo.create_task(
-                room_id=room_id,
-                title=title,
-                description=description,
-                frequency=frequency,
-                repeat=repeat,
-                scheduled_date=scheduled_date,
-                deadline=deadline_date,
-            )
-            tasks.append(task)
+                task = TaskRepo.create_task(
+                    room_id=room_id,
+                    title=title,
+                    description=description,
+                    frequency=frequency,
+                    repeat=repeat,
+                    scheduled_date=scheduled_date,
+                    deadline=deadline_date,
+                )
+                tasks.append(task)
 
-            for user_id, status in assignee_data:
-                TaskRepo.create_task_user(user_id, task.id, None)
+                for user_id, status in assignee_data:
+                    TaskRepo.create_task_user(user_id, task.id, None)
 
         return tasks

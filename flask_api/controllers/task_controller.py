@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, abort, g, request
 from entities.user import User
-from services.task_service import TaskService
+from services.task_service import TaskService, RoomService
 from utils import token_required
 from repository.task_repo import TaskRepo
 
@@ -21,8 +21,7 @@ def task_details(room_id):
     if not user:
         abort(404, description="User not found")
 
-
-    if not any(room.room_id == int(room_id) for room in user.rooms):
+    if not RoomService.validate_room_user(user.id, int(room_id)):
         abort(404, description="User does not belong to the room")
     # Get the input data from the request
     data = request.get_json(silent=True) or {}
@@ -30,7 +29,7 @@ def task_details(room_id):
     description = data.get("description")
     deadline = data.get("date")
     assignees = data.get("assignees", [])
-    frequency = (data.get("frequency") or "").strip()
+    frequency = (data.get("frequency")).strip()
     repeat = data.get("repeat", 0)
 
     try:
@@ -57,7 +56,7 @@ def update_task_details(task_id):
     if not task:
         abort(404, description="Task not found.")
 
-    if not any(room.room_id == task.room_id for room in user.rooms):
+    if not RoomService.validate_room_user(user.id, int(task.room_id)):
         abort(404, description="User does not belong to the room")
 
     data = request.get_json(silent=True) or {}
