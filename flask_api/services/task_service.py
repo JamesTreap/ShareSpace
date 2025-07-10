@@ -27,7 +27,7 @@ class TaskService:
         return enriched
 
     @staticmethod
-    def validate_input_create_task(title: str, frequency: str, repeat: int):
+    def validate_input_create_task(title: Optional[str], frequency: Optional[str], repeat: Optional[int]):
         if not title:
             abort(400, "Title is required.")
         if frequency and frequency[-1] not in ['d', 'w', 'm']:
@@ -84,11 +84,57 @@ class TaskService:
         return [user.id for user in users]
 
     @staticmethod
-    def create_task_service(room_id: int, title: str, description: str, frequency: str, repeat: int, deadline: str,
-                            user_ids: List[int]):
+    def validate_assignees(assignees: List[dict]) -> List[tuple]:
+        if not assignees:
+            abort(400, "At least one assignee is required.")
+
+        print(assignees)
+        validated_assignees = []
+        for assignee in assignees:
+            user_id = assignee.get('user_id')
+            status = assignee.get('status')
+
+            if not user_id or not status:
+                abort(400, "Each assignee must include both 'user_id' and 'status'.")
+
+            if status not in ['todo', 'in-progress', 'complete']:
+                abort(400, f"Invalid status '{status}', must be one of 'todo', 'in-progress', or 'complete'.")
+
+            validated_assignees.append((user_id, status))  # Store as a tuple (user_id, status)
+
+        return validated_assignees
+
+    @staticmethod
+    def update_task(task_id: int, title: str, description: Optional[str] = None,
+                    deadline: Optional[str] = None, assignees: Optional[List[dict]] = None):
+
+        task = TaskRepo.get_task_by_id(task_id)
+        if not task:
+            abort(404, "Task not found.")
+        if not title:
+            abort(400, "Title is required.")
+        if not deadline:
+            abort(400, "Deadline is required.")
+
+        if assignees is not None:
+            assignee_data = TaskService.validate_assignees(assignees)
+
+            for user_id, status in assignee_data:
+                TaskRepo.update_task_user(user_id, task.id, status)
+
+        TaskRepo.update_task(task_id, title, description, deadline)
+
+    @staticmethod
+    def create_task_service(room_id: int, title: Optional[str], description: Optional[str], frequency: Optional[str], repeat: Optional[int], deadline: Optional[str],
+                            assignees: List[dict]):
 
         freq_value, unit = TaskService.validate_input_create_task(title, frequency, repeat)
+        if not deadline:
+            abort(400, "Deadline is required.")
         deadline_date = TaskService.parse_dates(deadline)
+        assignee_data = TaskService.validate_assignees(assignees)
+
+        user_ids = [assignee[0] for assignee in assignee_data]
         user_ids = TaskService.check_users(user_ids, room_id)
 
         tasks = []
@@ -98,10 +144,14 @@ class TaskService:
             room_id=room_id,
             title=title,
             description=description,
+            frequency=frequency,
+            repeat=repeat,
             scheduled_date=scheduled_date,
             deadline=deadline_date,
         )
         tasks.append(task)
+        for user_id, status in assignee_data:
+            TaskRepo.create_task_user(user_id, task.id, status)
 
         for i in range(1, repeat + 1):
             scheduled_date = scheduled_date + timedelta(**{unit: freq_value})
@@ -111,9 +161,14 @@ class TaskService:
                 room_id=room_id,
                 title=title,
                 description=description,
+                frequency=frequency,
+                repeat=repeat,
                 scheduled_date=scheduled_date,
                 deadline=deadline_date,
             )
             tasks.append(task)
-            for user_id in user_ids:
-                TaskRepo.create_task_user(user_id, task.id)
+
+            for user_id, status in assignee_data:
+                TaskRepo.create_task_user(user_id, task.id, None)
+
+        return tasks

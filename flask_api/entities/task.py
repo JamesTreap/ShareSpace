@@ -11,6 +11,8 @@ class Task(db.Model, TimestampMixin):
     room_id: Mapped[int] = mapped_column(db.ForeignKey("rooms.id"))
     title: Mapped[str] = mapped_column(db.String(200))
     description: Mapped[Optional[str]] = mapped_column(db.Text)
+    frequency: Mapped[Optional[str]] = mapped_column(db.String(50))
+    repeat: Mapped[Optional[int]] = mapped_column(db.Integer, default=1)
     deadline: Mapped[Optional[date]] = mapped_column(db.Date)
 
     scheduled_date: Mapped[Optional[date]] = mapped_column(db.Date)

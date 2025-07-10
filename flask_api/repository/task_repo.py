@@ -34,13 +34,15 @@ class TaskRepo:
         return db.session.scalar(stmt)
 
     @staticmethod
-    def create_task(room_id: int, title: str, description: str, scheduled_date: Optional[datetime],
+    def create_task(room_id: int, title: str, description: str, frequency: int, repeat: int, scheduled_date: Optional[datetime],
                     deadline: Optional[datetime]) -> Task:
 
         task = Task(
             room_id=room_id,
             title=title,
             description=description,
+            frequency=frequency,
+            repeat=repeat,
             scheduled_date=scheduled_date,
             deadline=deadline
         )
@@ -50,8 +52,32 @@ class TaskRepo:
         return task
 
     @staticmethod
-    def create_task_user(user_id: int, task_id: int):
-        task_user = TaskUser(task_id=task_id, user_id=user_id)
+    def create_task_user(user_id: int, task_id: int, status: Optional[str]):
+        task_user = TaskUser(task_id=task_id, user_id=user_id, status=status)
         db.session.add(task_user)
         db.session.commit()
         return task_user
+
+    @staticmethod
+    def get_task_by_id(task_id: int):
+        return Task.query.get(task_id)
+
+    @staticmethod
+    def update_task_user(user_id: int, task_id: int, status: str):
+        task_user = TaskUser.query.filter_by(user_id=user_id, task_id=task_id).first()
+        if task_user:
+            task_user.status = status
+            db.session.commit()
+
+    @staticmethod
+    def update_task(task_id: int, title: Optional[str] = None, description: Optional[str] = None, deadline: Optional[datetime] = None):
+        task = Task.query.get(task_id)
+        if task:
+            if title is not None:
+                task.title = title
+            if description is not None:
+                task.description = description
+            if deadline is not None:
+                task.deadline = deadline
+            db.session.commit()
+        return task
