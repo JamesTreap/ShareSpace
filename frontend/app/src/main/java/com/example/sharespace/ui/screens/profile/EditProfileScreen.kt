@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -52,6 +53,16 @@ import com.example.sharespace.ui.components.SectionHeader
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewModelScope
+import com.example.sharespace.data.local.TokenStorage
+import com.example.sharespace.data.repository.ProfileRepository
+import com.example.sharespace.data.remote.ApiRoom
+import com.example.sharespace.data.remote.RoomInvite
+import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalContext
 
 data class User(
     val id: String,
@@ -82,7 +93,7 @@ class ProfileScreenViewModel : ViewModel() {
     val invites: MutableStateFlow<List<Room>> = _invites
 
     init {
-        loadSampleData()
+//        loadSampleData()
     }
 
     fun acceptInvite() {
@@ -91,6 +102,56 @@ class ProfileScreenViewModel : ViewModel() {
 
     fun declineInvite() {
 
+    }
+
+    private val repository = ProfileRepository()
+
+    fun loadData(token: String) {
+//        println("Loading data with token: $token")
+//        println("hfudsihujksalhfshfjlsdhk")
+
+        viewModelScope.launch {
+            try {
+                val apiUser = repository.getUser(token)
+//                println("Got user: ${apiUser.name}")
+
+                val (joinedRooms, roomInvites) = repository.getRoomsAndInvites(token)
+//                println("Got ${joinedRooms.size} joined rooms")
+//                println("Got ${roomInvites.size} invites")
+
+                _user.value = User(
+                    id = apiUser.id.toString(),
+                    name = apiUser.name,
+                    photoUrl = apiUser.profilePictureUrl
+                )
+
+                _rooms.value = joinedRooms.map { room ->
+                    Room(
+                        id = room.id.toString(),
+                        name = room.name,
+                        members = room.members.size,
+                        due = room.balanceDue,
+                        notifications = room.alerts,
+                        photoUrl = room.pictureUrl
+                    )
+                }
+
+                _invites.value = roomInvites.map { invite ->
+                    Room(
+                        id = invite.roomId.toString(),
+                        name = "Room ${invite.roomId}",
+                        members = 0, // if you need details, another API call is needed
+                        due = 0f,
+                        notifications = 0,
+                        photoUrl = null
+                    )
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                println("Error loading profile data: ${e.message}")
+            }
+        }
     }
 
     private fun loadSampleData() {
@@ -125,21 +186,32 @@ class ProfileScreenViewModel : ViewModel() {
 fun EditProfileScreen(
     viewModel: ProfileScreenViewModel = viewModel(),
     onCreateRoomClick: () -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToRoom: () -> Unit,
+    onLogOut: () -> Unit,
 ) {
     val user by viewModel.user
     val rooms by viewModel.rooms.collectAsState()
     val invites by viewModel.invites.collectAsState()
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val tokenState = produceState<String?>(initialValue = null) {
+        value = TokenStorage.getToken(context)
+    }
+    val token = tokenState.value
+
+    LaunchedEffect(token) {
+        if (token != null) {
+            println("Calling loadData with token: $token")
+            viewModel.loadData(token)
+        } else {
+            println("Token is null, not calling loadData")
+        }
+    }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            NavigationHeader(
-                title = "Profile",
-                onNavigateBack = onNavigateBack
-            )
-        }
+        modifier = Modifier.fillMaxSize().padding(vertical = 24.dp)
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -163,7 +235,8 @@ fun EditProfileScreen(
                 RoomCard(room = room, showAction = false,
                     acceptInvite = { viewModel.acceptInvite() },
                     declineInvite = { viewModel.declineInvite() },
-                    room.notifications)
+                    room.notifications,
+                    navigateToRoom = { onNavigateToRoom() })
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
@@ -179,11 +252,42 @@ fun EditProfileScreen(
                 RoomCard(room = room, showAction = true,
                     acceptInvite = { viewModel.acceptInvite() },
                     declineInvite = { viewModel.declineInvite() },
-                    room.notifications)
+                    room.notifications,
+                    navigateToRoom = onNavigateToRoom)
                 Spacer(modifier = Modifier.height(8.dp))
             }
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        TokenStorage.clearToken(context)
+                        onLogOut()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFB00020), // Red background
+                    contentColor = Color.White          // White text
+                ),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Log Out",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Log Out",
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+                )
+            }
         }
+
     }
+
 }
 
 @Composable
@@ -254,7 +358,8 @@ fun RoomCard(
     showAction: Boolean,
     acceptInvite: () -> Unit,
     declineInvite: () -> Unit,
-    numOfNotifications: Int
+    numOfNotifications: Int,
+    navigateToRoom: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -262,7 +367,8 @@ fun RoomCard(
             .padding(horizontal = 16.dp),
         border = BorderStroke(1.dp, Color.Black),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        onClick = navigateToRoom
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
