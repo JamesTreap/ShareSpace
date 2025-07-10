@@ -10,7 +10,7 @@ class TaskRepo:
     def get_tasks_for_room(room_id: int) -> List[Task]:
         stmt = (
             select(Task)
-                .where(Task.room_id == room_id)
+                .where(Task.room_id == room_id, Task.scheduled_date <= datetime.now())
                 .order_by(Task.deadline)
         )
         return db.session.scalars(stmt).all()

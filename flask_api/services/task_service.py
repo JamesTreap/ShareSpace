@@ -21,6 +21,8 @@ class TaskService:
                 "title": task.title,
                 "deadline": task.deadline.isoformat() if task.deadline else None,
                 "description": task.description,
+                "frequency": task.frequency,
+                "repeat": task.repeat,
                 "statuses": statuses,
             })
 
@@ -88,7 +90,6 @@ class TaskService:
         if not assignees:
             abort(400, "At least one assignee is required.")
 
-        print(assignees)
         validated_assignees = []
         for assignee in assignees:
             user_id = assignee.get('user_id')
@@ -125,8 +126,8 @@ class TaskService:
         TaskRepo.update_task(task_id, title, description, deadline)
 
     @staticmethod
-    def create_task_service(room_id: int, title: Optional[str], description: Optional[str], frequency: Optional[str], repeat: Optional[int], deadline: Optional[str],
-                            assignees: List[dict]):
+    def create_task_service(room_id: int, title: Optional[str], description: Optional[str], frequency: Optional[str],
+                            repeat: Optional[int], deadline: Optional[str], assignees: List[dict]):
 
         freq_value, unit = TaskService.validate_input_create_task(title, frequency, repeat)
         if not deadline:
