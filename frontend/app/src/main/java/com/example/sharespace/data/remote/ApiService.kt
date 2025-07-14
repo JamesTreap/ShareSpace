@@ -1,5 +1,6 @@
 package com.example.sharespace.data.remote
 
+import com.google.gson.annotations.SerializedName
 import retrofit2.http.*
 import retrofit2.Response
 
@@ -42,6 +43,37 @@ data class ApiTask(
     val statuses: Map<String, String>
 )
 
+data class CreateTaskRequest(
+    val title: String,
+    val date: String,
+    val description: String,
+    val assignees: List<Assignee>,
+    val frequency: String,
+    val repeat: String
+)
+
+data class Assignee(
+    @SerializedName("user_id")
+    val userId: Int,
+
+    @SerializedName("status")
+    val status: String
+)
+
+
+data class UserDetails(
+    val id: Int,
+    val name: String,
+    val profile_picture_url: String?,
+    val username: String
+)
+
+data class CreateTaskResponse(
+    val message: String
+)
+data class RoomMembersResponse(
+    val roommates: List<UserDetails>
+)
 
 interface ApiService {
     @POST("auth/login")
@@ -68,6 +100,22 @@ interface ApiService {
         @Path("userId") userId: Int,
         @Header("Authorization") token: String
     ): Response<ApiUser>
+
+    @POST("tasks/create_task/{room_id}")
+    suspend fun createTask(
+        @Path("room_id") roomId: Int,
+        @Body request: CreateTaskRequest,
+        @Header("Authorization") token: String
+    ): Response<CreateTaskResponse>
+
+
+    @GET("rooms/{room_id}/members")
+    suspend fun getRoomMembers(
+        @Path("room_id") roomId: Int,
+        @Header("Authorization") token: String
+    ): Response<RoomMembersResponse>
+
+
 
 
 }
