@@ -23,6 +23,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.sharespace.ui.components.NavigationHeader
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import com.example.sharespace.data.remote.ApiClient
+import com.example.sharespace.data.remote.ApiTask
+import androidx.compose.runtime.LaunchedEffect
+import java.io.IOException
+import retrofit2.HttpException
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,29 +42,122 @@ fun TasksListScreen(
     onNavigateBack: () -> Unit,
     onAddTaskClick: () -> Unit = {}
 ) {
-    val taskSummary = listOf(
-        "Roommate 1 - 2/5 Complete",
-        "Roommate 2 - 6/6 Complete",
-        "Roommate 3 - 32/23 Complete",
-        "Roommate 4 - 1/9 Complete",
-    )
+    var taskSummary by remember { mutableStateOf(listOf<String>()) }
+    var allTasks by remember { mutableStateOf(listOf<ApiTask>()) }
+    var inProgressTasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
+    var completedTasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var userDetailsMap by remember { mutableStateOf<Map<Int, UserDetails>>(emptyMap()) }
 
-    val inProgressTasks = listOf(
-        TaskData("Take out trash", "IN-PROGRESS", listOf("John", "Bob", "Katherine")),
-        TaskData("Make cookies", "ASSIGNED", listOf("Jack")),
-        TaskData("Cook dinner", "TO-DO", listOf("Simon")),
-    )
+    // Fetch task data from API
+    LaunchedEffect(Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val roomId = 7 // ← Replace this with actual room ID if needed
+                val token = "Bearer your_token_here" // ← Replace with real token or maybe just ignore it
 
-    val completedTasks = listOf(
-        TaskData("Walk The Demon", "COMPLETED", listOf("Jack", "Bob")),
-        TaskData("Take Out Trash", "COMPLETED", listOf("Bob")),
-        TaskData("Walk the dog", "COMPLETED", listOf("Simon")),
-        TaskData("Prep meal", "COMPLETED", listOf("Simon")),
-        TaskData("Buy groceries", "COMPLETED", listOf("Bob")),
-        TaskData("Make cake", "COMPLETED", listOf("Bob")),
-        TaskData("More groceries", "COMPLETED", listOf("Bob")),
-    )
+                val response = ApiClient.apiService.getTasksForRoom(roomId, token)
+                if (response.isSuccessful) {
+                    val apiTasks = response.body() ?: emptyList()
+                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    val today = LocalDate.now()
+                    val thirtyDaysAgo = today.minusDays(30)
 
+                    // Filter tasks that are within the last 30 days
+                    val filteredTasks = apiTasks.filter { task ->
+                        try {
+                            val deadline = LocalDate.parse(task.deadline, formatter)
+                            !deadline.isAfter(today) && !deadline.isBefore(thirtyDaysAgo)
+                        } catch (e: Exception) {
+                            false // Skip if parsing fails
+                        }
+                    }
+                    allTasks = filteredTasks
+
+                    // Extract all unique user IDs from the task statuses
+                    val userIds = filteredTasks.flatMap { it.statuses.keys }.mapNotNull { it.toIntOrNull() }.toSet()
+
+                    // Fetch user details for each ID
+                    val userIdToName = mutableMapOf<String, String>()
+
+                    //Count how many tasks each user has in total & how many they completed
+                    val userTaskMap = mutableMapOf<String, Pair<Int, Int>>() // userId -> (completed, total)
+
+                    for (task in filteredTasks) {
+                        for ((userId, status) in task.statuses) {
+                            val (completed, total) = userTaskMap[userId] ?: (0 to 0)
+                            val newCompleted = if (status == "COMPLETE") completed + 1 else completed
+                            userTaskMap[userId] = (newCompleted to total + 1)
+                        }
+                    }
+                    // After fetching user details
+                    for (id in userIds) {
+                        try {
+                            val userResp = ApiClient.apiService.getUserDetailsById(id, token)
+                            if (userResp.isSuccessful) {
+                                userResp.body()?.let { userIdToName[id.toString()] = it.name }
+                            }
+                        } catch (_: Exception) {
+                            // log or ignore
+                        }
+                    }
+                    // Now that names are available, convert summary
+                    val generatedSummary = userTaskMap.entries.map { (userId, pair) ->
+                        val name = userIdToName[userId] ?: "User $userId"
+                        "$name - ${pair.first}/${pair.second} Complete"
+                    }
+
+
+
+                    for (id in userIds) {
+                        try {
+                            val userResp = ApiClient.apiService.getUserDetailsById(id, token)
+                            if (userResp.isSuccessful) {
+                                userResp.body()?.let { userIdToName[id.toString()] = it.name }
+                            }
+                        } catch (_: Exception) {
+                            //log or ignore
+                        }
+                    }
+
+                    // Map tasks to TaskData with proper status and real user names
+                    val mapped = filteredTasks.map { task ->
+                        val statuses = task.statuses
+                        val statusValues = statuses.values.toSet()
+
+                        val finalStatus = when {
+                            statusValues.all { it == "COMPLETE" } -> "COMPLETE"
+                            statusValues.any { it == "IN-PROGRESS" } -> "IN-PROGRESS"
+                            else -> "ASSIGNED"
+                        }
+
+                        val assignees = statuses.keys.map { uid ->
+                            userIdToName[uid] ?: "User $uid"
+                        }
+
+                        TaskData(
+                            title = task.title,
+                            status = finalStatus,
+                            assignees = assignees
+                        )
+                    }
+
+                    inProgressTasks = mapped.filter { it.status != "COMPLETE" }
+                    completedTasks = mapped.filter { it.status == "COMPLETE" }
+                    taskSummary = generatedSummary
+                } else {
+                    error = "API Error: ${response.code()}"
+                }
+
+            } catch (e: IOException) {
+                error = "Network Error: ${e.message}"
+            } catch (e: HttpException) {
+                error = "HTTP Error: ${e.message}"
+            } catch (e: Exception) {
+                error = "Unexpected Error: ${e.message}"
+            }
+        }
+    }
     Scaffold(
         topBar = {
             NavigationHeader(
@@ -84,7 +188,7 @@ fun TasksListScreen(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("53 Tasks", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("${allTasks.size} Tasks", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         Text("Last 30d", fontSize = 10.sp)
                     }
                 }
@@ -222,3 +326,11 @@ data class TaskData(
     val status: String,
     val assignees: List<String>
 )
+
+data class UserDetails(
+    val id: Int,
+    val name: String,
+    val username: String,
+    val profile_picture_url: String?
+)
+

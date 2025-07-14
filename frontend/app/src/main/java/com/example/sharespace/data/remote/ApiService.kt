@@ -34,6 +34,15 @@ data class RoomsAndInvitesResponse(
     val roomInvitations: List<RoomInvite>
 )
 
+data class ApiTask(
+    val id: Int,
+    val title: String,
+    val description: String,
+    val deadline: String,
+    val statuses: Map<String, String>
+)
+
+
 interface ApiService {
     @POST("auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
@@ -47,4 +56,18 @@ interface ApiService {
     suspend fun getRoomsAndInvites(
         @Header("Authorization") token: String
     ): Response<RoomsAndInvitesResponse>
+
+    @GET("tasks/list/{roomId}")
+    suspend fun getTasksForRoom(
+        @Path("roomId") roomId: Int,
+        @Header("Authorization") token: String
+    ): Response<List<ApiTask>>
+
+    @GET("users/user_details/{userId}")
+    suspend fun getUserDetailsById(
+        @Path("userId") userId: Int,
+        @Header("Authorization") token: String
+    ): Response<ApiUser>
+
+
 }
