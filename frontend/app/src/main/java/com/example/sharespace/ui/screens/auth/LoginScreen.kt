@@ -1,6 +1,5 @@
 package com.example.sharespace.ui.screens.auth
 
-import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -14,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.example.sharespace.data.remote.ApiClient
 import com.example.sharespace.data.local.TokenStorage
 import com.example.sharespace.data.remote.LoginRequest
+import com.example.sharespace.ui.components.StyledTextField
 import kotlinx.coroutines.launch
 
 @Composable
@@ -39,7 +39,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        OutlinedTextField(
+        StyledTextField(
             value = username,
             onValueChange = { username = it },
             label = { Text("Username") },
@@ -48,7 +48,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedTextField(
+        StyledTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
