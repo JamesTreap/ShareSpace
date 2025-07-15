@@ -33,4 +33,13 @@ def update_profile():
     return {"message": "Profile updated successfully"}, 200
 
 
+@users_bp.route('/user_details', methods=['GET'])
+@token_required
+def user_details():
+    user = g.current_user
+    if not user:
+        abort(404, description="User not found")
+
+    return jsonify(user_schema.dump(user)), 200
+
 
