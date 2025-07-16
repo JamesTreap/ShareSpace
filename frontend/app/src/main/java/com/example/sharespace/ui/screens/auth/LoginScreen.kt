@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.example.sharespace.data.remote.ApiClient
 import com.example.sharespace.data.local.TokenStorage
 import com.example.sharespace.data.remote.LoginRequest
-import com.example.sharespace.ui.components.StyledTextField
+import com.example.sharespace.ui.components.styledComponents.StyledTextField
 import kotlinx.coroutines.launch
 
 @Composable

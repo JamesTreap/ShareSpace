@@ -1,4 +1,4 @@
-package com.example.sharespace.ui.components
+package com.example.sharespace.ui.components.styledComponents
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

@@ -1,4 +1,4 @@
-package com.example.sharespace.ui.components
+package com.example.sharespace.ui.components.styledComponents
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Spacer
@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -82,10 +83,13 @@ fun StyledButton(
     text: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    loading: Boolean = false,
     icon: ImageVector? = null,
     buttonType: ButtonType = ButtonType.Primary,
 ) {
-    val containerColor = if (buttonType == ButtonType.Danger) {
+    val containerColor = if (loading) {
+        BorderPrimary
+    } else if (buttonType == ButtonType.Danger) {
         if (enabled) AlertRed else BorderPrimary
     } else if (buttonType == ButtonType.Primary) {
         if (enabled) AquaAccent else BorderPrimary
@@ -105,7 +109,7 @@ fun StyledButton(
 
     Button(
         onClick = onClick,
-        enabled = enabled,
+        enabled = enabled || !loading,
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
             contentColor = contentColor
@@ -114,14 +118,25 @@ fun StyledButton(
         modifier = modifier,
         shape = RoundedCornerShape(ButtonRadius)
     ) {
-        if (icon != null) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(ButtonDefaults.IconSize)
+        if (loading) {
+            CircularProgressIndicator(
+                color = TextSecondary,
+                strokeWidth = 2.dp,
+                modifier = Modifier
+                    .size(20.dp)
             )
-            Spacer(modifier = Modifier.width(ButtonRadius))
+        } else {
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(modifier = Modifier.width(ButtonRadius))
+            }
+
+            // only display text if not loading
+            Text(text)
         }
-        Text(text)
     }
 }
