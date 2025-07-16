@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.example.sharespace.core.data.remote.ApiClient
 import com.example.sharespace.core.data.local.TokenStorage
 import com.example.sharespace.core.data.remote.LoginRequest
+import com.example.sharespace.core.ui.components.StyledTextField
 import kotlinx.coroutines.launch
 
 @Composable
@@ -38,7 +39,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        OutlinedTextField(
+        StyledTextField(
             value = username,
             onValueChange = { username = it },
             label = { Text("Username") },
@@ -47,7 +48,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedTextField(
+        StyledTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
