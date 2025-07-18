@@ -3,6 +3,7 @@ package com.example.sharespace.ui.screens.profile
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,16 +22,21 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -49,16 +55,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.sharespace.core.ui.components.SectionHeader
+import com.example.sharespace.core.ui.theme.AlertRed
+import com.example.sharespace.core.ui.theme.Typography
+import java.text.NumberFormat
+import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewModelScope
 import com.example.sharespace.core.data.local.TokenStorage
+import com.example.sharespace.core.ui.theme.AlertGreen
+import com.example.sharespace.core.ui.theme.AquaAccent
+import com.example.sharespace.core.ui.theme.TextSecondary
 import com.example.sharespace.user.data.repository.ProfileRepository
 import kotlinx.coroutines.launch
-import com.example.sharespace.core.ui.theme.Typography
 
 
 data class User(
@@ -179,6 +193,10 @@ class ProfileScreenViewModel : ViewModel() {
     }
 }
 
+fun formatCurrency(amount: Float): String {
+    return NumberFormat.getCurrencyInstance(Locale.getDefault()).format(amount)
+}
+
 @Composable
 fun EditProfileScreen(
     viewModel: ProfileScreenViewModel = viewModel(),
@@ -216,10 +234,10 @@ fun EditProfileScreen(
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            user?.let { UserHeader(name = it.name, photoUrl = it.photoUrl) }
+            user?.let { UserHeader(name = it.name, photoUrl = it.photoUrl, {}) }
             Spacer(modifier = Modifier.height(16.dp))
 
-            SectionHeader(
+            RoomSectionHeader(
                 title = "Your Rooms",
                 actionText = "+ Create Room",
                 onAction = onCreateRoomClick,
@@ -240,8 +258,9 @@ fun EditProfileScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text("Pending Invites",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp))
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                color = TextSecondary)
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -287,12 +306,53 @@ fun EditProfileScreen(
 
 }
 
+
 @Composable
-fun UserHeader(name: String, photoUrl: String?) {
+fun RoomSectionHeader(
+    title: String,
+    actionText: String,
+    onAction: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 0.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // The title text on the left
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextSecondary
+        )
+
+        // The clickable action text on the right
+        Button(
+            modifier = Modifier.height(30.dp),
+            onClick = onAction,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White,
+                contentColor = AquaAccent
+            ),
+            shape = RoundedCornerShape(25),
+            border = BorderStroke(1.dp, Color.LightGray),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 3.dp),
+        ) {
+            Text(text = "+ Create Room",
+                style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+@Composable
+fun UserHeader(name: String, photoUrl: String?, onViewProfileClick: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(top = 8.dp, bottom = 16.dp, start = 18.dp, end = 18.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Avatar(photoUrl = photoUrl, contentDescription = "$name's avatar")
@@ -302,17 +362,41 @@ fun UserHeader(name: String, photoUrl: String?) {
         Column {
             Text(
                 text = "Hi $name!",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.titleLarge
             )
             Text(
                 text = "Easily split bills and track tasks",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
+                color = TextSecondary
             )
         }
 
+        Spacer(modifier = Modifier.weight(1f))
+
+        // 3-dot menu
+        Box {
+            IconButton(onClick = { expanded = true }) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "Menu"
+                )
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("View Profile") },
+                    onClick = {
+                        expanded = false
+                        onViewProfileClick()
+                    }
+                )
+            }
+        }
+
     }
-    HorizontalDivider(color = Color.Black.copy(alpha = 0.8f), thickness = 1.dp,
+    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.8f), thickness = 1.dp,
         modifier = Modifier.padding(horizontal = 18.dp))
 }
 
@@ -362,27 +446,29 @@ fun RoomCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        border = BorderStroke(1.dp, Color.Black),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        border = BorderStroke(1.dp, Color.LightGray),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         onClick = navigateToRoom
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Avatar(photoUrl = room.photoUrl, size = 48.dp)
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = room.name,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.Black,
                 )
+                val memberLabel = if (room.members == 1) "member" else "members"
+                val dueColor = if (room.due > 0f) AlertRed else TextSecondary
                 Text(
-                    text = "${room.members} members | $${room.due} due",
-                    style = MaterialTheme.typography.bodyMedium
+                    text = "${room.members} $memberLabel | ${formatCurrency(room.due)} due",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = dueColor
                 )
             }
 
@@ -390,20 +476,20 @@ fun RoomCard(
                 Row { // Use Row for side-by-side buttons
                     Button(
                         onClick = acceptInvite,
-                        shape = CircleShape,
+                        shape = RoundedCornerShape(30),
                         modifier = Modifier.size(40.dp),
                         contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)) // Green
+                        colors = ButtonDefaults.buttonColors(containerColor = AquaAccent)
                     ) {
                         Icon(Icons.Default.Check, contentDescription = "Accept", tint = Color.White)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = declineInvite,
-                        shape = CircleShape,
+                        shape = RoundedCornerShape(30),
                         modifier = Modifier.size(40.dp),
                         contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB00020)) // Red
+                        colors = ButtonDefaults.buttonColors(containerColor = AlertRed) // Red
                     ) {
                         Icon(
                             Icons.Default.Close,
@@ -413,18 +499,18 @@ fun RoomCard(
                     }
                 }
             } else {
+                val badgeColor = if (numOfNotifications > 0) AlertRed else Color(0xFFE0E0E0)
                 Box(
                     modifier = Modifier
                         .size(32.dp)
-                        .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(6.dp))
-                        .border(1.dp, Color.Gray, shape = RoundedCornerShape(6.dp))
+                        .background(badgeColor, shape = RoundedCornerShape(100))
                         .padding(4.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = numOfNotifications.toString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White,
                     )
                 }
 
