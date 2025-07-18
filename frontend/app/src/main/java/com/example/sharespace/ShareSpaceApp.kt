@@ -18,7 +18,7 @@ import com.example.sharespace.ui.screens.finance.AddBillScreen
 import com.example.sharespace.ui.screens.finance.BillsListScreen
 import com.example.sharespace.ui.screens.finance.EditBillScreen
 import com.example.sharespace.ui.screens.finance.FinanceManagerScreen
-import com.example.sharespace.ui.screens.profile.EditProfileScreen
+import com.example.sharespace.ui.screens.profile.MainProfileScreen
 import com.example.sharespace.ui.screens.room.AddRoommateScreen
 import com.example.sharespace.ui.screens.room.CreateRoomScreen
 import com.example.sharespace.ui.screens.room.EditRoomScreen
@@ -82,7 +82,7 @@ fun ShareSpaceApp(navController: NavHostController = rememberNavController()) {
              )
         }
         composable(route = ShareSpaceScreens.EditProfile.name) {
-            EditProfileScreen(
+            MainProfileScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onCreateRoomClick = { navController.navigate(ShareSpaceScreens.CreateRoom.name)},
                 onNavigateToRoom = {
