@@ -58,6 +58,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.sharespace.core.data.local.TokenStorage
 import com.example.sharespace.user.data.repository.ProfileRepository
 import kotlinx.coroutines.launch
+import com.example.sharespace.core.ui.theme.Typography
+
 
 data class User(
     val id: String,
