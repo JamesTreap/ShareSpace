@@ -11,7 +11,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.sharespace.ShareSpaceApplication
-import com.example.sharespace.core.data.repository.Result
 import com.example.sharespace.core.data.repository.RoomRepository
 import com.example.sharespace.core.data.repository.dto.ApiUser
 import com.example.sharespace.core.domain.model.Bill
@@ -67,33 +66,33 @@ class RoomSummaryViewModel(
      * Fetches roommates from the repository and updates the UI state.
      * TODO: Determine how you get `token` and `roomId`.
      */
-    fun fetchRoommates(token: String, roomId: Int) {
-        viewModelScope.launch {
-            roommatesUiState = RoomSummaryRoommatesUiState.Loading
-            roommatesUiState = try {
-                // Assuming your repository's getRoomMembers directly throws on network error
-                // or returns a Result wrapper.
-                when (val result =
-                    roomRepository.getRoomMembers(token = "Bearer $token", roomId = roomId)) {
-                    is Result.Success -> RoomSummaryRoommatesUiState.Success(result.data)
-                    is Result.Error -> {
-                        // Log the exception for debugging
-                        // Log.e("RoomSummaryVM", "Error fetching roommates: ${result.exception}", result.exception)
-                        RoomSummaryRoommatesUiState.Error // You could pass result.message here too
-                    }
-                }
-            } catch (e: IOException) {
-                // This catch block is more relevant if roomRepository.getRoomMembers
-                // can directly throw IOException (e.g., not wrapped in your Result type)
-                // Log.e("RoomSummaryVM", "IOException fetching roommates: ${e.message}", e)
-                RoomSummaryRoommatesUiState.Error
-            } catch (e: HttpException) {
-                // Similar to IOException, for Retrofit HTTP errors
-                // Log.e("RoomSummaryVM", "HttpException fetching roommates: ${e.code()} - ${e.message()}", e)
-                RoomSummaryRoommatesUiState.Error
-            }
-        }
-    }
+//    fun fetchRoommates(token: String, roomId: Int) {
+//        viewModelScope.launch {
+//            roommatesUiState = RoomSummaryRoommatesUiState.Loading
+//            roommatesUiState = try {
+//                // Assuming your repository's getRoomMembers directly throws on network error
+//                // or returns a Result wrapper.
+//                when (val result =
+//                    roomRepository.getRoomMembers(token = "Bearer $token", roomId = roomId)) {
+//                    is Result.Success -> RoomSummaryRoommatesUiState.Success(result.data)
+//                    is Result.Error -> {
+//                        // Log the exception for debugging
+//                        // Log.e("RoomSummaryVM", "Error fetching roommates: ${result.exception}", result.exception)
+//                        RoomSummaryRoommatesUiState.Error // You could pass result.message here too
+//                    }
+//                }
+//            } catch (e: IOException) {
+//                // This catch block is more relevant if roomRepository.getRoomMembers
+//                // can directly throw IOException (e.g., not wrapped in your Result type)
+//                // Log.e("RoomSummaryVM", "IOException fetching roommates: ${e.message}", e)
+//                RoomSummaryRoommatesUiState.Error
+//            } catch (e: HttpException) {
+//                // Similar to IOException, for Retrofit HTTP errors
+//                // Log.e("RoomSummaryVM", "HttpException fetching roommates: ${e.code()} - ${e.message()}", e)
+//                RoomSummaryRoommatesUiState.Error
+//            }
+//        }
+//    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun loadSampleBillsAndTasks() {
