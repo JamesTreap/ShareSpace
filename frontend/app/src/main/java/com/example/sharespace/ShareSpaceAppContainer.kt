@@ -1,34 +1,33 @@
 package com.example.sharespace
 
 import android.content.Context
-import com.example.sharespace.core.data.local.TokenStorage
+import com.example.sharespace.core.data.local.dataStore
+import com.example.sharespace.core.data.local.sessionDataStore
 import com.example.sharespace.core.data.remote.ApiClient
 import com.example.sharespace.core.data.remote.ApiService
 import com.example.sharespace.core.data.repository.RoomRepository
-import com.example.sharespace.core.data.repository.implementation.RoomRepositoryImpl
+import com.example.sharespace.core.data.repository.UserSessionRepository
+import com.example.sharespace.core.data.repository.local.PreferencesUserSessionRepository
+import com.example.sharespace.core.data.repository.network.NetworkRoomRepository
 
 interface ShareSpaceAppContainer {
+    val userSessionRepository: UserSessionRepository
     val roomRepository: RoomRepository
 }
 
 class DefaultShareSpaceAppContainer(applicationContext: Context) : ShareSpaceAppContainer {
     private val apiService: ApiService = ApiClient.apiService
 
-    // --- Local Storage for Authentication ---
-    // TokenStorage needs application context for DataStore/SharedPreferences
-    val tokenStorage = TokenStorage
-
     // --- Repositories ---
-    // Repositories are instantiated here, injecting their dependencies (ApiService, TokenStorage)
+    override val userSessionRepository: UserSessionRepository by lazy {
+        PreferencesUserSessionRepository(applicationContext.sessionDataStore)
+    }
 
-//    val authRepository: AuthRepository = AuthRepository(
-//        apiService = apiService,
-//        tokenStorage = tokenStorage
-//    )
-
-    override val roomRepository: RoomRepository = RoomRepositoryImpl(
-        apiService = apiService,
-    )
+    override val roomRepository: RoomRepository by lazy {
+        NetworkRoomRepository(
+            apiService = apiService,
+        )
+    }
 
 //    val userRepository: UserRepository = UserRepository(
 //        apiService = apiService,
