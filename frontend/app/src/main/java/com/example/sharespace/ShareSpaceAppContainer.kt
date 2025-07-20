@@ -10,11 +10,13 @@ import com.example.sharespace.core.data.repository.UserSessionRepository
 import com.example.sharespace.core.data.repository.local.PreferencesUserSessionRepository
 import com.example.sharespace.core.data.repository.network.NetworkRoomRepository
 import com.example.sharespace.data.repository.AuthRepository
+import com.example.sharespace.user.data.repository.ProfileRepository
 
 interface ShareSpaceAppContainer {
     val userSessionRepository: UserSessionRepository
     val roomRepository: RoomRepository
     val authRepository: AuthRepository
+    val profileRepository: ProfileRepository
 }
 
 class DefaultShareSpaceAppContainer(applicationContext: Context) : ShareSpaceAppContainer {
@@ -25,6 +27,7 @@ class DefaultShareSpaceAppContainer(applicationContext: Context) : ShareSpaceApp
         PreferencesUserSessionRepository(applicationContext.sessionDataStore)
     }
 
+
     override val roomRepository: RoomRepository by lazy {
         NetworkRoomRepository(
             apiService = apiService,
@@ -33,6 +36,10 @@ class DefaultShareSpaceAppContainer(applicationContext: Context) : ShareSpaceApp
 
     override val authRepository: AuthRepository by lazy {
         NetworkAuthRepository(apiService = apiService)
+    }
+
+    override val profileRepository: ProfileRepository by lazy {
+        ProfileRepository(api = apiService)
     }
 
 //    val userRepository: UserRepository = UserRepository(

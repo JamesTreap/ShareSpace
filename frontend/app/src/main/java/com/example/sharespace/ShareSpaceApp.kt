@@ -65,7 +65,7 @@ fun ShareSpaceApp(
         composable(route = ShareSpaceScreens.Login.name) {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(ShareSpaceScreens.MainProfile.name) {
+                    navController.navigate(ShareSpaceScreens.HomeOverview.name) {
                         popUpTo("entry") { inclusive = true }
                     }
                 }

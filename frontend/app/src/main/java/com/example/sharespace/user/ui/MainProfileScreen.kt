@@ -15,14 +15,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -36,49 +34,51 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 import com.example.sharespace.core.ui.theme.AlertRed
 import java.text.NumberFormat
 import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.sharespace.ShareSpaceApplication
 import com.example.sharespace.core.data.local.TokenStorage
+import com.example.sharespace.core.data.repository.UserSessionRepository
 import com.example.sharespace.core.ui.theme.AquaAccent
 import com.example.sharespace.core.ui.theme.TextSecondary
 import com.example.sharespace.user.data.repository.ProfileRepository
 import kotlinx.coroutines.launch
 import com.example.sharespace.core.ui.components.Avatar
+import kotlinx.coroutines.flow.first
+import com.example.sharespace.core.domain.model.User
+
+//data class User(
+//    val id: Int,
+//    val name: String,
+//    val username: String? = null,
+//    val photoUrl: String? = null
+//)
 
 
-data class User(
-    val id: String,
-    val name: String,
-    val photoUrl: String? = null
-)
-
-
-data class Room (
+data class Room(
     val id: String,
     val name: String,
     val members: Int,
@@ -88,7 +88,11 @@ data class Room (
 )
 
 
-class ProfileScreenViewModel : ViewModel() {
+class ProfileScreenViewModel(
+    private val userSessionRepository: UserSessionRepository,
+    private val profileRepository: ProfileRepository,
+
+) : ViewModel() {
     // backing state
     private val _user = mutableStateOf<User?>(null)
     private val _rooms = MutableStateFlow<List<Room>>(emptyList())
@@ -99,8 +103,18 @@ class ProfileScreenViewModel : ViewModel() {
     val rooms: StateFlow<List<Room>> = _rooms
     val invites: MutableStateFlow<List<Room>> = _invites
 
-    init {
-//        loadSampleData()
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[APPLICATION_KEY] as ShareSpaceApplication)
+                val userSessionRepository = application.container.userSessionRepository
+                val profileRepository = application.container.profileRepository
+                ProfileScreenViewModel(
+                    userSessionRepository = userSessionRepository,
+                    profileRepository = profileRepository
+                )
+            }
+        }
     }
 
     fun acceptInvite() {
@@ -111,26 +125,31 @@ class ProfileScreenViewModel : ViewModel() {
 
     }
 
-    private val repository = ProfileRepository()
 
-    fun loadData(token: String) {
+    fun loadData() {
 //        println("Loading data with token: $token")
 //        println("hfudsihujksalhfshfjlsdhk")
 
+
         viewModelScope.launch {
             try {
-                val apiUser = repository.getUser(token)
-//                println("Got user: ${apiUser.name}")
+                val token = userSessionRepository.userTokenFlow.first()
+                if (token == null) {
+                    return@launch
+                }
+                val apiUser = profileRepository.getUser(token)
+                _user.value = User(
+                    id = apiUser.id,
+                    name = apiUser.name,
+                    username = apiUser.username,
+                    photoUrl = apiUser.profilePictureUrl
+                )
 
-                val (joinedRooms, roomInvites) = repository.getRoomsAndInvites(token)
+                val (joinedRooms, roomInvites) = profileRepository.getRoomsAndInvites(token)
 //                println("Got ${joinedRooms.size} joined rooms")
 //                println("Got ${roomInvites.size} invites")
 
-                _user.value = User(
-                    id = apiUser.id.toString(),
-                    name = apiUser.name,
-                    photoUrl = apiUser.profilePictureUrl
-                )
+
 
                 _rooms.value = joinedRooms.map { room ->
                     Room(
@@ -160,33 +179,6 @@ class ProfileScreenViewModel : ViewModel() {
             }
         }
     }
-
-    private fun loadSampleData() {
-        _user.value = User(id = "u1", name = "Bob", photoUrl = "https://static.wikia.nocookie.net/naruto/images/2/21/Sasuke_Part_1.png/revision/latest/scale-to-width-down/1200?cb=20170716092103")
-
-        _rooms.value = listOf(
-            Room(id = "r1",
-                name = "200 University Ave W.",
-                members = 4,
-                due = 2163f,
-                photoUrl = "https://.../goose.jpg",
-                notifications = 10),
-            Room(id = "r2",
-                name = "3828 Piermont Dr",
-                members = 3,
-                due = 0f,
-                photoUrl = "https://.../walter.jpg",
-                notifications = 20)
-        )
-
-        _invites.value = listOf(
-            Room(id = "i1",
-                name = "201 University Ave W.",
-                members = 662,
-                due = 314159f,
-                photoUrl = "https://.../babygoose.jpg")
-        )
-    }
 }
 
 fun formatCurrency(amount: Float): String {
@@ -195,35 +187,30 @@ fun formatCurrency(amount: Float): String {
 
 @Composable
 fun MainProfileScreen(
-    viewModel: ProfileScreenViewModel = viewModel(),
+    viewModel: ProfileScreenViewModel = viewModel(factory = ProfileScreenViewModel.Factory),
     onCreateRoomClick: () -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToRoom: () -> Unit,
     onLogOut: () -> Unit,
     onViewProfileClick: () -> Unit,
 ) {
+
     val user by viewModel.user
     val rooms by viewModel.rooms.collectAsState()
     val invites by viewModel.invites.collectAsState()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val tokenState = produceState<String?>(initialValue = null) {
-        value = TokenStorage.getToken(context)
-    }
-    val token = tokenState.value
+//    val tokenState = produceState<String?>(initialValue = null) {
+//        value = TokenStorage.getToken(context)
+//    }
 
-    LaunchedEffect(token) {
-        if (token != null) {
-            println("Calling loadData with token: $token")
-            viewModel.loadData(token)
-        } else {
-            println("Token is null, not calling loadData")
-        }
-    }
+    viewModel.loadData()
 
     Scaffold(
-        modifier = Modifier.fillMaxSize().padding(vertical = 24.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 24.dp)
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -244,7 +231,8 @@ fun MainProfileScreen(
 
 
             rooms.forEach { room ->
-                RoomCard(room = room, showAction = false,
+                RoomCard(
+                    room = room, showAction = false,
                     acceptInvite = { viewModel.acceptInvite() },
                     declineInvite = { viewModel.declineInvite() },
                     room.notifications,
@@ -254,19 +242,23 @@ fun MainProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Pending Invites",
+            Text(
+                "Pending Invites",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                color = TextSecondary)
+                color = TextSecondary
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             invites.forEach { room ->
-                RoomCard(room = room, showAction = true,
+                RoomCard(
+                    room = room, showAction = true,
                     acceptInvite = { viewModel.acceptInvite() },
                     declineInvite = { viewModel.declineInvite() },
                     room.notifications,
-                    navigateToRoom = onNavigateToRoom)
+                    navigateToRoom = onNavigateToRoom
+                )
                 Spacer(modifier = Modifier.height(8.dp))
             }
             Button(
@@ -312,7 +304,9 @@ fun RoomSectionHeader(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().padding(horizontal = 0.dp, vertical = 4.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 0.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -336,8 +330,10 @@ fun RoomSectionHeader(
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 3.dp),
         ) {
-            Text(text = "+ Create Room",
-                style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = "+ Create Room",
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
@@ -393,8 +389,10 @@ fun UserHeader(name: String, photoUrl: String?, onViewProfileClick: () -> Unit) 
         }
 
     }
-    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.8f), thickness = 1.dp,
-        modifier = Modifier.padding(horizontal = 18.dp))
+    HorizontalDivider(
+        color = Color.LightGray.copy(alpha = 0.8f), thickness = 1.dp,
+        modifier = Modifier.padding(horizontal = 18.dp)
+    )
 }
 
 

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -28,23 +27,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.sharespace.core.data.local.TokenStorage
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.sharespace.ShareSpaceApplication
+import com.example.sharespace.core.data.repository.UserSessionRepository
 import com.example.sharespace.core.ui.theme.TextSecondary
 import com.example.sharespace.user.data.repository.ProfileRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import com.example.sharespace.core.domain.model.User
+import kotlinx.coroutines.flow.first
 
-data class User(
-    val id: String,
-    val name: String,
-    val username: String,
-    val profilePictureUrl: String?
-)
 
-class ProfileScreenViewModel : ViewModel() {
+class ViewProfileScreenViewModel(
+    private val userSessionRepository: UserSessionRepository,
+    private val profileRepository: ProfileRepository,
+) : ViewModel() {
     // backing state
     private val _user = mutableStateOf<User?>(null)
 
@@ -52,20 +53,35 @@ class ProfileScreenViewModel : ViewModel() {
     val user: MutableState<User?> = _user
 
 
-    private val repository = ProfileRepository()
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[APPLICATION_KEY] as ShareSpaceApplication)
+                val userSessionRepository = application.container.userSessionRepository
+                val profileRepository = application.container.profileRepository
+                ViewProfileScreenViewModel(
+                    userSessionRepository = userSessionRepository,
+                    profileRepository = profileRepository
+                )
+            }
+        }
+    }
 
-    fun loadData(token: String) {
-
+    fun loadData() {
         viewModelScope.launch {
             try {
-                val apiUser = repository.getUser(token)
+                val token = userSessionRepository.userTokenFlow.first()
+                if (token == null) {
+                    return@launch
+                }
+                val apiUser = profileRepository.getUser(token)
 
 
                 _user.value = User(
-                    id = apiUser.id.toString(),
+                    id = apiUser.id,
                     name = apiUser.name,
                     username = apiUser.username,
-                    profilePictureUrl = apiUser.profilePictureUrl
+                    photoUrl = apiUser.profilePictureUrl
                 )
 
             } catch (e: Exception) {
@@ -79,7 +95,7 @@ class ProfileScreenViewModel : ViewModel() {
 
 @Composable
 fun ViewProfileScreen(
-    viewModel: ProfileScreenViewModel = viewModel(),
+    viewModel: ViewProfileScreenViewModel = viewModel(factory = ViewProfileScreenViewModel.Factory),
     onNavigateBack: () -> Unit,
     onEditProfile: () -> Unit,
     onLogout: () -> Unit
@@ -88,19 +104,13 @@ fun ViewProfileScreen(
     val user by viewModel.user
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
-    val tokenState = produceState<String?>(initialValue = null) {
-        value = TokenStorage.getToken(context)
-    }
-    val token = tokenState.value
 
-    LaunchedEffect(token) {
-        if (token != null) {
-            println("Calling loadData with token: $token")
-            viewModel.loadData(token)
-        } else {
-            println("Token is null, not calling loadData")
-        }
-    }
+    // Provide token for loading data
+//    val token = TokenStorage.getToken(context)
+//    LaunchedEffect(token) {
+//        token?.let { viewModel.loadData(it) }
+//    }
+    viewModel.loadData()
 
     Scaffold(
         modifier = Modifier.fillMaxSize().padding(vertical = 24.dp)
@@ -113,7 +123,7 @@ fun ViewProfileScreen(
                 title = user?.name ?: "View Profile",
                 onBackClick = onNavigateBack,
                 actions = {},
-                photoUrl = user?.profilePictureUrl
+                photoUrl = user?.photoUrl
             )
 
             HorizontalDivider(color = Color.LightGray.copy(alpha = 0.8f), thickness = 1.dp,
@@ -133,7 +143,8 @@ fun ViewProfileScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("User ID", style = MaterialTheme.typography.bodyMedium,  color = TextSecondary)
-                    Text(user?.id ?: "", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                    val idText = user?.id.toString()
+                    Text(idText, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
                 }
 
                 Row(

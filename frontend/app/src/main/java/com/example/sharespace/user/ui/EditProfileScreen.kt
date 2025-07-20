@@ -27,7 +27,6 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,13 +41,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.sharespace.ShareSpaceApplication
 import com.example.sharespace.core.data.local.TokenStorage
+import com.example.sharespace.core.data.repository.UserSessionRepository
+import com.example.sharespace.core.domain.model.User
 import com.example.sharespace.core.ui.theme.AlertRed
 import com.example.sharespace.core.ui.theme.AquaAccent
 import com.example.sharespace.core.ui.theme.TextSecondary
+import com.example.sharespace.ui.screens.profile.ProfileScreenViewModel
 import com.example.sharespace.user.data.repository.ProfileRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 
@@ -57,7 +65,9 @@ data class ApiResponse(
     val message: String
 )
 
-class EditProfileScreenViewModel : ViewModel() {
+class EditProfileScreenViewModel(
+    private val userSessionRepository: UserSessionRepository,
+    private val profileRepository: ProfileRepository, ) : ViewModel() {
     private val _user = mutableStateOf<User?>(null)
 
     // public streams
@@ -67,17 +77,34 @@ class EditProfileScreenViewModel : ViewModel() {
     val username = mutableStateOf("")
     val selectedIconIndex = mutableStateOf(0)
 
-    private val repository = ProfileRepository()
 
-    fun loadData(token: String) {
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[APPLICATION_KEY] as ShareSpaceApplication)
+                val userSessionRepository = application.container.userSessionRepository
+                val profileRepository = application.container.profileRepository
+                EditProfileScreenViewModel(
+                    userSessionRepository = userSessionRepository,
+                    profileRepository = profileRepository
+                )
+            }
+        }
+    }
+
+    fun loadData() {
         viewModelScope.launch {
             try {
-                val apiUser = repository.getUser(token)
+                val token = userSessionRepository.userTokenFlow.first()
+                if (token == null) {
+                    return@launch
+                }
+                val apiUser = profileRepository.getUser(token)
                 _user.value = User(
-                    id = apiUser.id.toString(),
+                    id = apiUser.id,
                     name = apiUser.name,
                     username = apiUser.username,
-                    profilePictureUrl = apiUser.profilePictureUrl
+                    photoUrl = apiUser.profilePictureUrl
                 )
 
                 name.value = apiUser.name
@@ -102,11 +129,18 @@ class EditProfileScreenViewModel : ViewModel() {
         selectedIconIndex.value = index
     }
 
-    fun updateProfile(token: String?, onNavigateBack: () -> Unit, snackbarHostState: SnackbarHostState) {
+    fun updateProfile(
+        onNavigateBack: () -> Unit,
+        snackbarHostState: SnackbarHostState
+    ) {
         viewModelScope.launch {
             try {
+                val token = userSessionRepository.userTokenFlow.first()
+                if (token == null) {
+                    return@launch
+                }
                 val pictureUrl = "pfp${selectedIconIndex.value}"
-                val updatedUser = repository.patchProfile(
+                profileRepository.patchProfile(
                     token = token,
                     name = name.value,
                     username = username.value,
@@ -136,8 +170,8 @@ class EditProfileScreenViewModel : ViewModel() {
 @SuppressLint("DiscouragedApi")
 @Composable
 fun EditProfileScreen(
-    viewModel: EditProfileScreenViewModel = viewModel(),
-    onNavigateBack: (() -> Unit)
+    viewModel: EditProfileScreenViewModel = viewModel(factory = EditProfileScreenViewModel.Factory),
+    onNavigateBack: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val user by viewModel.user
@@ -146,22 +180,15 @@ fun EditProfileScreen(
     val selectedIconIndex by viewModel.selectedIconIndex
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
-    val tokenState = produceState<String?>(initialValue = null) {
-        value = TokenStorage.getToken(context)
-    }
-    val token = tokenState.value
 
-    LaunchedEffect(token) {
-        if (token != null) {
-            println("Calling loadData with token: $token")
-            viewModel.loadData(token)
-        } else {
-            println("Token is null, not calling loadData")
-        }
-    }
+
+    viewModel.loadData()
+
 
     Scaffold(
-        modifier = Modifier.fillMaxSize().padding(vertical = 24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 24.dp),
         snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState,
@@ -179,19 +206,24 @@ fun EditProfileScreen(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize() ) {
+                .fillMaxSize()
+        ) {
             ScreenHeader(
                 title = "Edit Profile",
                 onNavigateBack,
                 actions = {},
-                photoUrl = user?.profilePictureUrl
+                photoUrl = user?.photoUrl
             )
-            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.8f), thickness = 1.dp,
-                modifier = Modifier.padding(horizontal = 18.dp))
+            HorizontalDivider(
+                color = Color.LightGray.copy(alpha = 0.8f), thickness = 1.dp,
+                modifier = Modifier.padding(horizontal = 18.dp)
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Column (Modifier.padding(vertical = 0.dp, horizontal = 16.dp).fillMaxSize()) {
+            Column(Modifier
+                .padding(vertical = 0.dp, horizontal = 16.dp)
+                .fillMaxSize()) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { viewModel.onNameChange(it) },
@@ -209,7 +241,11 @@ fun EditProfileScreen(
 //                )
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Selected Icon", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                Text(
+                    "Selected Icon",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
 
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(5),
@@ -218,7 +254,11 @@ fun EditProfileScreen(
                 ) {
                     items(10) { index ->
                         val resId = remember {
-                            context.resources.getIdentifier("pfp$index", "drawable", context.packageName)
+                            context.resources.getIdentifier(
+                                "pfp$index",
+                                "drawable",
+                                context.packageName
+                            )
                         }
 
                         Box(
@@ -247,7 +287,7 @@ fun EditProfileScreen(
 
                 Button(
                     onClick = {
-                        viewModel.updateProfile(token, onNavigateBack, snackbarHostState)
+                        viewModel.updateProfile(onNavigateBack, snackbarHostState)
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {

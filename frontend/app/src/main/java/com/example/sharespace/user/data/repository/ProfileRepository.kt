@@ -1,14 +1,15 @@
 package com.example.sharespace.user.data.repository
 
 import com.example.sharespace.core.data.remote.ApiClient
+import com.example.sharespace.core.data.remote.ApiService
 import com.example.sharespace.core.data.remote.PatchProfileRequest
 import com.example.sharespace.core.data.repository.dto.ApiRoom
 import com.example.sharespace.core.data.repository.dto.ApiRoomInvitation
 import com.example.sharespace.core.data.repository.dto.ApiUser
 import retrofit2.HttpException
 
-class ProfileRepository {
-    private val api = ApiClient.apiService
+class ProfileRepository(var api: ApiService) {
+
 
     suspend fun getUser(token: String): ApiUser {
         val response = api.getCurrentUserDetails("Bearer $token")
