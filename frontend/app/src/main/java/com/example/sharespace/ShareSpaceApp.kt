@@ -16,7 +16,7 @@ import com.example.sharespace.ui.screens.finance.AddBillScreen
 import com.example.sharespace.ui.screens.finance.BillsListScreen
 import com.example.sharespace.ui.screens.finance.EditBillScreen
 import com.example.sharespace.ui.screens.finance.FinanceManagerScreen
-import com.example.sharespace.ui.screens.profile.EditProfileScreen
+import com.example.sharespace.ui.screens.profile.MainProfileScreen
 import com.example.sharespace.ui.screens.room.AddRoommateScreen
 import com.example.sharespace.ui.screens.room.CreateRoomScreen
 import com.example.sharespace.ui.screens.room.EditRoomScreen
@@ -26,11 +26,15 @@ import com.example.sharespace.ui.screens.room.RoomSummaryScreen
 import com.example.sharespace.ui.screens.tasks.AddTaskScreen
 import com.example.sharespace.ui.screens.tasks.EditTaskScreen
 import com.example.sharespace.ui.screens.tasks.TasksListScreen
+import com.example.sharespace.user.ui.EditProfileScreen
+import com.example.sharespace.user.ui.ViewProfileScreen
 
 enum class ShareSpaceScreens(@StringRes val title: Int) {
     Login(title = R.string.login_screen),
     HomeOverview(title = R.string.home_overview_screen),
+    MainProfile(title = R.string.main_profile_screen),
     EditProfile(title = R.string.edit_profile_screen),
+    ViewProfile(title = R.string.view_profile_screen),
     RoomSummary(title = R.string.room_summary_screen),
     AddRoommate(title = R.string.add_roommate_screen),
     EditRoommate(title = R.string.edit_roommate_screen),
@@ -61,7 +65,7 @@ fun ShareSpaceApp(
         composable(route = ShareSpaceScreens.Login.name) {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(ShareSpaceScreens.EditProfile.name) {
+                    navController.navigate(ShareSpaceScreens.HomeOverview.name) {
                         popUpTo("entry") { inclusive = true }
                     }
                 }
@@ -70,7 +74,7 @@ fun ShareSpaceApp(
 
         composable(route = ShareSpaceScreens.HomeOverview.name) {
             HomeOverviewScreen(
-                onUserProfileClick = { navController.navigate(ShareSpaceScreens.EditProfile.name) },
+                onUserProfileClick = { navController.navigate(ShareSpaceScreens.MainProfile.name) },
                 onCreateRoomClick = { navController.navigate(ShareSpaceScreens.CreateRoom.name) },
                 onRoomClick = { navController.navigate(ShareSpaceScreens.RoomSummary.name) },
                 onLoginClick = {
@@ -85,12 +89,12 @@ fun ShareSpaceApp(
             )
         }
         composable(route = ShareSpaceScreens.Login.name) {
-            LoginScreen(
-                onLoginSuccess = { navController.navigate(ShareSpaceScreens.EditProfile.name) }
-            )
+             LoginScreen(
+                 onLoginSuccess = { navController.navigate(ShareSpaceScreens.MainProfile.name) }
+             )
         }
-        composable(route = ShareSpaceScreens.EditProfile.name) {
-            EditProfileScreen(
+        composable(route = ShareSpaceScreens.MainProfile.name) {
+            MainProfileScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onCreateRoomClick = { navController.navigate(ShareSpaceScreens.CreateRoom.name) },
                 onNavigateToRoom = {
@@ -98,9 +102,26 @@ fun ShareSpaceApp(
                 },
                 onLogOut = {
                     navController.navigate(ShareSpaceScreens.Login.name) {
-                        popUpTo(ShareSpaceScreens.EditProfile.name) { inclusive = true }
-                    }
-                }
+                    popUpTo(ShareSpaceScreens.MainProfile.name) { inclusive = true }
+                }},
+                onViewProfileClick = {
+                    navController.navigate(ShareSpaceScreens.ViewProfile.name)
+                },
+            )
+        }
+        composable(route = ShareSpaceScreens.EditProfile.name) {
+            EditProfileScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(route = ShareSpaceScreens.ViewProfile.name) {
+            ViewProfileScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onEditProfile = { navController.navigate(ShareSpaceScreens.EditProfile.name) },
+                onLogout = {
+                    navController.navigate(ShareSpaceScreens.Login.name) {
+                        popUpTo(ShareSpaceScreens.MainProfile.name) { inclusive = true }
+                }},
             )
         }
         composable(route = ShareSpaceScreens.RoomSummary.name) {

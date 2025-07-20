@@ -2,7 +2,9 @@
     <string name="app_name">ShareSpace</string>
     <string name="login_screen">Login</string>
     <string name="home_overview_screen">Overview</string>
-    <string name="edit_profile_screen">Update Profile</string>
+    <string name="main_profile_screen">Update Profile</string>
+    <string name="edit_profile_screen">Edit Profile</string>
+    <string name="view_profile_screen">View Profile</string>
     <string name="room_summary_screen">Summary</string>
     <string name="add_roommate_screen">Add Roommate</string>
     <string name="edit_roommate_screen">Edit Roommate</string>

@@ -5,26 +5,40 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.Font
+import com.example.sharespace.R
+
+val InstrumentSans = FontFamily(
+    Font(R.font.instrument_sans)
+)
+
+val JosefinSans = FontFamily(
+    Font(R.font.josefin_sans)
+)
+
+val JosefinSansBold = FontFamily(
+    Font(R.font.josefin_sans_bold)
+)
 
 // Set of Material typography styles to start with
 val Typography = Typography(
     bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = InstrumentSans,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
+        fontSize = 14.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
     ),
     bodyMedium = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = InstrumentSans,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
+        fontSize = 14.sp,
         letterSpacing = 0.5.sp,
     ),
     titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = JosefinSansBold,
         fontWeight = FontWeight.Bold,
-        fontSize = 22.sp,
+        fontSize = 18.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),

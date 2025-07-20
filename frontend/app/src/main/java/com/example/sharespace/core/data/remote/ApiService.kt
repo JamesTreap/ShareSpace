@@ -21,6 +21,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 
@@ -37,6 +38,13 @@ data class CreateTaskRequest(
     val frequency: String,
     val repeat: String
 )
+
+data class PatchProfileRequest(
+    val name: String,
+    val username: String,
+    val profile_picture_url: String
+)
+
 
 data class Assignee(
     @SerializedName("user_id")
@@ -142,6 +150,13 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: CreateTaskRequest
     ): Response<CreateTaskResponse>
+
+    @PATCH("users/update_profile")
+    suspend fun patchUserProfile(
+        @Header("Authorization") token: String,
+        @Body request: PatchProfileRequest
+    ): Response<ApiUser>
+
 
 //    @PATCH("tasks/{task_id}")
 //    suspend fun updateTask(
