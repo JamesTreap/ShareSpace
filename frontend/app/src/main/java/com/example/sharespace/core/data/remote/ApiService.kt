@@ -36,6 +36,13 @@ data class CreateTaskRequest(
     val repeat: String
 )
 
+data class PatchProfileRequest(
+    val name: String,
+    val username: String,
+    val profile_picture_url: String
+)
+
+
 data class Assignee(
     @SerializedName("user_id")
     val userId: Int,
@@ -140,6 +147,13 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: CreateTaskRequest
     ): Response<CreateTaskResponse>
+
+    @PATCH("users/update_profile")
+    suspend fun patchUserProfile(
+        @Header("Authorization") token: String,
+        @Body request: PatchProfileRequest
+    ): Response<ApiUser>
+
 
 //    @PATCH("tasks/{task_id}")
 //    suspend fun updateTask(

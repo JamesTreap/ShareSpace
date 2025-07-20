@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, abort, g
+from flask import Blueprint, jsonify, abort, g, request
 
 from repository.user_repo import UserRepo
 from schemas.user_schemas import UserPublicSchema
@@ -20,6 +20,7 @@ def user_details_by_id(user_id):
     return jsonify(user_schema.dump(user)), 200
 
 @users_bp.route('/update_profile', methods=['PATCH'])
+@token_required
 def update_profile():
     user: User = g.current_user
     if not user:
@@ -27,9 +28,10 @@ def update_profile():
 
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
-    password = (data.get("password") or "").strip()
+    name = (data.get("name") or "").strip()
+    profile_picture_url = (data.get("profile_picture_url") or "").strip()
 
-    UserService.update_user_profile(user, username, password)
+    UserService.update_user_profile(user, username, name, profile_picture_url)
     return {"message": "Profile updated successfully"}, 200
 
 

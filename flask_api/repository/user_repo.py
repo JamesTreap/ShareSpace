@@ -17,6 +17,7 @@ class UserRepo:
 
     @staticmethod
     def find_by_username(username: str) -> Optional[User]:
+        username = username.strip()
         return db.session.scalar(
             select(User).where(User.username == username)
         )
@@ -59,5 +60,17 @@ class UserRepo:
 
         user.username = username
         user.password_hash = generate_password_hash(password)
+        db.session.commit()
+        return user
+
+    @staticmethod
+    def update_user_profile(user_id: int, username: str, name: str, profile_picture_url: str) -> Optional[User]:
+        user = db.session.get(User, user_id)
+        if not user:
+            return None
+
+        user.username = username
+        user.name = name
+        user.profile_picture_url = profile_picture_url
         db.session.commit()
         return user

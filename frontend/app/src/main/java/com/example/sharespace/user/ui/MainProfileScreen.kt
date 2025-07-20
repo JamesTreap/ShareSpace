@@ -68,6 +68,7 @@ import com.example.sharespace.core.ui.theme.AquaAccent
 import com.example.sharespace.core.ui.theme.TextSecondary
 import com.example.sharespace.user.data.repository.ProfileRepository
 import kotlinx.coroutines.launch
+import com.example.sharespace.core.ui.components.Avatar
 
 
 data class User(
@@ -199,6 +200,7 @@ fun MainProfileScreen(
     onNavigateBack: () -> Unit,
     onNavigateToRoom: () -> Unit,
     onLogOut: () -> Unit,
+    onViewProfileClick: () -> Unit,
 ) {
     val user by viewModel.user
     val rooms by viewModel.rooms.collectAsState()
@@ -229,7 +231,7 @@ fun MainProfileScreen(
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            user?.let { UserHeader(name = it.name, photoUrl = it.photoUrl, {}) }
+            user?.let { UserHeader(name = it.name, photoUrl = it.photoUrl, onViewProfileClick) }
             Spacer(modifier = Modifier.height(16.dp))
 
             RoomSectionHeader(
@@ -393,38 +395,6 @@ fun UserHeader(name: String, photoUrl: String?, onViewProfileClick: () -> Unit) 
     }
     HorizontalDivider(color = Color.LightGray.copy(alpha = 0.8f), thickness = 1.dp,
         modifier = Modifier.padding(horizontal = 18.dp))
-}
-
-
-@Composable
-fun Avatar(
-    photoUrl: String?, contentDescription: String? = null, size: Dp = 56.dp
-) {
-    Box(
-        modifier = Modifier
-            .size(size)
-            .clip(CircleShape)
-            .background(color = MaterialTheme.colorScheme.surfaceVariant) // subtle backdrop
-    ) {
-        if (photoUrl != null) {
-            AsyncImage(
-                model = photoUrl,
-                contentDescription = contentDescription,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .matchParentSize()
-                    .clip(CircleShape)
-            )
-        } else {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = contentDescription,
-                modifier = Modifier
-                    .matchParentSize()
-                    .padding(12.dp)
-            )
-        }
-    }
 }
 
 
