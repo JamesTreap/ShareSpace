@@ -1,15 +1,15 @@
 package com.example.sharespace.core.data.repository.network
 
-import com.example.sharespace.core.data.remote.ApiService
 // Result class import is removed
+import com.example.sharespace.core.data.remote.ApiService
 import com.example.sharespace.core.data.repository.RoomRepository
+import com.example.sharespace.core.data.repository.dto.ApiCreateRoomRequest
+import com.example.sharespace.core.data.repository.dto.ApiInviteUserToRoomRequest
+import com.example.sharespace.core.data.repository.dto.ApiRespondToRoomInviteRequest
 import com.example.sharespace.core.data.repository.dto.ApiRespondToRoomInviteResponse
 import com.example.sharespace.core.data.repository.dto.ApiRoom
 import com.example.sharespace.core.data.repository.dto.ApiRoomInvitation
 import com.example.sharespace.core.data.repository.dto.ApiUser
-import com.example.sharespace.core.data.repository.dto.CreateRoomRequest
-import com.example.sharespace.core.data.repository.dto.InviteUserToRoomRequest
-import com.example.sharespace.core.data.repository.dto.RespondToRoomInviteRequest
 import retrofit2.HttpException
 
 // IOException import can remain as these exceptions might still be caught by the ViewModel
@@ -66,7 +66,7 @@ class NetworkRoomRepository(private val apiService: ApiService) : RoomRepository
     }
 
     override suspend fun createRoom(token: String, roomName: String): ApiRoom {
-        val request = CreateRoomRequest(name = roomName)
+        val request = ApiCreateRoomRequest(name = roomName)
         val response = apiService.createRoom("Bearer $token", request)
         if (response.isSuccessful) {
             return response.body()
@@ -81,7 +81,7 @@ class NetworkRoomRepository(private val apiService: ApiService) : RoomRepository
         roomId: Int,
         inviteeUsername: String
     ): ApiRoomInvitation {
-        val request = InviteUserToRoomRequest(inviteeUsername = inviteeUsername)
+        val request = ApiInviteUserToRoomRequest(inviteeUsername = inviteeUsername)
         val response = apiService.inviteUserToRoom("Bearer $token", roomId, request)
         if (response.isSuccessful) {
             return response.body()
@@ -96,7 +96,7 @@ class NetworkRoomRepository(private val apiService: ApiService) : RoomRepository
         roomIdFromInvite: Int,
         status: String
     ): ApiRespondToRoomInviteResponse {
-        val request = RespondToRoomInviteRequest(status = status)
+        val request = ApiRespondToRoomInviteRequest(status = status)
         val response = apiService.respondToRoomInvite("Bearer $token", roomIdFromInvite, request)
         if (response.isSuccessful) {
             return response.body()
