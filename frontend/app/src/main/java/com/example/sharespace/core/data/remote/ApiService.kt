@@ -1,6 +1,13 @@
 package com.example.sharespace.core.data.remote
 
+import com.example.sharespace.core.data.repository.dto.ApiCreateAccountRequest
+import com.example.sharespace.core.data.repository.dto.ApiCreateAccountResponse
+import com.example.sharespace.core.data.repository.dto.ApiCreateRoomRequest
+import com.example.sharespace.core.data.repository.dto.ApiInviteUserToRoomRequest
 import com.example.sharespace.core.data.repository.dto.ApiJoinedRoomsResponse
+import com.example.sharespace.core.data.repository.dto.ApiLoginRequest
+import com.example.sharespace.core.data.repository.dto.ApiLoginResponse
+import com.example.sharespace.core.data.repository.dto.ApiRespondToRoomInviteRequest
 import com.example.sharespace.core.data.repository.dto.ApiRespondToRoomInviteResponse
 import com.example.sharespace.core.data.repository.dto.ApiRoom
 import com.example.sharespace.core.data.repository.dto.ApiRoomInvitation
@@ -9,18 +16,14 @@ import com.example.sharespace.core.data.repository.dto.ApiRoomMembersResponse
 import com.example.sharespace.core.data.repository.dto.ApiRoomsAndInvitationsResponse
 import com.example.sharespace.core.data.repository.dto.ApiTask
 import com.example.sharespace.core.data.repository.dto.ApiUser
-import com.example.sharespace.core.data.repository.dto.CreateRoomRequest
-import com.example.sharespace.core.data.repository.dto.InviteUserToRoomRequest
-import com.example.sharespace.core.data.repository.dto.RespondToRoomInviteRequest
 import com.google.gson.annotations.SerializedName
-import retrofit2.http.*
 import retrofit2.Response
-
-data class LoginRequest(val username: String, val password: String)
-data class LoginResponse(val token: String)
-
-
-
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.PATCH
+import retrofit2.http.POST
+import retrofit2.http.Path
 
 data class RoomsAndInvitesResponse(
     val joinedRooms: List<ApiRoom>,
@@ -60,12 +63,12 @@ interface ApiService {
 
     // --- Auth ---
     @POST("auth/login")
-    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+    suspend fun login(@Body request: ApiLoginRequest): Response<ApiLoginResponse>
 
-//    @POST("auth/create-user")
-//    suspend fun createAccount(
-//        @Body request: CreateAccountRequest
-//    ): Response<CreateAccountResponse>
+    @POST("auth/create-user")
+    suspend fun createAccount(
+        @Body request: ApiCreateAccountRequest
+    ): Response<ApiCreateAccountResponse>
 
     // --- Users ---
     @GET("users/user_details") // This seems to be for the currently authenticated user
@@ -116,21 +119,21 @@ interface ApiService {
     @POST("rooms/create")
     suspend fun createRoom(
         @Header("Authorization") token: String,
-        @Body request: CreateRoomRequest
+        @Body request: ApiCreateRoomRequest
     ): Response<ApiRoom>
 
     @POST("rooms/{room_id}/invite")
     suspend fun inviteUserToRoom(
         @Header("Authorization") token: String,
         @Path("room_id") roomId: Int,
-        @Body request: InviteUserToRoomRequest
+        @Body request: ApiInviteUserToRoomRequest
     ): Response<ApiRoomInvitation>
 
     @POST("rooms/invites/{room_id}/respond")
     suspend fun respondToRoomInvite(
         @Header("Authorization") token: String,
         @Path("room_id") roomIdFromInvite: Int,
-        @Body request: RespondToRoomInviteRequest
+        @Body request: ApiRespondToRoomInviteRequest
     ): Response<ApiRespondToRoomInviteResponse>
 
 

@@ -1,7 +1,5 @@
 package com.example.sharespace
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,17 +49,19 @@ enum class ShareSpaceScreens(@StringRes val title: Int) {
     EditTask(title = R.string.edit_task_screen),
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ShareSpaceApp(navController: NavHostController = rememberNavController()) {
+fun ShareSpaceApp(
+    startDestination: String,
+    navController: NavHostController = rememberNavController()
+) {
     NavHost(
         navController = navController,
-        startDestination = "entry",
+        startDestination = startDestination,
         modifier = Modifier,
     ) {
-        composable("entry") {
-            EntryPoint(navController)
-        }
+//        composable("entry") {
+//            EntryPoint(navController)
+//        }
         composable(route = ShareSpaceScreens.Login.name) {
             LoginScreen(
                 onLoginSuccess = {
@@ -77,7 +77,15 @@ fun ShareSpaceApp(navController: NavHostController = rememberNavController()) {
                 onUserProfileClick = { navController.navigate(ShareSpaceScreens.MainProfile.name) },
                 onCreateRoomClick = { navController.navigate(ShareSpaceScreens.CreateRoom.name) },
                 onRoomClick = { navController.navigate(ShareSpaceScreens.RoomSummary.name) },
-                onLoginClick = { navController.navigate(ShareSpaceScreens.Login.name) },
+                onLoginClick = {
+                    navController.navigate(ShareSpaceScreens.Login.name)
+                },
+                onLogoutNavigation = {
+                    navController.navigate(ShareSpaceScreens.Login.name) {
+                        popUpTo(ShareSpaceScreens.HomeOverview.name) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
             )
         }
         composable(route = ShareSpaceScreens.Login.name) {
@@ -88,7 +96,7 @@ fun ShareSpaceApp(navController: NavHostController = rememberNavController()) {
         composable(route = ShareSpaceScreens.MainProfile.name) {
             MainProfileScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onCreateRoomClick = { navController.navigate(ShareSpaceScreens.CreateRoom.name)},
+                onCreateRoomClick = { navController.navigate(ShareSpaceScreens.CreateRoom.name) },
                 onNavigateToRoom = {
                     navController.navigate(ShareSpaceScreens.RoomSummary.name)
                 },
@@ -188,27 +196,27 @@ fun ShareSpaceApp(navController: NavHostController = rememberNavController()) {
     }
 }
 
-@Composable
-fun EntryPoint(navController: NavHostController) {
-    val context = LocalContext.current
-
-    // Load token asynchronously
-    val tokenState = produceState<String?>(initialValue = null) {
-        value = TokenStorage.getToken(context)
-    }
-
-    val token = tokenState.value
-
-
-    LaunchedEffect(token) {
-        if (token != null && token.isNotEmpty()) {
-            navController.navigate(ShareSpaceScreens.MainProfile.name) {
-                popUpTo("entry") { inclusive = true }
-            }
-        } else {
-            navController.navigate(ShareSpaceScreens.Login.name) {
-                popUpTo("entry") { inclusive = true }
-            }
-        }
-    }
-}
+//@Composable
+//fun EntryPoint(navController: NavHostController) {
+//    val context = LocalContext.current
+//
+//    // Load token asynchronously
+//    val tokenState = produceState<String?>(initialValue = null) {
+//        value = TokenStorage.getToken(context)
+//    }
+//
+//    val token = tokenState.value
+//
+//
+//    LaunchedEffect(token) {
+//        if (token != null && token.isNotEmpty()) {
+//            navController.navigate(ShareSpaceScreens.EditProfile.name) {
+//                popUpTo("entry") { inclusive = true }
+//            }
+//        } else {
+//            navController.navigate(ShareSpaceScreens.Login.name) {
+//                popUpTo("entry") { inclusive = true }
+//            }
+//        }
+//    }
+//}

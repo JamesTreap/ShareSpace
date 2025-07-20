@@ -1,5 +1,5 @@
 package com.example.sharespace.core.data.repository.dto
 
-data class InviteUserToRoomRequest(
+data class ApiInviteUserToRoomRequest(
     val inviteeUsername: String
 )
