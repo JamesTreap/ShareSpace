@@ -424,7 +424,7 @@ fun UpcomingTasksSection(
                     headlineContent = { Text(task.title) },
                     supportingContent = {
                         Text(
-                            task.dueDate?.format(DateTimeFormatter.ofPattern("MMM d | h:mm a"))
+                            task.dueDate.format(DateTimeFormatter.ofPattern("MMM d | h:mm a"))
                                 ?: "No due date"
                         )
                     },
