@@ -12,7 +12,8 @@ def create_app() -> Flask:
     app = Flask(__name__)
 
     # ── Config ─────────────────────────────────────────
-    cfg = dotenv_values(".env.potential")
+    from pathlib import Path
+    cfg = dotenv_values(Path(__file__).parent / "env.potential")
     
     # Determine which database to use
     use_local = cfg.get("USE_LOCAL_DB", "false").lower() == "true"
@@ -23,7 +24,8 @@ def create_app() -> Flask:
     else:
         database_uri = cfg.get("DATABASE_URL")
         print("🌐 Using remote database")
-    
+
+    print(database_uri)
     app.config.update(
         SECRET_KEY                = cfg.get("SECRET_KEY", "dev-secret-key"),
         SQLALCHEMY_DATABASE_URI   = database_uri,
@@ -49,12 +51,14 @@ def create_app() -> Flask:
     from controllers.room_controller   import rooms_bp
     from controllers.task_controller   import tasks_bp
     from controllers.finance_controller import finance_bp
+    from controllers.calendar_controller import calendar_bp
 
     app.register_blueprint(auth_bp,   url_prefix="/auth")
     app.register_blueprint(users_bp,  url_prefix="/users")
     app.register_blueprint(rooms_bp,  url_prefix="/rooms")
     app.register_blueprint(tasks_bp,  url_prefix="/tasks")
     app.register_blueprint(finance_bp, url_prefix="/finance")
+    app.register_blueprint(calendar_bp, url_prefix="/calendar")
 
     return app
 

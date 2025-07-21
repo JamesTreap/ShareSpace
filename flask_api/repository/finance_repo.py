@@ -1,9 +1,9 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
 from entities.finance import Bill, Payment
 from entities import db
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, date
 
 
 
@@ -13,7 +13,7 @@ class FinanceRepo:
         stmt = (
             select(Bill)
             .where(Bill.room_id == room_id, Bill.scheduled_date <= db.func.now())
-            .order_by(Bill.created_at.desc())
+            .order_by(Bill.scheduled_date.desc())
             .options(joinedload(Bill.payer))
         )
         return db.session.scalars(stmt).all()
@@ -30,6 +30,21 @@ class FinanceRepo:
             )
         )
         return db.session.scalars(stmt).all()
+
+    @staticmethod
+    def get_bills_for_room_by_date(room_id: int, target_date: date) -> List[Bill]:
+        stmt = (
+            select(Bill)
+                .where(
+                Bill.room_id == room_id,
+                func.date(Bill.scheduled_date) == target_date,
+                Bill.scheduled_date <= datetime.utcnow()
+            )
+            .order_by(Bill.scheduled_date.desc())
+        )
+        return db.session.scalars(stmt).all()
+
+
 
     @staticmethod
     def create_bill(title: str, category: str, amount: float, payer_user_id: int, frequency: Optional[str], repeat: int, room_id: int, scheduled_date: datetime, meta_data=None) -> Bill:

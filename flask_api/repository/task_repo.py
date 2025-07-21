@@ -2,7 +2,9 @@ from sqlalchemy import select
 from entities.task import Task, TaskUser
 from entities import db
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, date
+from sqlalchemy import select, func
+from sqlalchemy.orm import joinedload
 
 class TaskRepo:
 
@@ -14,6 +16,19 @@ class TaskRepo:
                 .order_by(Task.deadline)
         )
         return db.session.scalars(stmt).all()
+
+    @staticmethod
+    def get_tasks_for_room_by_date(room_id: int, target_date: date) -> List[Task]:
+        stmt = (
+            select(Task)
+                .options(joinedload(Task.users))
+                .where(
+                Task.room_id == room_id,
+                func.date(Task.deadline) == target_date,
+                Task.scheduled_date <= datetime.now()
+            )
+        )
+        return db.session.execute(stmt).unique().scalars().all()
 
     @staticmethod
     def get_uncompleted_task_users(task_id: int) -> List[TaskUser]:
@@ -110,3 +125,14 @@ class TaskRepo:
             task.notified = True
             db.session.commit()
         return task
+
+    def get_tasks_for_date(target_date, now):
+        return (
+            db.session.query(Task)
+                .options(joinedload(Task.users))
+                .filter(
+                func.date(Task.deadline) == target_date,
+                Task.scheduled_date > now
+            )
+                .all()
+        )

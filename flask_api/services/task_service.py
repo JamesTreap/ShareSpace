@@ -1,7 +1,7 @@
 from repository.task_repo import TaskRepo
 from repository.user_repo import UserRepo
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from flask import abort
 from services.room_service import RoomService
 
@@ -9,8 +9,20 @@ class TaskService:
     @staticmethod
     def get_enriched_tasks_for_room(room_id: int) -> List[dict]:
         tasks = TaskRepo.get_tasks_for_room(room_id)
-        enriched = []
+        enriched = TaskService.prepare_tasks(tasks)
 
+        return enriched
+
+    @staticmethod
+    def get_tasks_for_room_by_date(room_id: int, date: date) -> List[dict]:
+        tasks = TaskRepo.get_tasks_for_room_by_date(room_id, date)
+        enriched = TaskService.prepare_tasks(tasks)
+
+        return enriched
+
+    @staticmethod
+    def prepare_tasks(tasks):
+        enriched = []
         for task in tasks:
             statuses = {
                 str(task_user.user_id): task_user.status.upper()
@@ -25,8 +37,8 @@ class TaskService:
                 "frequency": task.frequency,
                 "repeat": task.repeat,
                 "statuses": statuses,
+                "scheduled_date": task.scheduled_date.isoformat() if task.scheduled_date else None,
             })
-
         return enriched
 
     @staticmethod

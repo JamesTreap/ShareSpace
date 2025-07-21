@@ -1,12 +1,31 @@
 from repository.finance_repo import FinanceRepo
 from typing import List, Optional
 from flask import abort
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from entities.finance import Bill
 from services.room_service import RoomService
 
 
 class FinanceService:
+
+    @staticmethod
+    def get_room_bills_by_date(room_id: int, target_date: date) -> List[dict]:
+        bills = FinanceRepo.get_bills_for_room_by_date(room_id, target_date)
+        result = []
+        for bill in bills:
+            result.append({
+                "type": "bill",
+                "id": bill.id,
+                "title": bill.title,
+                "amount": float(bill.amount),
+                "category": bill.category,
+                "payer_user_id": bill.payer_user_id,
+                "deadline": bill.deadline.isoformat() if bill.deadline else None,
+                "scheduled_date": bill.scheduled_date.isoformat() if bill.scheduled_date else None,
+                "created_at": bill.created_at.isoformat(),
+            })
+        return result
+
     @staticmethod
     def get_room_financial_activity(room_id: int) -> List[dict]:
         bills = FinanceRepo.get_bills_for_room(room_id)
@@ -15,6 +34,7 @@ class FinanceService:
         merged = []
 
         for bill in bills:
+            scheduled_sort_key = bill.scheduled_date or bill.created_at
             merged.append({
                 "type": "bill",
                 "id": bill.id,
@@ -22,8 +42,10 @@ class FinanceService:
                 "amount": float(bill.amount),
                 "category": bill.category,
                 "payer_user_id": bill.payer_user_id,
+                "deadline": bill.deadline.isoformat() if bill.deadline else None,
                 "scheduled_date": bill.scheduled_date.isoformat() if bill.scheduled_date else None,
                 "created_at": bill.created_at.isoformat(),
+                "_sort_key": scheduled_sort_key
             })
 
         for payment in payments:
@@ -34,9 +56,14 @@ class FinanceService:
                 "payer_user_id": payment.payer_user_id,
                 "payee_user_id": payment.payee_user_id,
                 "created_at": payment.created_at.isoformat(),
+                "_sort_key": payment.created_at
             })
 
-        merged.sort(key=lambda x: x["created_at"], reverse=True)
+        merged.sort(key=lambda x: x["_sort_key"], reverse=True)
+
+        for item in merged:
+            item.pop("_sort_key", None)
+
         return merged
 
     @staticmethod

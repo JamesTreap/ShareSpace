@@ -697,6 +697,46 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "calendar",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"date\": \"2024-12-10\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/calendar/7",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"calendar",
+						"7"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"auth": {
