@@ -27,10 +27,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.sharespace.core.domain.model.Room
 import com.example.sharespace.core.ui.theme.AlertRed
 import com.example.sharespace.core.ui.theme.AquaAccent
 import com.example.sharespace.core.ui.theme.TextSecondary
-import com.example.sharespace.ui.screens.profile.Room
 import com.example.sharespace.ui.screens.profile.formatCurrency
 
 @Composable
@@ -63,10 +63,10 @@ fun RoomCard(
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.Black,
                 )
-                val memberLabel = if (room.members == 1) "member" else "members"
-                val dueColor = if (room.due > 0f) AlertRed else TextSecondary
+                val memberLabel = if (room.members.size == 1) "member" else "members"
+                val dueColor = if (room.balanceDue > 0f) AlertRed else TextSecondary
                 Text(
-                    text = "${room.members} $memberLabel | ${formatCurrency(room.due)} due",
+                    text = "${room.members.size} $memberLabel | ${formatCurrency(room.balanceDue)} due",
                     style = MaterialTheme.typography.bodyMedium,
                     color = dueColor
                 )
@@ -111,7 +111,6 @@ fun RoomCard(
                         color = Color.White,
                     )
                 }
-
             }
         }
     }

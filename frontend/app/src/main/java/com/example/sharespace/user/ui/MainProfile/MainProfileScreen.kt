@@ -39,16 +39,6 @@ import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
-
-data class Room(
-    val id: String,
-    val name: String,
-    val members: Int,
-    val due: Float,
-    val notifications: Int = 0,
-    val photoUrl: String? = null,
-)
-
 fun formatCurrency(amount: Float): String {
     return NumberFormat.getCurrencyInstance(Locale.getDefault()).format(amount)
 }
@@ -103,7 +93,7 @@ fun MainProfileScreen(
                     room = room, showAction = false,
                     acceptInvite = { viewModel.acceptInvite() },
                     declineInvite = { viewModel.declineInvite() },
-                    room.notifications,
+                    room.alerts,
                     navigateToRoom = { onNavigateToRoom() })
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -119,16 +109,16 @@ fun MainProfileScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            invites.forEach { room ->
-                RoomCard(
-                    room = room, showAction = true,
-                    acceptInvite = { viewModel.acceptInvite() },
-                    declineInvite = { viewModel.declineInvite() },
-                    room.notifications,
-                    navigateToRoom = onNavigateToRoom
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+//            invites.forEach { room ->
+//                RoomCard(
+//                    room = room, showAction = true,
+//                    acceptInvite = { viewModel.acceptInvite() },
+//                    declineInvite = { viewModel.declineInvite() },
+//                    room.notifications,
+//                    navigateToRoom = onNavigateToRoom
+//                )
+//                Spacer(modifier = Modifier.height(8.dp))
+//            }
             Button(
                 onClick = {
                     coroutineScope.launch {
