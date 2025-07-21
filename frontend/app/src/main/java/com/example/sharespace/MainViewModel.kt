@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.sharespace.ShareSpaceScreens
 import com.example.sharespace.core.data.repository.UserSessionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,7 +36,7 @@ class MainViewModel(
             val token = userSessionRepository.userTokenFlow.first() // Get the first emitted value
 
             val destinationRoute = if (!token.isNullOrEmpty()) {
-                ShareSpaceScreens.HomeOverview.name
+                ShareSpaceScreens.MainProfile.name
             } else {
                 ShareSpaceScreens.Login.name
             }

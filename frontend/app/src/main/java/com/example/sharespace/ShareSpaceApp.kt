@@ -2,15 +2,11 @@ package com.example.sharespace
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.sharespace.core.data.local.TokenStorage
 import com.example.sharespace.ui.screens.auth.LoginScreen
 import com.example.sharespace.ui.screens.finance.AddBillScreen
 import com.example.sharespace.ui.screens.finance.BillsListScreen
@@ -59,19 +55,6 @@ fun ShareSpaceApp(
         startDestination = startDestination,
         modifier = Modifier,
     ) {
-//        composable("entry") {
-//            EntryPoint(navController)
-//        }
-        composable(route = ShareSpaceScreens.Login.name) {
-            LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate(ShareSpaceScreens.HomeOverview.name) {
-                        popUpTo("entry") { inclusive = true }
-                    }
-                }
-            )
-        }
-
         composable(route = ShareSpaceScreens.HomeOverview.name) {
             HomeOverviewScreen(
                 onUserProfileClick = { navController.navigate(ShareSpaceScreens.MainProfile.name) },
@@ -89,9 +72,9 @@ fun ShareSpaceApp(
             )
         }
         composable(route = ShareSpaceScreens.Login.name) {
-             LoginScreen(
-                 onLoginSuccess = { navController.navigate(ShareSpaceScreens.MainProfile.name) }
-             )
+            LoginScreen(
+                onLoginSuccess = { navController.navigate(ShareSpaceScreens.MainProfile.name) }
+            )
         }
         composable(route = ShareSpaceScreens.MainProfile.name) {
             MainProfileScreen(
@@ -102,8 +85,9 @@ fun ShareSpaceApp(
                 },
                 onLogOut = {
                     navController.navigate(ShareSpaceScreens.Login.name) {
-                    popUpTo(ShareSpaceScreens.MainProfile.name) { inclusive = true }
-                }},
+                        popUpTo(ShareSpaceScreens.MainProfile.name) { inclusive = true }
+                    }
+                },
                 onViewProfileClick = {
                     navController.navigate(ShareSpaceScreens.ViewProfile.name)
                 },
@@ -121,7 +105,8 @@ fun ShareSpaceApp(
                 onLogout = {
                     navController.navigate(ShareSpaceScreens.Login.name) {
                         popUpTo(ShareSpaceScreens.MainProfile.name) { inclusive = true }
-                }},
+                    }
+                },
             )
         }
         composable(route = ShareSpaceScreens.RoomSummary.name) {
@@ -195,28 +180,3 @@ fun ShareSpaceApp(
         }
     }
 }
-
-//@Composable
-//fun EntryPoint(navController: NavHostController) {
-//    val context = LocalContext.current
-//
-//    // Load token asynchronously
-//    val tokenState = produceState<String?>(initialValue = null) {
-//        value = TokenStorage.getToken(context)
-//    }
-//
-//    val token = tokenState.value
-//
-//
-//    LaunchedEffect(token) {
-//        if (token != null && token.isNotEmpty()) {
-//            navController.navigate(ShareSpaceScreens.EditProfile.name) {
-//                popUpTo("entry") { inclusive = true }
-//            }
-//        } else {
-//            navController.navigate(ShareSpaceScreens.Login.name) {
-//                popUpTo("entry") { inclusive = true }
-//            }
-//        }
-//    }
-//}
