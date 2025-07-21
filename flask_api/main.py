@@ -3,6 +3,10 @@ from dotenv import dotenv_values
 from entities import db
 from importlib import import_module
 from sqlalchemy.orm import configure_mappers
+import firebase_admin
+from firebase_admin import credentials
+from apscheduler.schedulers.background import BackgroundScheduler
+from jobs.scheduled_tasks import send_upcoming_deadline_notifications
 
 def create_app() -> Flask:
     app = Flask(__name__)
@@ -54,7 +58,21 @@ def create_app() -> Flask:
 
     return app
 
+def init_firebase():
+    cred = credentials.Certificate("sharespace-firebase.json")
+    firebase_admin.initialize_app(cred)
+
 app = create_app()
+init_firebase()
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(
+    lambda: send_upcoming_deadline_notifications(app),
+    'interval',
+    minutes=15
+)
+scheduler.start()
+
 
 if __name__ == "__main__":
     app.run(debug=True)

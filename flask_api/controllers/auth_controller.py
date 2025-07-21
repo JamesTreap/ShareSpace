@@ -1,8 +1,11 @@
 import jwt
-from flask import Blueprint, request, jsonify, current_app, g
+from flask import Blueprint, jsonify, abort, g, request
 from werkzeug.security import generate_password_hash, check_password_hash
 from repository.user_repo import UserRepo
 from services.auth_service import AuthService
+from services.user_service import UserService
+from entities.user import User
+from utils import token_required
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -43,4 +46,20 @@ def login():
 
     return jsonify({'token': token}), 200
 
+@auth_bp.route('/register-device', methods=['POST'])
+@token_required
+def register_device():
+    user: User = g.current_user
+    if not user:
+        abort(404, description="User not found")
+    data = request.get_json(silent=True) or {}
+    device_token = data.get('device_token')
+    if not device_token:
+        return jsonify({'error': 'Missing device_token'}), 400
+
+    success = AuthService.save_device_token(user.id, device_token)
+    if success:
+        return jsonify({'message': 'Device token registered successfully'}), 200
+    else:
+        return jsonify({'error': 'Failed to save device token'}), 500
 

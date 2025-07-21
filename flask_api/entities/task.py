@@ -1,8 +1,9 @@
 # flask_api/entities/task.py
-from datetime import date
+from datetime import datetime
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from . import db, TimestampMixin
 from typing import Optional, List, Dict
+from sqlalchemy import Boolean
 
 class Task(db.Model, TimestampMixin):
     __tablename__ = "tasks"
@@ -13,9 +14,10 @@ class Task(db.Model, TimestampMixin):
     description: Mapped[Optional[str]] = mapped_column(db.Text)
     frequency: Mapped[Optional[str]] = mapped_column(db.String(50))
     repeat: Mapped[Optional[int]] = mapped_column(db.Integer, default=1)
-    deadline: Mapped[Optional[date]] = mapped_column(db.Date)
+    deadline: Mapped[Optional[datetime]] = mapped_column(db.Date)
 
-    scheduled_date: Mapped[Optional[date]] = mapped_column(db.Date)
+    scheduled_date: Mapped[Optional[datetime]] = mapped_column(db.Date)
+    notified: Mapped[bool] = mapped_column(Boolean, default=False)
 
     room  = relationship("Room", back_populates="tasks")
     users = relationship("TaskUser", back_populates="task")

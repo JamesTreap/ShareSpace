@@ -6,6 +6,7 @@ from typing import Optional, List
 
 from .finance import Payment
 from .room import RoomInvitation
+from .device_token import DeviceToken
 
 
 class User(db.Model, TimestampMixin):
@@ -50,6 +51,10 @@ class User(db.Model, TimestampMixin):
         "Payment",
         back_populates="payee",
         foreign_keys=[Payment.payee_user_id],
+    )
+
+    device_tokens: Mapped[List["DeviceToken"]] = relationship(
+        "DeviceToken", back_populates="user", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:
