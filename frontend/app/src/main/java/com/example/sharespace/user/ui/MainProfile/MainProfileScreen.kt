@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,6 +64,10 @@ fun MainProfileScreen(
 //        value = TokenStorage.getToken(context)
 //    }
 
+    LaunchedEffect(Unit) {
+        viewModel.onProfileScreenEntered()
+    }
+
     viewModel.loadData()
 
     Scaffold(
@@ -94,7 +99,10 @@ fun MainProfileScreen(
                     acceptInvite = { viewModel.acceptInvite() },
                     declineInvite = { viewModel.declineInvite() },
                     room.alerts,
-                    navigateToRoom = { onNavigateToRoom() })
+                    navigateToRoom = {
+                        viewModel.setActiveRoom(room.id)
+                        onNavigateToRoom()
+                    })
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
