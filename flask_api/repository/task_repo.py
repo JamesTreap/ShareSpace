@@ -16,6 +16,15 @@ class TaskRepo:
         return db.session.scalars(stmt).all()
 
     @staticmethod
+    def get_uncompleted_task_users(task_id: int) -> List[TaskUser]:
+        stmt = (
+            select(TaskUser)
+                .where(TaskUser.task_id == task_id)
+                .where(TaskUser.status != 'complete' if TaskUser.status else True)
+        )
+        return db.session.scalars(stmt).all()
+
+    @staticmethod
     def get_tasks_for_user(user_id: int) -> List[Task]:
         stmt = (
             select(Task)
@@ -79,5 +88,25 @@ class TaskRepo:
                 task.description = description
             if deadline is not None:
                 task.deadline = deadline
+            db.session.commit()
+        return task
+
+    @staticmethod
+    def get_upcoming_tasks(date: datetime) -> List[Task]:
+        stmt = (
+            select(Task)
+                .where(
+                Task.deadline <= date,
+                Task.deadline >= datetime.now(),
+                Task.notified == False
+            )
+                .order_by(Task.deadline)
+        )
+        return db.session.scalars(stmt).all()
+
+    def set_task_notified(task_id: int):
+        task = Task.query.get(task_id)
+        if task:
+            task.notified = True
             db.session.commit()
         return task

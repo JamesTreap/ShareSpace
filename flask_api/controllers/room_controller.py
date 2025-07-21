@@ -1,6 +1,6 @@
 # flask_api/controllers/rooms.py
 from __future__ import annotations
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 from flask import Blueprint, abort, g, jsonify, request
 
@@ -52,7 +52,7 @@ def get_user_rooms_and_invitations():
     
     joined_rooms_data = room_schema.dump(joined_rooms, many=True)
     invitations_data = invs_schema.dump(pending_invitations, many=True)
-    alert_window = date.today() + timedelta(days=1)
+    alert_window = datetime.utcnow() + timedelta(days=1)
    
     for i, room_data in enumerate(joined_rooms_data):
         room = joined_rooms[i]

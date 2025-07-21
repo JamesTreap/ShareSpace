@@ -6,7 +6,7 @@ from sqlalchemy import select
 from werkzeug.security import generate_password_hash
 
 from entities import db
-from entities.user import User
+from entities.user import User, DeviceToken
 
 
 class UserRepo:
@@ -74,3 +74,17 @@ class UserRepo:
         user.profile_picture_url = profile_picture_url
         db.session.commit()
         return user
+
+    @staticmethod
+    def get_device_token(user_id, token):
+
+        return DeviceToken.query.filter_by(user_id=user_id).first()
+
+
+
+    @staticmethod
+    def create_device_token(user_id, token):
+        new_token = DeviceToken(user_id=user_id, token=token)
+        db.session.add(new_token)
+        db.session.commit()
+        return new_token

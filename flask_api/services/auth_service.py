@@ -40,3 +40,10 @@ class AuthService:
             algorithm="HS256",
         )
         return token
+
+    @staticmethod
+    def save_device_token(user_id: int, device_token: str):
+        device_token = UserRepo.get_device_token(user_id, device_token)
+        if not device_token:
+            UserRepo.create_device_token(user_id, device_token)
+        return True
