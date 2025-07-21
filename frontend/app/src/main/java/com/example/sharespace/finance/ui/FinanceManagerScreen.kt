@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.example.sharespace.core.ui.components.NavigationHeader
-import com.example.sharespace.ui.screens.room.SectionHeader
+import com.example.sharespace.core.ui.components.SectionHeader
 
 @Composable
 fun FinanceManagerScreen(

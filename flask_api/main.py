@@ -12,8 +12,7 @@ def create_app() -> Flask:
     app = Flask(__name__)
 
     # ── Config ─────────────────────────────────────────
-    from pathlib import Path
-    cfg = dotenv_values(Path(__file__).parent / "env.potential")
+    cfg = dotenv_values(".env.potential")
     
     # Determine which database to use
     use_local = cfg.get("USE_LOCAL_DB", "false").lower() == "true"
