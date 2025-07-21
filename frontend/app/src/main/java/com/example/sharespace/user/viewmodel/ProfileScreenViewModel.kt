@@ -1,5 +1,6 @@
 package com.example.sharespace.user.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -22,8 +23,7 @@ import kotlinx.coroutines.launch
 class ProfileScreenViewModel(
     private val userSessionRepository: UserSessionRepository,
     private val profileRepository: ProfileRepository,
-
-    ) : ViewModel() {
+) : ViewModel() {
     // backing state
     private val _user = mutableStateOf<User?>(null)
     private val _rooms = MutableStateFlow<List<Room>>(emptyList())
@@ -37,22 +37,39 @@ class ProfileScreenViewModel(
 
     fun acceptInvite() {
 
+//        Log.d(TAG, "acceptInvite called (Not yet implemented)")
+
     }
 
     fun declineInvite() {
 
+//        Log.d(TAG, "declineInvite called (Not yet implemented)")
+    }
+
+    fun onProfileScreenEntered() {
+        viewModelScope.launch {
+            userSessionRepository.saveActiveRoomId(null)
+//            Log.d(TAG, "Active room ID cleared on profile screen entry.")
+        }
+        loadData()
+    }
+
+    fun setActiveRoom(roomId: Int) {
+        viewModelScope.launch {
+            userSessionRepository.saveActiveRoomId(roomId)
+//            Log.d(TAG, "Active room ID set to: $roomId")
+        }
     }
 
 
     fun loadData() {
-//        println("Loading data with token: $token")
-//        println("hfudsihujksalhfshfjlsdhk")
         viewModelScope.launch {
             try {
                 val token = userSessionRepository.userTokenFlow.first()
                 if (token == null) {
                     return@launch
                 }
+                // Log.d(TAG, "Loading data with token: $token")
                 val apiUser = profileRepository.getUser(token)
                 _user.value = User(
                     id = apiUser.id,
@@ -69,8 +86,7 @@ class ProfileScreenViewModel(
                 }
 
             } catch (e: Exception) {
-                e.printStackTrace()
-                println("Error loading profile data: ${e.message}")
+                Log.e(TAG, "Error loading profile data", e)
             }
         }
     }
@@ -87,5 +103,6 @@ class ProfileScreenViewModel(
                 )
             }
         }
+        private const val TAG = "ProfileScreenViewModel"
     }
 }
