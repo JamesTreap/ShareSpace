@@ -44,21 +44,18 @@ Midterm week. Project put on hold.
 
 ## Jul 6–12
 
-- Anshul:
-- Beck:
-- Francesco:
-- Haoyan:
-- James
-- Majid:
+- Francesco: 14h - Add user login support & JWT token handling (8h). Add toggle between supabase db & local for dev purposes without needing SQLite installed (6h)
+- Haoyan: 3h (MR reviews)
+- James: 4h (D4 writeup)
+- Majid: 12h (POST & Patch APIs)
 
 ## Jul 13–19
 
-- Anshul:
-- Beck:
-- Francesco:
-- Haoyan:
-- James
-- Majid:
+- Beck: 5.5h Update task screen to use API connection rather than hardcoded data
+- Francesco: 13h - Added fonts from Figma (4h). Theme updates for consistency (2h). Debugging & review changes w/ Haoyan (3h)
+- Haoyan: 20h - Project structure reorganization (6h). Datastore to store the active room (7h). Add splashscreen & updated token management (6h). Add startup logo (1h). Debugging & review changes w/ Francesco (3h)
+- James: 16h - Polished theme tests + Hi-Fi Figma (12h). Assign tasks on JIRA (1h). D5 writeup (3h). Create styled components (2h)
+- Majid: 4.5h Investigating push notifications from backend w/ firebase
 
 ## Jul 20–26
 
@@ -66,14 +63,5 @@ Midterm week. Project put on hold.
 - Beck:
 - Francesco:
 - Haoyan:
-- James
-- Majid:
-
-## Jul 27–Aug 2
-
-- Anshul:
-- Beck:
-- Francesco:
-- Haoyan:
-- James
+- James:
 - Majid:
