@@ -458,6 +458,44 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "update_room",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{room_name}}\",\r\n    \"address\": \"adsfadf\",\r\n    \"description\": \"asdfadd\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/rooms/update/7",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"update",
+								"7"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
