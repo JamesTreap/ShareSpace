@@ -44,10 +44,19 @@ class RoomService:
         return room
 
     @staticmethod
-    def create_room_for_user(name: str, picture_url: Optional[str], user: User) -> Room:
-        room = RoomRepo.create_room(name, picture_url)
+    def create_room_for_user(name: str, address: str, description: str, picture_url: Optional[str], user: User) -> Room:
+        room = RoomRepo.create_room(name, address, description, picture_url)
         RoomRepo.add_member(room.id, user.id)
         return room
+
+    @staticmethod
+    def update_room(
+        room_id: int, name: str, address: str, description: str, picture_url: Optional[str] = None
+    ) -> Room:
+        room = RoomRepo.get_room(room_id)
+        if room is None:
+            abort(404, "Room not found")
+        return RoomRepo.update_room(room_id, name, address, description, picture_url)
 
     @staticmethod
     def invite_user_to_room(room_id: int, inviter: User, invitee_username: str) -> RoomInvitation:

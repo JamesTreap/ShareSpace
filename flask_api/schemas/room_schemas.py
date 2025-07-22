@@ -34,5 +34,7 @@ class RoomSchema(SQLAlchemySchema):
 
     id = auto_field()
     name = auto_field()
+    address = auto_field()
+    description = auto_field()
     picture_url = auto_field()
     members = Nested(RoomMemberSchema, many=True, dump_only=True)

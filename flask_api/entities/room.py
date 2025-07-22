@@ -9,6 +9,8 @@ class Room(db.Model, TimestampMixin):
     id: Mapped[int]   = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(db.String(100), nullable=False)
     picture_url: Mapped[Optional[str]] = mapped_column(db.Text)
+    address: Mapped[str] = mapped_column(db.String(200))
+    description: Mapped[Optional[str]] = mapped_column(db.Text)
 
     members   = relationship("RoomMember", back_populates="room")
     tasks     = relationship("Task", back_populates="room")

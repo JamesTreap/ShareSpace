@@ -9,9 +9,22 @@ from entities.user import User
 
 class RoomRepo:
     @staticmethod
-    def create_room(name: str, picture_url: Optional[str] = None) -> Room:
-        room = Room(name=name, picture_url=picture_url)
+    def create_room(name: str, address: str, description: str, picture_url: Optional[str] = None) -> Room:
+        room = Room(name=name, picture_url=picture_url, address=address, description=description)
         db.session.add(room)
+        db.session.commit()
+        return room
+
+    @staticmethod
+    def update_room(room_id: int, name: str, address: str,
+                    description: str, picture_url: Optional[str] = None) -> Room:
+        room = Room.query.get(room_id)
+
+        room.name = name
+        room.address = address
+        room.description = description
+        if picture_url:
+            room.picture_url = picture_url
         db.session.commit()
         return room
 
