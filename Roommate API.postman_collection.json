@@ -342,8 +342,11 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"packages": {},
-								"type": "text/javascript"
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -362,7 +365,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{room_name}}\"\r\n}",
+							"raw": "{\r\n    \"name\": \"{{room_name}}\",\r\n    \"address\": \"adsfadf\",\r\n    \"description\": \"asdfadd\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
