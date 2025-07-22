@@ -145,6 +145,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# Firebase
+sharespace-firebase.json
+
 # Spyder project settings
 .spyderproject
 .spyproject

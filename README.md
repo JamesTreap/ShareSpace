@@ -10,6 +10,8 @@ CS 446 App Repo
 4. Run `python -m venv venv` to create the virtual environment
 5. Run `venv\Scripts\activate`
 6. Run `pip install -r requirements.txt`
-7. Run `python main.py`
+7. Add `sharespace-firebase.json` to flask_api folder
+8. Add `.env.potential` to flask_api folder
+9. Run `python main.py`
 
 Once setup has been completed, you only need to run steps 3, 4, and 7.
