@@ -13,7 +13,6 @@ def create_app() -> Flask:
 
     # ── Config ─────────────────────────────────────────
     cfg = dotenv_values(".env.potential")
-    
     # Determine which database to use
     use_local = cfg.get("USE_LOCAL_DB", "false").lower() == "true"
     

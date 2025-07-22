@@ -14,9 +14,9 @@ class Task(db.Model, TimestampMixin):
     description: Mapped[Optional[str]] = mapped_column(db.Text)
     frequency: Mapped[Optional[str]] = mapped_column(db.String(50))
     repeat: Mapped[Optional[int]] = mapped_column(db.Integer, default=1)
-    deadline: Mapped[Optional[datetime]] = mapped_column(db.Date)
+    deadline: Mapped[Optional[datetime]] = mapped_column(db.DateTime)
 
-    scheduled_date: Mapped[Optional[datetime]] = mapped_column(db.Date)
+    scheduled_date: Mapped[Optional[datetime]] = mapped_column(db.DateTime)
     notified: Mapped[bool] = mapped_column(Boolean, default=False)
 
     room  = relationship("Room", back_populates="tasks")
