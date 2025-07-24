@@ -177,3 +177,16 @@ class TaskService:
                     TaskRepo.create_task_user(user_id, task.id, None)
 
         return tasks
+
+    @staticmethod
+    def delete_task(user_id: int, task_id: int) -> bool:
+        if not TaskService.is_user_in_room_of_task(user_id, task_id):
+            abort(403, "User does not have permission to delete this task.")
+        return TaskRepo.delete_task(task_id)
+
+    @staticmethod
+    def is_user_in_room_of_task(user_id: int, task_id: int) -> bool:
+        room_id = TaskRepo.get_task_by_id(task_id).room_id
+        if room_id is None:
+            return False
+        return RoomService.validate_room_user(user_id, room_id)

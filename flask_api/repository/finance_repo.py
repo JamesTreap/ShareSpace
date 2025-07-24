@@ -8,6 +8,15 @@ from datetime import datetime, date
 
 
 class FinanceRepo:
+
+    @staticmethod
+    def find_bill_by_id(bill_id: int) -> Optional[Bill]:
+        return db.session.get(Bill, bill_id)
+
+    @staticmethod
+    def find_payment_by_id(payment_id: int) -> Optional[Payment]:
+        return db.session.get(Payment, payment_id)
+
     @staticmethod
     def get_bills_for_room(room_id: int) -> List[Bill]:
         stmt = (
@@ -77,3 +86,19 @@ class FinanceRepo:
         db.session.add(payment)
         db.session.commit()
         return payment
+
+    @staticmethod
+    def delete_bill(bill_id: int) -> bool:
+        bill = db.session.get(Bill, bill_id)
+        if not bill:
+            return False
+        db.session.delete(bill)
+        db.session.commit()
+
+    @staticmethod
+    def delete_payment(payment_id: int) -> bool:
+        payment = db.session.get(Payment, payment_id)
+        if not payment:
+            return False
+        db.session.delete(payment)
+        db.session.commit()
