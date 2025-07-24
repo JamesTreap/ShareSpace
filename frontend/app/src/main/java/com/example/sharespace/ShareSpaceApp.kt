@@ -7,7 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.sharespace.room.ui.RoomSummaryScreen
+import com.example.sharespace.room.ui.roomSummary.RoomSummaryScreen
 import com.example.sharespace.ui.screens.auth.LoginScreen
 import com.example.sharespace.ui.screens.finance.AddBillScreen
 import com.example.sharespace.ui.screens.finance.BillsListScreen

@@ -1,4 +1,4 @@
-package com.example.sharespace.room.ui
+package com.example.sharespace.room.viewmodel
 
 import android.util.Log
 import androidx.compose.runtime.getValue
