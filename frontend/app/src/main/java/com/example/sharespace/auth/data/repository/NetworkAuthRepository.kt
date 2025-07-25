@@ -1,10 +1,10 @@
 package com.example.sharespace.auth.data.repository
 
 import com.example.sharespace.core.data.remote.ApiService
-import com.example.sharespace.core.data.repository.dto.ApiCreateAccountRequest
-import com.example.sharespace.core.data.repository.dto.ApiCreateAccountResponse
-import com.example.sharespace.core.data.repository.dto.ApiLoginRequest
-import com.example.sharespace.core.data.repository.dto.ApiLoginResponse
+import com.example.sharespace.core.data.repository.dto.auth.ApiCreateAccountRequest
+import com.example.sharespace.core.data.repository.dto.auth.ApiCreateAccountResponse
+import com.example.sharespace.core.data.repository.dto.auth.ApiLoginRequest
+import com.example.sharespace.core.data.repository.dto.auth.ApiLoginResponse
 import com.example.sharespace.data.repository.AuthRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

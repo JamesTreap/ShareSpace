@@ -1,8 +1,8 @@
 package com.example.sharespace.core.data.repository
-import com.example.sharespace.core.data.repository.dto.ApiRespondToRoomInviteResponse
-import com.example.sharespace.core.data.repository.dto.ApiRoom
-import com.example.sharespace.core.data.repository.dto.ApiRoomInvitation
-import com.example.sharespace.core.data.repository.dto.ApiUser
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRespondToRoomInviteResponse
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRoom
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomInvitation
+import com.example.sharespace.core.data.repository.dto.users.ApiUser
 
 interface RoomRepository {
 

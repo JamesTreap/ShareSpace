@@ -1,4 +1,4 @@
-package com.example.sharespace.core.data.repository.dto
+package com.example.sharespace.core.data.repository.dto.users
 
 data class ApiUser(
     val id: Int,

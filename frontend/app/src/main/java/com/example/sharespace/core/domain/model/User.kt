@@ -1,6 +1,6 @@
 package com.example.sharespace.core.domain.model
 
-import com.example.sharespace.core.data.repository.dto.ApiUser
+import com.example.sharespace.core.data.repository.dto.users.ApiUser
 
 data class User(
     val id: Int,

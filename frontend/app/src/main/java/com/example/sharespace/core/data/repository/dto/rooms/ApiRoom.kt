@@ -1,6 +1,4 @@
-package com.example.sharespace.core.data.repository.dto
-
-import com.google.gson.annotations.SerializedName
+package com.example.sharespace.core.data.repository.dto.rooms
 
 data class ApiRoom(
     val id: Int,

@@ -1,6 +1,6 @@
 package com.example.sharespace.core.domain.model
 
-import com.example.sharespace.core.data.repository.dto.ApiRoomInvitation
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomInvitation
 
 
 /**
