@@ -71,3 +71,15 @@ def update_task_details(task_id):
         "message": "Task updated successfully"
     }, 200
 
+@tasks_bp.route('/delete/<task_id>', methods=['DELETE'])
+@token_required
+def delete_task(task_id):
+    user: User = g.current_user
+    if not user:
+        abort(404, description="User not found")
+
+    TaskService.delete_task(user.id, int(task_id))
+
+    return {
+        "message": "Task deleted successfully"
+    }, 200

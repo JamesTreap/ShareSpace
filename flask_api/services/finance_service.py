@@ -206,4 +206,4 @@ class FinanceService:
         room_id = FinanceRepo.find_payment_by_id(payment_id).room_id
         if room_id is None:
             return False
-        return RoomRepo.validate_room_user(user_id, room_id)
+        return RoomService.validate_room_user(user_id, room_id)
