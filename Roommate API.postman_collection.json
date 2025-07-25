@@ -649,6 +649,25 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "delete_task",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/tasks/delete/60",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"tasks",
+								"delete",
+								"60"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -732,6 +751,46 @@
 								"finance",
 								"pay_user",
 								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_payment",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/finance/delete/payment/20",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"finance",
+								"delete",
+								"payment",
+								"20"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_bill",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/finance/delete/bill/15",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"finance",
+								"delete",
+								"bill",
+								"15"
 							]
 						}
 					},
