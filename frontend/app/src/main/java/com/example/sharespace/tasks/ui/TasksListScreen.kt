@@ -73,7 +73,7 @@ fun TasksListScreen(
     LaunchedEffect(Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val roomId = 7 // ← Replace this with actual room ID if needed
+                val roomId = 7 // ← Replace this with actual room ID
                 val token =
                     "Bearer your_token_here" // ← Replace with real token or maybe just ignore it
 
@@ -91,7 +91,7 @@ fun TasksListScreen(
                             val deadline = LocalDate.parse(task.deadline.substringBefore("T"))
                             !deadline.isAfter(today) && !deadline.isBefore(thirtyDaysAgo)
                         } catch (e: Exception) {
-                            false // Skip if parsing fails
+                            false
                         }
                     }
                     allTasks = filteredTasks
@@ -106,7 +106,7 @@ fun TasksListScreen(
 
                     //Count how many tasks each user has in total & how many they completed
                     val userTaskMap =
-                        mutableMapOf<String, Pair<Int, Int>>() // userId -> (completed, total)
+                        mutableMapOf<String, Pair<Int, Int>>()
 
                     for (task in filteredTasks) {
                         for ((userId, status) in task.statuses) {
@@ -124,7 +124,6 @@ fun TasksListScreen(
                                 userResp.body()?.let { userIdToName[id.toString()] = it.name }
                             }
                         } catch (_: Exception) {
-                            // log or ignore
                         }
                     }
                     // Now that names are available, convert summary
@@ -142,7 +141,6 @@ fun TasksListScreen(
                                 userResp.body()?.let { userIdToName[id.toString()] = it.name }
                             }
                         } catch (_: Exception) {
-                            //log or ignore
                         }
                     }
 

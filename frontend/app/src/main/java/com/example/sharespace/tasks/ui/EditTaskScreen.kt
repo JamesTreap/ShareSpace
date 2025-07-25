@@ -44,12 +44,10 @@ fun EditTaskScreen(
     var assigneeStatuses by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Load token
     LaunchedEffect(Unit) {
         token = TokenStorage.getToken(context)?.let { "Bearer $it" }
     }
 
-    // Fetch task and user info
     LaunchedEffect(taskId, token) {
         token?.let { authToken ->
             CoroutineScope(Dispatchers.IO).launch {
