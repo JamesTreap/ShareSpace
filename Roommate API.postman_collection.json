@@ -499,6 +499,25 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "leave_room",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/rooms/leave/8",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"rooms",
+								"leave",
+								"8"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},

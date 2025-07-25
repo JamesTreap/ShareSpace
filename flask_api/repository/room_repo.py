@@ -137,3 +137,12 @@ class RoomRepo:
                 .order_by(RoomInvitation.created_at.desc())
         )
         return db.session.scalars(stmt).first()
+
+    @staticmethod
+    def remove_member(user_id:int, room_id: int) -> None:
+        member = RoomMember.query.filter_by(user_id=user_id, room_id=room_id).first()
+        if member:
+            db.session.delete(member)
+            db.session.commit()
+        else:
+            raise ValueError("User is not a member of the room")
