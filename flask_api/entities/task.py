@@ -20,13 +20,19 @@ class Task(db.Model, TimestampMixin):
     notified: Mapped[bool] = mapped_column(Boolean, default=False)
 
     room  = relationship("Room", back_populates="tasks")
-    users = relationship("TaskUser", back_populates="task")
+    users = relationship(
+        "TaskUser",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
 
 class TaskUser(db.Model, TimestampMixin):
     __tablename__ = "task_users"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    task_id: Mapped[int] = mapped_column(db.ForeignKey("tasks.id"))
+    task_id: Mapped[int] = mapped_column(db.ForeignKey("tasks.id", ondelete="CASCADE"))
     user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
     status: Mapped[str] = mapped_column(
         db.Enum("todo", "in-progress", "complete", name="taskuser_status"),

@@ -90,3 +90,27 @@ def pay_user(room_id):
         "message": "Payment created successfully",
         "payment_id": payment.id
     }, 200
+
+
+@finance_bp.route('/delete/bill/<bill_id>', methods=['DELETE'])
+@token_required
+def delete_bill(bill_id):
+    user: User = g.current_user
+    if not user:
+        abort(404, description="User not found")
+
+    FinanceService.delete_bill(user.id, int(bill_id))
+
+    return {"message": "Bill deleted successfully"}, 200
+
+
+@finance_bp.route('/delete/payment/<payment_id>', methods=['DELETE'])
+@token_required
+def delete_payment(payment_id):
+    user: User = g.current_user
+    if not user:
+        abort(404, description="User not found")
+
+    FinanceService.delete_payment(user.id, int(payment_id))
+
+    return {"message": "Payment deleted successfully"}, 200

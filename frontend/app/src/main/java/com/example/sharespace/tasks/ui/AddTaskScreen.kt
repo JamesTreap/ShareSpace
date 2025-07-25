@@ -1,18 +1,14 @@
 package com.example.sharespace.ui.screens.tasks
 
 import android.util.Log
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -40,9 +36,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.sharespace.core.data.local.TokenStorage
 import com.example.sharespace.core.data.remote.ApiClient
-import com.example.sharespace.core.data.repository.dto.tasks.ApiAssignee
-import com.example.sharespace.core.data.repository.dto.tasks.ApiCreateTaskRequest
-import com.example.sharespace.core.data.repository.dto.users.ApiUser
+import com.example.sharespace.core.data.remote.Assignee
+import com.example.sharespace.core.data.remote.CreateTaskRequest
+import com.example.sharespace.core.data.repository.dto.ApiUser
+import com.example.sharespace.core.ui.components.Avatar
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,7 +53,8 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(
-    roomId: Int = 7, onNavigateBack: (() -> Unit)? = null
+    roomId: Int = 7,
+    onNavigateBack: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     var token by remember { mutableStateOf<String?>(null) }
@@ -70,11 +68,10 @@ fun AddTaskScreen(
     var selectedUserIds by remember { mutableStateOf(setOf<Int>()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Load token
     LaunchedEffect(Unit) {
         token = TokenStorage.getToken(context)?.let { "Bearer $it" }
     }
-    // Fetch members after token is ready
+
     LaunchedEffect(token) {
         token?.let { authToken ->
             CoroutineScope(Dispatchers.IO).launch {
@@ -102,12 +99,16 @@ fun AddTaskScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Add Task") }, navigationIcon = {
-                IconButton(onClick = { onNavigateBack?.invoke() }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            TopAppBar(
+                title = { Text("Add Task") },
+                navigationIcon = {
+                    IconButton(onClick = { onNavigateBack?.invoke() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
                 }
-            })
-        }) { innerPadding ->
+            )
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -176,21 +177,23 @@ fun AddTaskScreen(
                         .fillMaxWidth()
                         .padding(vertical = 6.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(Color.LightGray, CircleShape)
+                    Avatar(
+                        photoUrl = user.profilePictureUrl,
+                        contentDescription = "${user.name}'s avatar",
+                        size = 40.dp
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(user.name, modifier = Modifier.weight(1f))
                     Checkbox(
-                        checked = selectedUserIds.contains(user.id), onCheckedChange = {
+                        checked = selectedUserIds.contains(user.id),
+                        onCheckedChange = {
                             selectedUserIds = if (it) {
                                 selectedUserIds + user.id
                             } else {
                                 selectedUserIds - user.id
                             }
-                        })
+                        }
+                    )
                 }
             }
 
@@ -213,11 +216,11 @@ fun AddTaskScreen(
                             val deadline = parsedDate.toString()
                             val dueTime = parsedTime.toString()
 
-                            val request = ApiCreateTaskRequest(
+                            val request = CreateTaskRequest(
                                 title = title,
                                 date = "${deadline}T$dueTime",
                                 description = description,
-                                assignees = selectedUserIds.map { ApiAssignee(it.toString(), "todo") },
+                                assignees = selectedUserIds.map { Assignee(it, "todo") },
                                 frequency = occurs,
                                 repeat = repeats
                             )
@@ -227,7 +230,9 @@ fun AddTaskScreen(
 
 
                             val res = ApiClient.apiService.createTask(
-                                roomId, request = request, token = authToken
+                                roomId,
+                                request = request,
+                                token = authToken
                             )
                             if (res.isSuccessful) {
                                 withContext(Dispatchers.Main) {

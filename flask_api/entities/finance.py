@@ -20,7 +20,7 @@ class Bill(db.Model, TimestampMixin):
     status: Mapped[str] = mapped_column(
         db.Enum("waiting", "created", name="bill_status"), default="waiting"
     )
-    scheduled_date = mapped_column(db.Date)
+    scheduled_date: Mapped[Optional[datetime]] = mapped_column(db.DateTime)
 
     room  = relationship("Room", back_populates="bills")
     payer = relationship("User", back_populates="bills_paid")
@@ -50,8 +50,6 @@ class FinanceSummary(db.Model):
     user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
     owes:  Mapped[dict] = mapped_column(JSON)
     debts: Mapped[dict] = mapped_column(JSON)
-    updated_at = mapped_column(db.DateTime, default=datetime.utcnow,
-                               onupdate=datetime.utcnow)
 
     __table_args__ = (
         db.UniqueConstraint("room_id", "user_id", name="uniq_room_user"),

@@ -102,3 +102,12 @@ class RoomService:
         if not user:
             return False
         return any(room_member.room_id == room_id for room_member in user.rooms)
+
+    @staticmethod
+    def leave_room(user_id: int, room_id: int) -> bool:
+        if not RoomService.validate_room_user(user_id, room_id):
+            abort(403, "You are not a member of this room")
+
+        RoomRepo.remove_member(room_id, user_id)
+
+        return True

@@ -3,11 +3,20 @@ from sqlalchemy.orm import joinedload
 from entities.finance import Bill, Payment
 from entities import db
 from typing import List, Optional
-from datetime import datetime, date
+from datetime import datetime
 
 
 
 class FinanceRepo:
+
+    @staticmethod
+    def find_bill_by_id(bill_id: int) -> Optional[Bill]:
+        return db.session.get(Bill, bill_id)
+
+    @staticmethod
+    def find_payment_by_id(payment_id: int) -> Optional[Payment]:
+        return db.session.get(Payment, payment_id)
+
     @staticmethod
     def get_bills_for_room(room_id: int) -> List[Bill]:
         stmt = (
@@ -32,7 +41,7 @@ class FinanceRepo:
         return db.session.scalars(stmt).all()
 
     @staticmethod
-    def get_bills_for_room_by_date(room_id: int, target_date: date) -> List[Bill]:
+    def get_bills_for_room_by_date(room_id: int, target_date: datetime) -> List[Bill]:
         stmt = (
             select(Bill)
                 .where(
@@ -77,3 +86,19 @@ class FinanceRepo:
         db.session.add(payment)
         db.session.commit()
         return payment
+
+    @staticmethod
+    def delete_bill(bill_id: int) -> bool:
+        bill = db.session.get(Bill, bill_id)
+        if not bill:
+            return False
+        db.session.delete(bill)
+        db.session.commit()
+
+    @staticmethod
+    def delete_payment(payment_id: int) -> bool:
+        payment = db.session.get(Payment, payment_id)
+        if not payment:
+            return False
+        db.session.delete(payment)
+        db.session.commit()

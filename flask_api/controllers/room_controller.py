@@ -86,6 +86,14 @@ def get_roommates(room_id: int):
     mates = user_public_schema.dump([m.user for m in room.members])
     return jsonify({"roommates": mates}), 200
 
+@rooms_bp.route("/leave/<int:room_id>", methods=["POST"])
+@token_required
+def leave_room(room_id: int):
+    user: User = g.current_user
+
+    RoomService.leave_room(room_id, user.id)
+
+    return jsonify({"message": "Successfully left the room"}), 200
 
 @rooms_bp.route("/<int:room_id>", methods=["GET"])
 @token_required

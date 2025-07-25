@@ -119,6 +119,7 @@ class TaskRepo:
         )
         return db.session.scalars(stmt).all()
 
+    @staticmethod
     def set_task_notified(task_id: int):
         task = Task.query.get(task_id)
         if task:
@@ -126,6 +127,7 @@ class TaskRepo:
             db.session.commit()
         return task
 
+    @staticmethod
     def get_tasks_for_date(target_date, now):
         return (
             db.session.query(Task)
@@ -136,3 +138,13 @@ class TaskRepo:
             )
                 .all()
         )
+
+    @staticmethod
+    def delete_task(task_id: int):
+        task = Task.query.get(task_id)
+        if task:
+            db.session.delete(task)
+            db.session.commit()
+            return True
+        return False
+

@@ -1,7 +1,8 @@
 from repository.finance_repo import FinanceRepo
+from repository.room_repo import RoomRepo
 from typing import List, Optional
 from flask import abort
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from entities.finance import Bill
 from services.room_service import RoomService
 
@@ -9,7 +10,7 @@ from services.room_service import RoomService
 class FinanceService:
 
     @staticmethod
-    def get_room_bills_by_date(room_id: int, target_date: date) -> List[dict]:
+    def get_room_bills_by_date(room_id: int, target_date: datetime) -> List[dict]:
         bills = FinanceRepo.get_bills_for_room_by_date(room_id, target_date)
         result = []
         for bill in bills:
@@ -42,7 +43,6 @@ class FinanceService:
                 "amount": float(bill.amount),
                 "category": bill.category,
                 "payer_user_id": bill.payer_user_id,
-                "deadline": bill.deadline.isoformat() if bill.deadline else None,
                 "scheduled_date": bill.scheduled_date.isoformat() if bill.scheduled_date else None,
                 "created_at": bill.created_at.isoformat(),
                 "_sort_key": scheduled_sort_key
@@ -180,3 +180,29 @@ class FinanceService:
         )
 
         return payment
+
+    @staticmethod
+    def delete_bill(user_id: int, bill_id: int):
+        if not FinanceService.is_user_in_room_of_bill(user_id, bill_id):
+            abort(403, "User does not belong to the room.")
+        FinanceRepo.delete_bill(bill_id)
+
+    @staticmethod
+    def delete_payment(user_id: int, payment_id: int):
+        if not FinanceService.is_user_in_room_of_payment(user_id, payment_id):
+            abort(403, "User does not belong to the room.")
+        FinanceRepo.delete_payment(payment_id)
+
+    @staticmethod
+    def is_user_in_room_of_bill(user_id: int, bill_id: int) -> bool:
+        room_id = FinanceRepo.find_bill_by_id(bill_id).room_id
+        if room_id is None:
+            return False
+        return RoomService.validate_room_user(user_id, room_id)
+
+    @staticmethod
+    def is_user_in_room_of_payment(user_id: int, payment_id: int) -> bool:
+        room_id = FinanceRepo.find_payment_by_id(payment_id).room_id
+        if room_id is None:
+            return False
+        return RoomService.validate_room_user(user_id, room_id)
