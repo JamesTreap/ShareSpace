@@ -2,7 +2,7 @@ from repository.finance_repo import FinanceRepo
 from repository.room_repo import RoomRepo
 from typing import List, Optional
 from flask import abort
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from entities.finance import Bill
 from services.room_service import RoomService
 
@@ -10,7 +10,7 @@ from services.room_service import RoomService
 class FinanceService:
 
     @staticmethod
-    def get_room_bills_by_date(room_id: int, target_date: date) -> List[dict]:
+    def get_room_bills_by_date(room_id: int, target_date: datetime) -> List[dict]:
         bills = FinanceRepo.get_bills_for_room_by_date(room_id, target_date)
         result = []
         for bill in bills:
@@ -43,7 +43,6 @@ class FinanceService:
                 "amount": float(bill.amount),
                 "category": bill.category,
                 "payer_user_id": bill.payer_user_id,
-                "deadline": bill.deadline.isoformat() if bill.deadline else None,
                 "scheduled_date": bill.scheduled_date.isoformat() if bill.scheduled_date else None,
                 "created_at": bill.created_at.isoformat(),
                 "_sort_key": scheduled_sort_key

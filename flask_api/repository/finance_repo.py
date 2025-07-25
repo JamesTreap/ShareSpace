@@ -3,7 +3,7 @@ from sqlalchemy.orm import joinedload
 from entities.finance import Bill, Payment
 from entities import db
 from typing import List, Optional
-from datetime import datetime, date
+from datetime import datetime
 
 
 
@@ -41,7 +41,7 @@ class FinanceRepo:
         return db.session.scalars(stmt).all()
 
     @staticmethod
-    def get_bills_for_room_by_date(room_id: int, target_date: date) -> List[Bill]:
+    def get_bills_for_room_by_date(room_id: int, target_date: datetime) -> List[Bill]:
         stmt = (
             select(Bill)
                 .where(
