@@ -7,14 +7,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.sharespace.room.ui.RoomSummaryScreen
+import com.example.sharespace.room.ui.AddRoommateScreen
+import com.example.sharespace.room.ui.roomSummary.RoomSummaryScreen
 import com.example.sharespace.ui.screens.auth.LoginScreen
 import com.example.sharespace.ui.screens.finance.AddBillScreen
 import com.example.sharespace.ui.screens.finance.BillsListScreen
 import com.example.sharespace.ui.screens.finance.EditBillScreen
 import com.example.sharespace.ui.screens.finance.FinanceManagerScreen
 import com.example.sharespace.ui.screens.profile.MainProfileScreen
-import com.example.sharespace.ui.screens.room.AddRoommateScreen
 import com.example.sharespace.ui.screens.room.CreateRoomScreen
 import com.example.sharespace.ui.screens.room.EditRoomScreen
 import com.example.sharespace.ui.screens.room.EditRoommateScreen
@@ -165,7 +165,10 @@ fun ShareSpaceApp(
         composable(route = ShareSpaceScreens.TasksList.name) {
             TasksListScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onAddTaskClick = { navController.navigate(ShareSpaceScreens.AddTask.name) }
+                onAddTaskClick = { navController.navigate(ShareSpaceScreens.AddTask.name) },
+                onEditTaskClick = { taskId ->
+                    navController.navigate("${ShareSpaceScreens.EditTask.name}/$taskId")
+                }
             )
         }
         composable(route = ShareSpaceScreens.AddTask.name) {
@@ -173,8 +176,12 @@ fun ShareSpaceApp(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
-        composable(route = ShareSpaceScreens.EditTask.name) {
+        composable(
+            route = ShareSpaceScreens.EditTask.name + "/{taskId}"
+        ) { backStackEntry ->
+            val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull() ?: -1
             EditTaskScreen(
+                taskId = taskId,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

@@ -5,5 +5,7 @@ data class ApiTask(
     val title: String,
     val description: String,
     val deadline: String,
-    val statuses: Map<String, String>
+    val statuses: Map<String, String>,
+    val frequency: String?,
+    val repeat: String?
 )

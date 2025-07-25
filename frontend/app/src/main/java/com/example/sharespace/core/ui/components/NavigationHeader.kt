@@ -3,9 +3,17 @@ package com.example.sharespace.core.ui.components
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.sharespace.core.ui.theme.ShareSpaceTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -18,7 +26,7 @@ fun NavigationHeader(
         title = {
             Text(
                 text = title,
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.titleLarge
             )
         },
         navigationIcon = {
@@ -33,4 +41,29 @@ fun NavigationHeader(
         },
         actions = actions
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun NavigationHeaderPreview() {
+    ShareSpaceTheme {
+        NavigationHeader(
+            title = "My Items",
+            onNavigateBack = {},
+            actions = {
+                IconButton(onClick = { }) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search"
+                    )
+                }
+                IconButton(onClick = { }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "More options"
+                    )
+                }
+            }
+        )
+    }
 }
