@@ -1,5 +1,6 @@
 package com.example.sharespace.ui.screens.tasks
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,21 +53,21 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TasksListScreen(
     onNavigateBack: () -> Unit,
-    onAddTaskClick: () -> Unit = {}
-) {
+    onAddTaskClick: () -> Unit = {},
+    onEditTaskClick: (Int) -> Unit
+)
+ {
     var taskSummary by remember { mutableStateOf(listOf<String>()) }
     var allTasks by remember { mutableStateOf(listOf<ApiTask>()) }
     var inProgressTasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
     var completedTasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
     var error by remember { mutableStateOf<String?>(null) }
-    var userDetailsMap by remember { mutableStateOf<Map<Int, UserDetails>>(emptyMap()) }
 
     // Fetch task data from API
     LaunchedEffect(Unit) {
@@ -77,16 +78,17 @@ fun TasksListScreen(
                     "Bearer your_token_here" // ← Replace with real token or maybe just ignore it
 
                 val response = ApiClient.apiService.getTasksForRoom(roomId, token)
+                Log.d("TASKS", "Fetched tasks: ${response.body()}")
+
                 if (response.isSuccessful) {
                     val apiTasks = response.body() ?: emptyList()
-                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                     val today = LocalDate.now()
                     val thirtyDaysAgo = today.minusDays(30)
 
                     // Filter tasks that are within the last 30 days
                     val filteredTasks = apiTasks.filter { task ->
                         try {
-                            val deadline = LocalDate.parse(task.deadline, formatter)
+                            val deadline = LocalDate.parse(task.deadline.substringBefore("T"))
                             !deadline.isAfter(today) && !deadline.isBefore(thirtyDaysAgo)
                         } catch (e: Exception) {
                             false // Skip if parsing fails
@@ -150,6 +152,7 @@ fun TasksListScreen(
                         val statusValues = statuses.values.toSet()
 
                         val finalStatus = when {
+                            statusValues.isEmpty() -> "ASSIGNED" // Default if no status
                             statusValues.all { it == "COMPLETE" } -> "COMPLETE"
                             statusValues.any { it == "IN-PROGRESS" } -> "IN-PROGRESS"
                             else -> "ASSIGNED"
@@ -160,6 +163,7 @@ fun TasksListScreen(
                         }
 
                         TaskData(
+                            id = task.id,
                             title = task.title,
                             status = finalStatus,
                             assignees = assignees
@@ -250,8 +254,7 @@ fun TasksListScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 items(inProgressTasks) { task ->
-                    TaskCard(task = task)
-                }
+                    TaskCard(task = task, onEditClick = onEditTaskClick)                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -311,7 +314,7 @@ fun TasksListScreen(
 }
 
 @Composable
-fun TaskCard(task: TaskData) {
+fun TaskCard(task: TaskData, onEditClick: (Int) -> Unit) {
     Card(
         modifier = Modifier
             .width(200.dp)
@@ -323,12 +326,13 @@ fun TaskCard(task: TaskData) {
             Text(task.status, fontWeight = FontWeight.Medium)
             Text(task.assignees.joinToString(", "), fontSize = 12.sp)
             Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = { /* Edit logic */ }, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = { onEditClick(task.id) }, modifier = Modifier.fillMaxWidth()) {
                 Text("Edit Task")
             }
         }
     }
 }
+
 
 @Composable
 fun CompletedTaskRow(task: TaskData) {
@@ -352,15 +356,10 @@ fun CompletedTaskRow(task: TaskData) {
 }
 
 data class TaskData(
+    val id: Int,
     val title: String,
     val status: String,
     val assignees: List<String>
 )
 
-data class UserDetails(
-    val id: Int,
-    val name: String,
-    val username: String,
-    val profile_picture_url: String?
-)
 

@@ -165,7 +165,10 @@ fun ShareSpaceApp(
         composable(route = ShareSpaceScreens.TasksList.name) {
             TasksListScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onAddTaskClick = { navController.navigate(ShareSpaceScreens.AddTask.name) }
+                onAddTaskClick = { navController.navigate(ShareSpaceScreens.AddTask.name) },
+                onEditTaskClick = { taskId ->
+                    navController.navigate("${ShareSpaceScreens.EditTask.name}/$taskId")
+                }
             )
         }
         composable(route = ShareSpaceScreens.AddTask.name) {
@@ -173,8 +176,12 @@ fun ShareSpaceApp(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
-        composable(route = ShareSpaceScreens.EditTask.name) {
+        composable(
+            route = ShareSpaceScreens.EditTask.name + "/{taskId}"
+        ) { backStackEntry ->
+            val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull() ?: -1
             EditTaskScreen(
+                taskId = taskId,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
