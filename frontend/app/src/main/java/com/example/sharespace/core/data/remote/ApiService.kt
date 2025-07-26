@@ -16,6 +16,7 @@ import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomMembersRespo
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomsAndInvitationsResponse
 import com.example.sharespace.core.data.repository.dto.tasks.ApiCreateTaskRequest
 import com.example.sharespace.core.data.repository.dto.tasks.ApiCreateTaskResponse
+import com.example.sharespace.core.data.repository.dto.tasks.ApiDeleteTaskResponse
 import com.example.sharespace.core.data.repository.dto.tasks.ApiTask
 import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskRequest
 import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskResponse
@@ -127,7 +128,7 @@ interface ApiService {
     suspend fun deleteTask(
         @Path("taskId") taskId: Int,
         @Header("Authorization") token: String
-    ): Response<DeleteResponse>
+    ): Response<ApiDeleteTaskResponse>
 
 //    @PATCH("tasks/{task_id}")
 //    suspend fun updateTask(

@@ -1,4 +1,3 @@
 package com.example.sharespace.core.data.repository.dto.tasks
 
-class ApiDeleteTaskResponse {
-}
+data class ApiDeleteTaskResponse(val message: String)
