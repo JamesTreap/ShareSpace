@@ -1,6 +1,8 @@
 package com.example.sharespace.user.data.repository
 
 import com.example.sharespace.core.data.remote.ApiService
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRespondToRoomInviteRequest
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRespondToRoomInviteResponse
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRoom
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomInvitation
 import com.example.sharespace.core.data.repository.dto.users.ApiPatchProfileRequest
@@ -28,6 +30,20 @@ class ProfileRepository(var api: ApiService) {
 
     }
 
+    suspend fun respondToRoomInvite(
+        token: String,
+        roomIdFromInvite: Int,
+        status: String
+    ): ApiRespondToRoomInviteResponse {
+        val request = ApiRespondToRoomInviteRequest(status = status)
+        val response = api.respondToRoomInvite("Bearer $token", roomIdFromInvite, request)
+        if (response.isSuccessful) {
+            return response.body()
+                ?: throw IllegalStateException("API response body was null for respondToRoomInvite")
+        } else {
+            throw HttpException(response)
+        }
+    }
     suspend fun patchProfile(
         token: String?,
         name: String,

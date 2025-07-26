@@ -82,6 +82,8 @@ class RoomService:
         updated = RoomRepo.respond_to_invitation(invitation.id, status)
         if status == "accepted":
             RoomRepo.add_member(updated.room_id, user.id)
+
+        RoomRepo.delete_invitation(invitation.id)
         return updated
 
     @staticmethod

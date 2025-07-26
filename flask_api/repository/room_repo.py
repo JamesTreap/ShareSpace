@@ -14,6 +14,13 @@ class RoomRepo:
         db.session.add(room)
         db.session.commit()
         return room
+    
+    @staticmethod 
+    def delete_invitation(invitation_id: int) -> None:
+        invitation = db.session.get(RoomInvitation, invitation_id)
+        if invitation:
+            db.session.delete(invitation)
+            db.session.commit()
 
     @staticmethod
     def update_room(room_id: int, name: str, address: str,

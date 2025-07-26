@@ -69,8 +69,6 @@ fun MainProfileScreen(
         viewModel.onProfileScreenEntered()
     }
 
-    Log.d("MainProfileScreen", "User: $user, Rooms: ${rooms}, Invites: ${invites}")
-
     viewModel.loadData()
 
     Scaffold(
@@ -99,8 +97,8 @@ fun MainProfileScreen(
             rooms.forEach { room ->
                 RoomCard(
                     room = room, showAction = false,
-                    acceptInvite = { viewModel.acceptInvite() },
-                    declineInvite = { viewModel.declineInvite() },
+                    acceptInvite = {  },
+                    declineInvite = {  },
                     room.alerts,
                     navigateToRoom = {
                         viewModel.setActiveRoom(room.id)
@@ -123,8 +121,8 @@ fun MainProfileScreen(
             invites.forEach { room ->
                 RoomCard(
                     room = room, showAction = true,
-                    acceptInvite = { viewModel.acceptInvite() },
-                    declineInvite = { viewModel.declineInvite() },
+                    acceptInvite = { viewModel.acceptInvite(room.id) },
+                    declineInvite = { viewModel.declineInvite(room.id) },
                     room.alerts,
                     navigateToRoom = { }
                 )

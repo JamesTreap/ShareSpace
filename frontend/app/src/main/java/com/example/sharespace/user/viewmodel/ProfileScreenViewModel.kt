@@ -35,15 +35,30 @@ class ProfileScreenViewModel(
     val invites: MutableStateFlow<List<Room>> = _invites
 
 
-    fun acceptInvite() {
-
-//        Log.d(TAG, "acceptInvite called (Not yet implemented)")
-
+    fun acceptInvite(roomId: Int) {
+        viewModelScope.launch {
+            try {
+                val token = userSessionRepository.userTokenFlow.first()
+                if (token == null) return@launch
+                profileRepository.respondToRoomInvite(token, roomId, "accepted")
+                loadData()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error accepting invite for room $roomId", e)
+            }
+        }
     }
 
-    fun declineInvite() {
-
-//        Log.d(TAG, "declineInvite called (Not yet implemented)")
+    fun declineInvite(roomId: Int) {
+        viewModelScope.launch {
+            try {
+                val token = userSessionRepository.userTokenFlow.first()
+                if (token == null) return@launch
+                profileRepository.respondToRoomInvite(token, roomId, "rejected")
+                loadData()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error declining invite for room $roomId", e)
+            }
+        }
     }
 
     fun onProfileScreenEntered() {
