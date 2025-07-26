@@ -97,7 +97,7 @@ class FinanceService:
             abort(400, "Category is required.")
         if frequency and frequency[-1] not in ['d', 'w', 'm']:
             abort(400, "Frequency must be in the format like '1d', '2w', or '3m'.")
-        if frequency and not repeat:
+        if frequency and repeat is None:
             abort(400, "Repeat is required and must be a number.")
 
         freq_value, unit = None, None
