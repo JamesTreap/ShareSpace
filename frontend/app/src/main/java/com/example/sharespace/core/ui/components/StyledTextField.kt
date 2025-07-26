@@ -30,6 +30,8 @@ fun StyledTextField(
     singleLine: Boolean = false,
     isError: Boolean = false,
     enabled: Boolean = true,
+    readOnly: Boolean = false,
+    trailingIcon: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     containerColor: Color? = null,
@@ -44,7 +46,9 @@ fun StyledTextField(
         singleLine = singleLine,
         isError = isError,
         enabled = enabled,
+        readOnly = readOnly,
         visualTransformation = visualTransformation,
+        trailingIcon = trailingIcon,
         keyboardOptions = keyboardOptions,
         colors = TextFieldDefaults.colors(
             focusedTextColor = TextSecondary,
