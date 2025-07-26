@@ -24,6 +24,7 @@ import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.DELETE
 
 data class RoomsAndInvitesResponse(
     val joinedRooms: List<ApiRoom>,
@@ -55,6 +56,9 @@ data class Assignee(
 )
 
 data class CreateTaskResponse(
+    val message: String
+)
+data class DeleteResponse(
     val message: String
 )
 
@@ -157,6 +161,11 @@ interface ApiService {
         @Body request: PatchProfileRequest
     ): Response<ApiUser>
 
+    @DELETE("tasks/delete/{taskId}")
+    suspend fun deleteTask(
+        @Path("taskId") taskId: Int,
+        @Header("Authorization") token: String
+    ): Response<DeleteResponse>
 
 //    @PATCH("tasks/{task_id}")
 //    suspend fun updateTask(
