@@ -31,7 +31,7 @@ class ProfileScreenViewModel(
 
     // public streams
     val user: MutableState<User?> = _user
-    val rooms: StateFlow<List<Room>> = _rooms
+    val rooms: MutableStateFlow<List<Room>> = _rooms
     val invites: MutableStateFlow<List<Room>> = _invites
 
 
@@ -79,6 +79,7 @@ class ProfileScreenViewModel(
                 )
                 val apiJoinedRooms = profileRepository.getJoinedRooms(token)
                 val apiRoomInvites = profileRepository.getRoomInvitations(token)
+                Log.d(TAG, "Loaded $apiJoinedRooms joined rooms and $apiRoomInvites invites")
                 _rooms.value = apiJoinedRooms.map { apiRoom ->
                     Room(apiRoom)
                 }
