@@ -1,4 +1,4 @@
-package com.example.sharespace.core.data.repository.dto
+package com.example.sharespace.core.data.repository.dto.tasks
 
 data class ApiTask(
     val id: Int,
@@ -7,5 +7,6 @@ data class ApiTask(
     val deadline: String,
     val statuses: Map<String, String>,
     val frequency: String?,
-    val repeat: String?
+    val repeat: Int,
+    val scheduledDate: String
 )

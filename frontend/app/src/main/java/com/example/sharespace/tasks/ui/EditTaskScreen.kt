@@ -15,11 +15,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.sharespace.ShareSpaceApplication
 import com.example.sharespace.core.data.remote.ApiClient
-import com.example.sharespace.core.data.repository.dto.ApiTask
+import com.example.sharespace.core.data.repository.dto.tasks.ApiTask
+import com.example.sharespace.core.data.repository.dto.users.ApiUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.example.sharespace.core.data.repository.dto.ApiUser
 import com.example.sharespace.core.ui.components.Avatar
 import kotlinx.coroutines.withContext
 
@@ -75,7 +75,7 @@ fun EditTaskScreen(
                                 date = foundTask.deadline.substringBefore("T")
                                 time = foundTask.deadline.substringAfter("T")
                                 occurs = foundTask.frequency ?: ""
-                                repeats = foundTask.repeat ?: ""
+                                repeats = foundTask.repeat.toString() ?: ""
                                 assigneeStatuses = foundTask.statuses
                             } else {
                                 errorMessage = "Task not found"

@@ -9,18 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,16 +22,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.sharespace.core.domain.model.Task
-import com.example.sharespace.core.ui.components.Avatar
 import com.example.sharespace.room.ui.roomSummary.components.RecentBillsSection
 import com.example.sharespace.room.ui.roomSummary.components.RoomSummaryTopAppBar
 import com.example.sharespace.room.ui.roomSummary.components.RoommatesSection
-import com.example.sharespace.room.ui.roomSummary.components.SectionHeader
+import com.example.sharespace.room.ui.roomSummary.components.UpcomingTasksSection
 import com.example.sharespace.room.viewmodel.RoomDetailsUiState
 import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
 import com.example.sharespace.room.viewmodel.RoomSummaryViewModel
-import java.time.format.DateTimeFormatter
+import com.example.sharespace.room.viewmodel.TasksUiState
 
 @Composable
 fun RoomSummaryScreen(
@@ -53,7 +42,7 @@ fun RoomSummaryScreen(
     onNavigateBack: () -> Unit
 ) {
     val bills by viewModel.bills.collectAsState()
-    val tasks by viewModel.tasks.collectAsState()
+    val tasksState = viewModel.tasksUiState
     val roomDetailsState = viewModel.roomDetailsUiState
     val roommatesState = viewModel.roommatesUiState
 
@@ -85,8 +74,7 @@ fun RoomSummaryScreen(
                 subtitle = topBarSubtitle,
                 onNavigateBack = onNavigateBack,
                 showRetry = showRetryDetailsButton,
-                onRetry = { viewModel.fetchRoomDetails() }
-            )
+                onRetry = { viewModel.fetchRoomDetails() })
         }, modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Column(
@@ -94,19 +82,9 @@ fun RoomSummaryScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            Button(
-                onClick = onFinanceManagerClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-            ) {
-                Text(text = "Finance Manager")
-            }
-            RecentBillsSection(
-                bills = bills,
-                onPay = viewModel::payBill,
-                onViewAll = onViewBillsClick
-            )
+//            RecentBillsSection(
+//                bills = bills, onPay = viewModel::payBill, onViewAll = onViewBillsClick
+//            )
             when (roommatesState) {
                 is RoomSummaryRoommatesUiState.Loading -> {
                     Box(
@@ -123,8 +101,7 @@ fun RoomSummaryScreen(
                     RoommatesSection(
                         roommates = roommatesState.roommates,
                         onAdd = onAddRoommateClick,
-                        onViewAll = { /* TODO for roommates view all */ }
-                    )
+                        onViewAll = { /* TODO for roommates view all */ })
                 }
 
                 is RoomSummaryRoommatesUiState.Error -> {
@@ -135,8 +112,7 @@ fun RoomSummaryScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            "Failed to load roommates.",
-                            color = MaterialTheme.colorScheme.error
+                            "Failed to load roommates.", color = MaterialTheme.colorScheme.error
                         )
                         Spacer(Modifier.height(8.dp))
                         Button(onClick = { viewModel.fetchRoomMembers() }) {
@@ -146,84 +122,59 @@ fun RoomSummaryScreen(
                 }
             }
 
-            UpcomingTasksSection(
-                tasks = tasks,
-                onToggleDone = viewModel::toggleTaskDone,
-                onAdd = onAddTaskClick,
-                onViewAll = onViewTasksClick,
-            )
-        }
-    }
-}
 
-
-@Composable
-fun UpcomingTasksSection(
-    tasks: List<Task>,
-    onAdd: () -> Unit,
-    onToggleDone: (Task) -> Unit,
-    onViewAll: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        SectionHeader(
-            title = "Upcoming Tasks", actionText = "+ Add Task", onAction = onAdd
-        )
-        if (tasks.isEmpty()) {
-            Text(
-                "No upcoming tasks.",
-                modifier = Modifier.padding(start = 12.dp, top = 8.dp, bottom = 8.dp)
-            )
-            Spacer(Modifier.height(8.dp))
-            Button( // "View all" button consistent with your structure
-                onClick = onViewAll, modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
-            ) {
-                Text("View all / Add Task")
-            }
-            Spacer(Modifier.height(8.dp))
-            return@Column
-        }
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-        ) {
-            items(tasks) { task ->
-                ListItem(headlineContent = { Text(task.title) }, supportingContent = {
-                    Text(
-                        task.dueDate.format(DateTimeFormatter.ofPattern("MMM d | h:mm a"))
-                            ?: "No due date"
-                    )
-                }, leadingContent = {
-                    Avatar(
-                        photoUrl = null,
-                        size = 40.dp,
-                        contentDescription = "Task assignment placeholder"
-                    )
-                }, trailingContent = {
-                    IconButton(onClick = { onToggleDone(task) }) {
-                        Icon(
-                            imageVector = if (task.isDone) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
-                            contentDescription = if (task.isDone) "Mark as not done" else "Mark as done"
-                        )
+            // render tasks section
+            when (val currentTasksState = tasksState) { // Use the collected state
+                is TasksUiState.Loading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
-                })
-                HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
-            }
-
-            item {
-                Spacer(Modifier.height(8.dp))
-                Button(
-                    onClick = onViewAll,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
-                ) {
-                    Text("View all tasks")
                 }
-                Spacer(Modifier.height(8.dp))
+                is TasksUiState.Success -> {
+                    UpcomingTasksSection(
+                        tasks = currentTasksState.tasks,
+                        onToggleDone = { },
+                        onAdd = onAddTaskClick,
+                        onViewAll = onViewTasksClick,
+                    )
+                }
+                is TasksUiState.Empty -> {
+                    // You might want a specific UI for when there are no tasks
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("No upcoming tasks.")
+                        Spacer(Modifier.height(8.dp))
+                        Button(onClick = onAddTaskClick) { // Allow adding a task
+                            Text("Add Task")
+                        }
+                    }
+                }
+                is TasksUiState.Error -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            "Failed to load tasks.",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Button(onClick = { viewModel.fetchTasks() }) { // Retry fetching tasks
+                            Text("Retry")
+                        }
+                    }
+                }
             }
         }
     }

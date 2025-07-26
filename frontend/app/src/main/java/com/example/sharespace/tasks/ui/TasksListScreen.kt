@@ -45,7 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sharespace.core.data.remote.ApiClient
-import com.example.sharespace.core.data.repository.dto.ApiTask
+import com.example.sharespace.core.data.repository.dto.tasks.ApiTask
 import com.example.sharespace.core.ui.components.NavigationHeader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
