@@ -1,11 +1,9 @@
 package com.example.sharespace.room.viewmodel
 
 import android.util.Log
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.geometry.isEmpty
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -16,17 +14,20 @@ import com.example.sharespace.ShareSpaceApplication
 import com.example.sharespace.core.data.repository.RoomRepository
 import com.example.sharespace.core.data.repository.TaskRepository
 import com.example.sharespace.core.data.repository.UserSessionRepository
+import com.example.sharespace.core.data.repository.dto.tasks.ApiAssignee
 import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskRequest
+import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskResponse
 import com.example.sharespace.core.domain.model.Bill
 import com.example.sharespace.core.domain.model.Room
 import com.example.sharespace.core.domain.model.Task
-import com.example.sharespace.core.domain.model.User // User class now has the secondary constructor
+import com.example.sharespace.core.domain.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
+import retrofit2.HttpException
+import java.io.IOException
 
 // Sealed Interface for Room Details
 sealed interface RoomDetailsUiState {
@@ -65,7 +66,6 @@ class RoomSummaryViewModel(
 
     var tasksUiState: TasksUiState by mutableStateOf(TasksUiState.Loading)
         private set
-
 
 
     // StateFlows for bills and tasks
@@ -156,7 +156,7 @@ class RoomSummaryViewModel(
 
     fun fetchTasks() {
         viewModelScope.launch {
-            tasksUiState = TasksUiState.Loading // Set loading state
+            tasksUiState = TasksUiState.Loading
             val roomId = currentRoomId
             if (roomId == null) {
                 Log.w(TAG, "Cannot fetch tasks, no active room ID.")
@@ -170,25 +170,22 @@ class RoomSummaryViewModel(
                     tasksUiState = TasksUiState.Error
                     return@launch
                 }
-                val apiTasks = taskRepository.getTasksForRoom(token = token, roomId = roomId)
-                // *** IMPORTANT: Implement your ApiTask to Task mapping here ***
-                val domainTasks = apiTasks.map { apiTask ->
-                    Task(
-                        id = apiTask.id.toString(),
-                        title = apiTask.title,
-                        description = apiTask.description,
-                        dueDate = try { LocalDateTime.parse(apiTask.date) } catch (e: Exception) { LocalDateTime.now() },
-                        isDone = apiTask.status == "complete",
-                        assignees = emptyList() // Placeholder: Map assignees properly
-                    )
-                }
+                // 1. Fetch List<ApiTask> from the repository
+                val apiTasksList = taskRepository.getTasksForRoom(token = token, roomId = roomId)
 
-                if (domainTasks.isEmpty()) {
-                    tasksUiState = TasksUiState.Empty // Set to Empty if no tasks returned
+                // 2. Map List<ApiTask> to List<Task> using the secondary constructor
+                val domainTasksList = apiTasksList.map { apiTask -> Task(apiTask) }
+
+                if (domainTasksList.isEmpty()) {
+                    tasksUiState = TasksUiState.Empty
                 } else {
-                    tasksUiState = TasksUiState.Success(domainTasks)
+                    tasksUiState = TasksUiState.Success(domainTasksList)
                 }
-                Log.i(TAG, "Tasks fetched successfully for roomId: $roomId, Count: ${domainTasks.size}")
+                Log.i(
+                    TAG,
+                    "Tasks fetched successfully for roomId: $roomId, Count: ${domainTasksList.size}"
+                )
+
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching tasks for roomId: $roomId", e)
                 tasksUiState = TasksUiState.Error
@@ -196,50 +193,108 @@ class RoomSummaryViewModel(
         }
     }
 
-    fun updateTaskStatus(taskToUpdate: Task, newStatus: Boolean) {
+    fun updateTaskStatus(
+        taskToUpdate: Task, userIdToUpdate: String, newIndividualStatus: String
+    ) {
         viewModelScope.launch {
+            val tasksBeforeThisUpdate: List<Task>
             val currentTasksState = tasksUiState
-            if (currentTasksState !is TasksUiState.Success) {
-                Log.w(TAG, "Cannot update task, current tasks state is not Success.")
-                return@launch // Don't proceed if not in a success state with tasks
-            }
-
-            val roomId = currentRoomId
-            val token = userSessionRepository.userTokenFlow.first()
-
-            if (roomId == null || token == null) {
-                Log.w(TAG, "Cannot update task, missing roomId or token.")
-                // Optionally, show error to user. UI won't change here if not Success state.
+            if (currentTasksState is TasksUiState.Success) {
+                tasksBeforeThisUpdate = currentTasksState.tasks
+            } else {
+                Log.w(
+                    TAG,
+                    "Cannot update task, current tasks state is not Success: $currentTasksState"
+                )
                 return@launch
             }
 
-            // Optimistically update UI
-            val updatedTasks = currentTasksState.tasks.map { task ->
-                if (task.id == taskToUpdate.id) task.copy(isDone = newStatus) else task
+            val token = userSessionRepository.userTokenFlow.first()
+            if (token == null) {
+                Log.w(TAG, "Cannot update task, missing token.")
+                return@launch
             }
-            tasksUiState = TasksUiState.Success(updatedTasks) // Update with new list
-            Log.d(TAG, "Optimistically updated task: ${taskToUpdate.title} to isDone = $newStatus")
+
+            // --- Optimistic UI Update ---
+            val modifiedStatusesMap = taskToUpdate.statuses.toMutableMap()
+            if (modifiedStatusesMap[userIdToUpdate] == newIndividualStatus) {
+                Log.d(
+                    TAG,
+                    "No change in status for user $userIdToUpdate, task ${taskToUpdate.id}. Skipping update."
+                )
+                return@launch
+            }
+            modifiedStatusesMap[userIdToUpdate] = newIndividualStatus
+            val optimisticallyUpdatedTask = taskToUpdate.copy(statuses = modifiedStatusesMap)
+            val updatedTasksList = tasksBeforeThisUpdate.map { task ->
+                if (task.id == optimisticallyUpdatedTask.id) optimisticallyUpdatedTask else task
+            }
+            tasksUiState = TasksUiState.Success(updatedTasksList)
+            Log.d(
+                TAG,
+                "Optimistically updated task ${taskToUpdate.id} for user $userIdToUpdate to $newIndividualStatus"
+            )
+            // --- End Optimistic UI Update ---
 
             try {
-                val updateRequest = ApiUpdateTaskRequest(
-                    title = taskToUpdate.title,
-                    date = taskToUpdate.dueDate.toString(),
-                    description = taskToUpdate.description,
-                    status = if (newStatus) "complete" else "todo",
-                    assignees = null // Or map current assignees if needed by API
-                )
-                taskRepository.updateTask(token = token, taskId = taskToUpdate.id.toInt(), request = updateRequest)
-                Log.i(TAG, "Task ${taskToUpdate.title} updated successfully on backend.")
-                // Optional: Re-fetch to ensure consistency if optimistic update isn't trusted fully
-                // fetchTasks()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error updating task ${taskToUpdate.title} on backend", e)
-                // Revert optimistic update on error
-                val revertedTasks = currentTasksState.tasks.map { task ->
-                    if (task.id == taskToUpdate.id) task.copy(isDone = !newStatus) else task // Revert the change
+                val finalApiAssigneesList = modifiedStatusesMap.map { (userId, status) ->
+                    ApiAssignee(userId = userId, status = status.toLowerCase())
                 }
-                tasksUiState = TasksUiState.Success(revertedTasks) // Update UI back to original state for this task
-                // Consider showing an error message to the user
+                val requestBody = ApiUpdateTaskRequest(
+                    title = taskToUpdate.title,
+                    date = taskToUpdate.deadline,
+                    description = taskToUpdate.description,
+                    assignees = finalApiAssigneesList
+                )
+
+                Log.d(
+                    TAG,
+                    "Updating task ${taskToUpdate.id} on backend for user $userIdToUpdate. Request: $requestBody"
+                )
+
+                // This call now directly returns ApiUpdateTaskResponse or throws an exception
+                val successResponse: ApiUpdateTaskResponse = taskRepository.updateTask(
+                    token = token, taskId = taskToUpdate.id, request = requestBody
+                )
+
+                // If we reach here, the call was successful (no exception thrown)
+                Log.i(
+                    TAG,
+                    "Task ${taskToUpdate.id} status update for user $userIdToUpdate successful: ${successResponse.message}"
+                )
+            } catch (e: HttpException) { // Catch specific HTTP errors from Retrofit/OkHttp
+                val errorBody = e.response()?.errorBody()?.string() ?: "Unknown HTTP error"
+                val statusCode = e.code()
+                Log.e(
+                    TAG,
+                    "HTTP error updating task ${taskToUpdate.id} for user $userIdToUpdate on backend. Code: $statusCode, Body: $errorBody",
+                    e
+                )
+                tasksUiState = TasksUiState.Success(tasksBeforeThisUpdate) // Revert
+                // TODO: Show specific error message to the user
+            } catch (e: IOException) { // Catch network errors (e.g., no internet)
+                Log.e(
+                    TAG,
+                    "Network error updating task ${taskToUpdate.id} for user $userIdToUpdate on backend: ${e.message}",
+                    e
+                )
+                tasksUiState = TasksUiState.Success(tasksBeforeThisUpdate) // Revert
+                // TODO: Show specific error message to the user
+            } catch (e: IllegalStateException) { // As per your repository's KDoc
+                Log.e(
+                    TAG,
+                    "IllegalStateException updating task ${taskToUpdate.id} (e.g. null body when not expected): ${e.message}",
+                    e
+                )
+                tasksUiState = TasksUiState.Success(tasksBeforeThisUpdate) // Revert
+            } catch (e: Exception) { // Catch any other unexpected errors
+                Log.e(
+                    TAG,
+                    "Generic exception updating task ${taskToUpdate.id} for user $userIdToUpdate on backend: ${e.message}",
+                    e
+                )
+                tasksUiState = TasksUiState.Success(tasksBeforeThisUpdate) // Revert
+                // TODO: Consider showing an error message to the user.
             }
         }
     }
@@ -250,8 +305,7 @@ class RoomSummaryViewModel(
 
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val application =
-                    (this[APPLICATION_KEY] as ShareSpaceApplication)
+                val application = (this[APPLICATION_KEY] as ShareSpaceApplication)
                 val roomRepository = application.container.roomRepository
                 val userSessionRepository = application.container.userSessionRepository
                 val taskRepository = application.container.taskRepository

@@ -59,7 +59,7 @@ fun UpcomingTasksSection(
             items(tasks) { task ->
                 ListItem(headlineContent = { Text(task.title) }, supportingContent = {
                     Text(
-                        task.dueDate.format(DateTimeFormatter.ofPattern("MMM d | h:mm a"))
+                        task.deadline.format(DateTimeFormatter.ofPattern("MMM d | h:mm a"))
                             ?: "No due date"
                     )
                 }, leadingContent = {
@@ -71,8 +71,8 @@ fun UpcomingTasksSection(
                 }, trailingContent = {
                     IconButton(onClick = { onToggleDone(task) }) {
                         Icon(
-                            imageVector = if (task.isDone) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
-                            contentDescription = if (task.isDone) "Mark as not done" else "Mark as done"
+                            imageVector = if (true) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
+                            contentDescription = if (true) "Mark as not done" else "Mark as done"
                         )
                     }
                 })

@@ -41,7 +41,7 @@ fun RoomSummaryScreen(
     onNavigateBack: () -> Unit
 ) {
     val bills by viewModel.bills.collectAsState()
-    val tasks by viewModel.tasks.collectAsState()
+//    val tasks by viewModel.tasks.collectAsState()
     val roomDetailsState = viewModel.roomDetailsUiState
     val roommatesState = viewModel.roommatesUiState
 
@@ -122,8 +122,8 @@ fun RoomSummaryScreen(
             }
 
             UpcomingTasksSection(
-                tasks = tasks,
-                onToggleDone = viewModel::toggleTaskDone,
+                tasks = emptyList(),
+                onToggleDone = { },
                 onAdd = onAddTaskClick,
                 onViewAll = onViewTasksClick,
             )
