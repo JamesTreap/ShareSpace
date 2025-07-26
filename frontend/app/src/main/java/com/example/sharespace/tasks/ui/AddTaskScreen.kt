@@ -36,9 +36,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.sharespace.ShareSpaceApplication
 import com.example.sharespace.core.data.remote.ApiClient
-import com.example.sharespace.core.data.remote.Assignee
-import com.example.sharespace.core.data.remote.CreateTaskRequest
-import com.example.sharespace.core.data.repository.dto.ApiUser
+import com.example.sharespace.core.data.repository.dto.tasks.ApiAssignee
+import com.example.sharespace.core.data.repository.dto.tasks.ApiCreateTaskRequest
+import com.example.sharespace.core.data.repository.dto.users.ApiUser
 import com.example.sharespace.core.ui.components.Avatar
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
@@ -236,11 +236,16 @@ fun AddTaskScreen(
                             val deadline = parsedDate.toString()
                             val dueTime = parsedTime.toString()
 
-                            val request = CreateTaskRequest(
+                            val request = ApiCreateTaskRequest(
                                 title = title,
                                 date = "${deadline}T$dueTime",
                                 description = description,
-                                assignees = selectedUserIds.map { Assignee(it, "todo") },
+                                assignees = selectedUserIds.map {
+                                    ApiAssignee(
+                                        it.toString(),
+                                        "todo"
+                                    )
+                                },
                                 frequency = occurs,
                                 repeat = repeats
                             )

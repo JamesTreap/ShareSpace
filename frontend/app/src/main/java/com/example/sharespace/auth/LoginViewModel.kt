@@ -1,6 +1,5 @@
 package com.example.sharespace.ui.screens.auth
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,9 +9,10 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.sharespace.ShareSpaceApplication // Your Application class
-import com.example.sharespace.core.data.repository.UserSessionRepository // Your UserSessionRepository interface
-import com.example.sharespace.data.repository.AuthRepository // Your AuthRepository interface
+import com.example.sharespace.ShareSpaceApplication
+import com.example.sharespace.core.data.repository.UserSessionRepository
+import com.example.sharespace.data.repository.AuthRepository
+import com.example.sharespace.user.data.repository.ProfileRepository
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
@@ -43,7 +43,8 @@ sealed interface LoginUiState {
 
 class LoginViewModel(
     private val authRepository: AuthRepository,
-    private val userSessionRepository: UserSessionRepository
+    private val userSessionRepository: UserSessionRepository,
+    private val profileRepository: ProfileRepository
 ) : ViewModel() {
 
     /**
@@ -74,7 +75,8 @@ class LoginViewModel(
         val password = currentInputState.passwordInput
 
         if (username.isBlank() || password.isBlank()) {
-            loginUiState = currentInputState.copy(errorMessage = "Username and password cannot be empty.")
+            loginUiState =
+                currentInputState.copy(errorMessage = "Username and password cannot be empty.")
             return
         }
 
@@ -83,9 +85,12 @@ class LoginViewModel(
             try {
                 // Ensure authRepository is available and used here
                 val response = authRepository.login(username, password)
-                val token = response.token // Assuming your DTO from authRepository.login() has a 'token' field
+                val token =
+                    response.token // Assuming your DTO from authRepository.login() has a 'token' field
                 if (token != null) {
                     userSessionRepository.saveUserToken(token)
+                    val apiUser = profileRepository.getUser(token)
+                    userSessionRepository.saveCurrentUserId(apiUser.id)
                     loginUiState = LoginUiState.LoginSuccess
                 } else {
                     loginUiState = currentInputState.copy(
@@ -134,11 +139,13 @@ class LoginViewModel(
 
                 // Retrieve dependencies from the application's DI container
                 val userSessionRepository = application.container.userSessionRepository
-                val authRepository = application.container.authRepository // Make sure this is in your container
+                val authRepository = application.container.authRepository
+                val profileRepository = application.container.profileRepository
 
                 LoginViewModel(
                     authRepository = authRepository,
-                    userSessionRepository = userSessionRepository
+                    userSessionRepository = userSessionRepository,
+                    profileRepository = profileRepository
                 )
             }
         }

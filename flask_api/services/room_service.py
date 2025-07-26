@@ -108,6 +108,5 @@ class RoomService:
         if not RoomService.validate_room_user(user_id, room_id):
             abort(403, "You are not a member of this room")
 
-        RoomRepo.remove_member(room_id, user_id)
-
+        RoomRepo.remove_member(user_id, room_id)
         return True

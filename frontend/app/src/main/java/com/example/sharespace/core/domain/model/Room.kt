@@ -1,6 +1,6 @@
 package com.example.sharespace.core.domain.model
 
-import com.example.sharespace.core.data.repository.dto.ApiRoom
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRoom
 
 data class Room(
     val id: Int,

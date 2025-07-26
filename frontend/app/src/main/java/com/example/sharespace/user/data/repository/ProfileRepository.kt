@@ -1,11 +1,10 @@
 package com.example.sharespace.user.data.repository
 
-import com.example.sharespace.core.data.remote.ApiClient
 import com.example.sharespace.core.data.remote.ApiService
-import com.example.sharespace.core.data.remote.PatchProfileRequest
-import com.example.sharespace.core.data.repository.dto.ApiRoom
-import com.example.sharespace.core.data.repository.dto.ApiRoomInvitation
-import com.example.sharespace.core.data.repository.dto.ApiUser
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRoom
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomInvitation
+import com.example.sharespace.core.data.repository.dto.users.ApiPatchProfileRequest
+import com.example.sharespace.core.data.repository.dto.users.ApiUser
 import retrofit2.HttpException
 
 class ProfileRepository(var api: ApiService) {
@@ -29,8 +28,13 @@ class ProfileRepository(var api: ApiService) {
 
     }
 
-    suspend fun patchProfile(token: String?, name: String, username: String, profilePictureUrl: String): ApiUser {
-        val request = PatchProfileRequest(name, username, profilePictureUrl)
+    suspend fun patchProfile(
+        token: String?,
+        name: String,
+        username: String,
+        profilePictureUrl: String
+    ): ApiUser {
+        val request = ApiPatchProfileRequest(name, username, profilePictureUrl)
         val response = api.patchUserProfile("Bearer $token", request)
         if (!response.isSuccessful) {
             throw Exception("Failed to patch profile: ${response.code()}")

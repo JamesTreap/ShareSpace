@@ -91,7 +91,7 @@ def get_roommates(room_id: int):
 def leave_room(room_id: int):
     user: User = g.current_user
 
-    RoomService.leave_room(room_id, user.id)
+    RoomService.leave_room(user.id, room_id)
 
     return jsonify({"message": "Successfully left the room"}), 200
 

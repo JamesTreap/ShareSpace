@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "5d54dc6e-6dbc-4600-ab04-07dd60190ef3",
+		"_postman_id": "d34663e3-f7f6-4ee9-8bd2-7c7f0530410e",
 		"name": "Roommate API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "45745407",
-		"_collection_link": "https://james-389807.postman.co/workspace/James's-Workspace~80a689a1-5128-41c0-891b-32cf04fe6ab1/collection/45745407-5d54dc6e-6dbc-4600-ab04-07dd60190ef3?action=share&source=collection_link&creator=45745407"
+		"_collection_link": "https://james-389807.postman.co/workspace/James's-Workspace~80a689a1-5128-41c0-891b-32cf04fe6ab1/collection/45745407-d34663e3-f7f6-4ee9-8bd2-7c7f0530410e?action=share&source=collection_link&creator=45745407"
 	},
 	"item": [
 		{
@@ -487,14 +487,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}/rooms/update/7",
+							"raw": "{{baseURL}}/rooms/update/{{room_id}}",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
 								"rooms",
 								"update",
-								"7"
+								"{{room_id}}"
 							]
 						}
 					},
@@ -506,14 +506,14 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}/rooms/leave/8",
+							"raw": "{{baseURL}}/rooms/leave/{{room_id}}",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
 								"rooms",
 								"leave",
-								"8"
+								"{{room_id}}"
 							]
 						}
 					},
@@ -721,6 +721,24 @@
 				},
 				{
 					"name": "create_bill",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    let jsonData = pm.response.json();\r",
+									"\r",
+									"    if (jsonData && jsonData.bill_id) {\r",
+									"        pm.environment.set(\"bill_id\", jsonData.bill_id);\r",
+									"    }\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -734,14 +752,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}/finance/create_bill/7",
+							"raw": "{{baseURL}}/finance/create_bill/{{room_id}}",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
 								"finance",
 								"create_bill",
-								"7"
+								"{{room_id}}"
 							]
 						}
 					},
@@ -749,12 +767,30 @@
 				},
 				{
 					"name": "pay_user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    let jsonData = pm.response.json();\r",
+									"\r",
+									"    if (jsonData && jsonData.bill_id) {\r",
+									"        pm.environment.set(\"payment_id\", jsonData.payment_id);\r",
+									"    }\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"title\": \"Walmart\",\r\n    \"category\": \"grocery\",\r\n    \"amount\": \"135\",\r\n    \"payer_id\": \"8\",\r\n    \"payee_id\": \"9\"\r\n}",
+							"raw": "{\r\n    \"title\": \"Walmart\",\r\n    \"category\": \"grocery\",\r\n    \"amount\": \"135\",\r\n    \"payer_id\": \"8\",\r\n    \"payee_id\": \"10\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -762,14 +798,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}/finance/pay_user/7",
+							"raw": "{{baseURL}}/finance/pay_user/{{room_id}}",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
 								"finance",
 								"pay_user",
-								"7"
+								"{{room_id}}"
 							]
 						}
 					},
@@ -801,7 +837,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}/finance/delete/bill/15",
+							"raw": "{{baseURL}}/finance/delete/bill/{{bill_id}}",
 							"host": [
 								"{{baseURL}}"
 							],
@@ -809,7 +845,7 @@
 								"finance",
 								"delete",
 								"bill",
-								"15"
+								"{{bill_id}}"
 							]
 						}
 					},

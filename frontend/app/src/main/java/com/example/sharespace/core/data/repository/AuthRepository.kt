@@ -1,7 +1,7 @@
 package com.example.sharespace.data.repository
 
-import com.example.sharespace.core.data.repository.dto.ApiCreateAccountResponse
-import com.example.sharespace.core.data.repository.dto.ApiLoginResponse
+import com.example.sharespace.core.data.repository.dto.auth.ApiCreateAccountResponse
+import com.example.sharespace.core.data.repository.dto.auth.ApiLoginResponse
 
 interface AuthRepository {
     /**

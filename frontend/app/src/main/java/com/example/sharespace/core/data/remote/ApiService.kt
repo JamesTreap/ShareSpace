@@ -1,22 +1,26 @@
 package com.example.sharespace.core.data.remote
 
-import com.example.sharespace.core.data.repository.dto.ApiCreateAccountRequest
-import com.example.sharespace.core.data.repository.dto.ApiCreateAccountResponse
-import com.example.sharespace.core.data.repository.dto.ApiCreateRoomRequest
-import com.example.sharespace.core.data.repository.dto.ApiInviteUserToRoomRequest
-import com.example.sharespace.core.data.repository.dto.ApiJoinedRoomsResponse
-import com.example.sharespace.core.data.repository.dto.ApiLoginRequest
-import com.example.sharespace.core.data.repository.dto.ApiLoginResponse
-import com.example.sharespace.core.data.repository.dto.ApiRespondToRoomInviteRequest
-import com.example.sharespace.core.data.repository.dto.ApiRespondToRoomInviteResponse
-import com.example.sharespace.core.data.repository.dto.ApiRoom
-import com.example.sharespace.core.data.repository.dto.ApiRoomInvitation
-import com.example.sharespace.core.data.repository.dto.ApiRoomInvitesResponse
-import com.example.sharespace.core.data.repository.dto.ApiRoomMembersResponse
-import com.example.sharespace.core.data.repository.dto.ApiRoomsAndInvitationsResponse
-import com.example.sharespace.core.data.repository.dto.ApiTask
-import com.example.sharespace.core.data.repository.dto.ApiUser
-import com.google.gson.annotations.SerializedName
+import com.example.sharespace.core.data.repository.dto.auth.ApiCreateAccountRequest
+import com.example.sharespace.core.data.repository.dto.auth.ApiCreateAccountResponse
+import com.example.sharespace.core.data.repository.dto.auth.ApiLoginRequest
+import com.example.sharespace.core.data.repository.dto.auth.ApiLoginResponse
+import com.example.sharespace.core.data.repository.dto.rooms.ApiCreateRoomRequest
+import com.example.sharespace.core.data.repository.dto.rooms.ApiInviteUserToRoomRequest
+import com.example.sharespace.core.data.repository.dto.rooms.ApiJoinedRoomsResponse
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRespondToRoomInviteRequest
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRespondToRoomInviteResponse
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRoom
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomInvitation
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomInvitesResponse
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomMembersResponse
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomsAndInvitationsResponse
+import com.example.sharespace.core.data.repository.dto.tasks.ApiCreateTaskRequest
+import com.example.sharespace.core.data.repository.dto.tasks.ApiCreateTaskResponse
+import com.example.sharespace.core.data.repository.dto.tasks.ApiTask
+import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskRequest
+import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskResponse
+import com.example.sharespace.core.data.repository.dto.users.ApiPatchProfileRequest
+import com.example.sharespace.core.data.repository.dto.users.ApiUser
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -25,43 +29,6 @@ import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.DELETE
-
-data class RoomsAndInvitesResponse(
-    val joinedRooms: List<ApiRoom>,
-    val roomInvitations: List<ApiRoomInvitation>
-)
-
-data class CreateTaskRequest(
-    val title: String,
-    val date: String,
-    val description: String,
-    val assignees: List<Assignee>,
-    val frequency: String,
-    val repeat: String
-)
-
-data class PatchProfileRequest(
-    val name: String,
-    val username: String,
-    val profile_picture_url: String
-)
-
-
-data class Assignee(
-    @SerializedName("user_id")
-    val userId: Int,
-
-    @SerializedName("status")
-    val status: String
-)
-
-data class CreateTaskResponse(
-    val message: String
-)
-data class DeleteResponse(
-    val message: String
-)
-
 
 interface ApiService {
 
@@ -82,15 +49,13 @@ interface ApiService {
 
     @GET("users/user_details/{userId}") // This is for getting any user by ID
     suspend fun getUserDetailsById(
-        @Path("userId") userId: Int,
-        @Header("Authorization") token: String
+        @Path("userId") userId: Int, @Header("Authorization") token: String
     ): Response<ApiUser>
 
-//    @PATCH("users/update_profile")
-//    suspend fun updateProfile(
-//        @Header("Authorization") token: String,
-//        @Body request: UpdateProfileRequest
-//    ): Response<UpdateProfileResponse>
+    @PATCH("users/update_profile")
+    suspend fun patchUserProfile(
+        @Header("Authorization") token: String, @Body request: ApiPatchProfileRequest
+    ): Response<ApiUser>
 
     // --- Rooms ---
     @GET("rooms/rooms-and-invitations")
@@ -110,20 +75,17 @@ interface ApiService {
 
     @GET("rooms/{roomId}/members")
     suspend fun getRoomMembers(
-        @Path("roomId") roomId: Int,
-        @Header("Authorization") token: String
+        @Path("roomId") roomId: Int, @Header("Authorization") token: String
     ): Response<ApiRoomMembersResponse>
 
     @GET("rooms/{roomId}")
     suspend fun getRoomInfo(
-        @Path("roomId") roomId: Int,
-        @Header("Authorization") token: String
+        @Path("roomId") roomId: Int, @Header("Authorization") token: String
     ): Response<ApiRoom> // Returns a single ApiRoom
 
     @POST("rooms/create")
     suspend fun createRoom(
-        @Header("Authorization") token: String,
-        @Body request: ApiCreateRoomRequest
+        @Header("Authorization") token: String, @Body request: ApiCreateRoomRequest
     ): Response<ApiRoom>
 
     @POST("rooms/{room_id}/invite")
@@ -144,22 +106,22 @@ interface ApiService {
     // --- Tasks ---
     @GET("tasks/list/{roomId}")
     suspend fun getTasksForRoom(
-        @Path("roomId") roomId: Int,
-        @Header("Authorization") token: String
+        @Path("roomId") roomId: Int, @Header("Authorization") token: String
     ): Response<List<ApiTask>>
 
     @POST("tasks/create_task/{roomId}")
     suspend fun createTask(
         @Path("roomId") roomId: Int,
         @Header("Authorization") token: String,
-        @Body request: CreateTaskRequest
-    ): Response<CreateTaskResponse>
+        @Body request: ApiCreateTaskRequest
+    ): Response<ApiCreateTaskResponse>
 
-    @PATCH("users/update_profile")
-    suspend fun patchUserProfile(
+    @PATCH("tasks/{task_id}")
+    suspend fun updateTask(
+        @Path("task_id") taskId: Int,
         @Header("Authorization") token: String,
-        @Body request: PatchProfileRequest
-    ): Response<ApiUser>
+        @Body request: ApiUpdateTaskRequest
+    ): Response<ApiUpdateTaskResponse>
 
     @DELETE("tasks/delete/{taskId}")
     suspend fun deleteTask(

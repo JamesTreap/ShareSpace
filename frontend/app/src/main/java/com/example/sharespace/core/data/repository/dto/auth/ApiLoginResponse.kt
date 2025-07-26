@@ -1,4 +1,4 @@
-package com.example.sharespace.core.data.repository.dto
+package com.example.sharespace.core.data.repository.dto.auth
 
 data class ApiLoginResponse(
     val token: String? = null,

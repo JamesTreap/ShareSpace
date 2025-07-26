@@ -2,9 +2,6 @@ package com.example.sharespace.core.data.repository
 
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Interface for managing user session data stored in DataStore Preferences.
- */
 interface UserSessionRepository {
 
     /**
@@ -20,6 +17,13 @@ interface UserSessionRepository {
     val activeRoomIdFlow: Flow<Int?>
 
     /**
+     * A flow that emits the ID of the currently logged-in user.
+     * Emits null if no user ID is stored or if it's cleared.
+     * The ID corresponds to the 'id' field from ApiUser.
+     */
+    val currentUserIdFlow: Flow<Int?> // Changed to Int
+
+    /**
      * Saves the user's authentication token.
      * @param token The token to save.
      */
@@ -32,6 +36,12 @@ interface UserSessionRepository {
     suspend fun saveActiveRoomId(roomId: Int?)
 
     /**
+     * Saves the ID of the current user.
+     * @param userId The ID of the user to save. Pass null to clear the current user ID.
+     */
+    suspend fun saveCurrentUserId(userId: Int?)
+
+    /**
      * Clears the stored user authentication token.
      */
     suspend fun clearUserToken()
@@ -42,7 +52,12 @@ interface UserSessionRepository {
     suspend fun clearActiveRoomId()
 
     /**
-     * Clears all stored session data (token and active room ID).
+     * Clears the stored current user ID.
+     */
+    suspend fun clearCurrentUserId()
+
+    /**
+     * Clears all stored session data (token, active room ID, and current user ID).
      */
     suspend fun clearAllSessionData()
 }
