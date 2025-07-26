@@ -22,7 +22,8 @@ import kotlinx.coroutines.launch
 import com.example.sharespace.core.data.repository.dto.ApiUser
 import com.example.sharespace.core.ui.components.Avatar
 import kotlinx.coroutines.withContext
-
+import com.example.sharespace.core.ui.components.StyledTextField
+import com.example.sharespace.core.ui.components.StyledCircleLoader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +34,7 @@ fun EditTaskScreen(
     val context = LocalContext.current
     val userSessionRepository = (context.applicationContext as ShareSpaceApplication).container.userSessionRepository
     var token by remember { mutableStateOf<String?>(null) }
-
+    var roomId by remember { mutableStateOf<Int?>(null) }
     var taskToEdit by remember { mutableStateOf<ApiTask?>(null) }
     var title by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
@@ -44,10 +45,16 @@ fun EditTaskScreen(
     var userList by remember { mutableStateOf<List<ApiUser>>(emptyList()) }
     var assigneeStatuses by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         userSessionRepository.userTokenFlow.collect { storedToken ->
             token = storedToken?.let { "Bearer $it" }
+        }
+    }
+    LaunchedEffect(Unit) {
+        userSessionRepository.activeRoomIdFlow.collect { storedRoomId ->
+            roomId = storedRoomId
         }
     }
 
@@ -55,35 +62,41 @@ fun EditTaskScreen(
         token?.let { authToken ->
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    val roomId = 7
+                    println("TOKEN: $token")
+                    println("ROOMID: $roomId")
 
-                    val taskRes = ApiClient.apiService.getTasksForRoom(roomId, authToken)
-                    val userRes = ApiClient.apiService.getRoomMembers(roomId, authToken)
+                    val taskRes = roomId?.let { ApiClient.apiService.getTasksForRoom(it, authToken) }
+                    val userRes = roomId?.let { ApiClient.apiService.getRoomMembers(it, authToken) }
 
-                    if (taskRes.isSuccessful && userRes.isSuccessful) {
-                        val allTasks = taskRes.body() ?: emptyList()
-                        val foundTask = allTasks.find { it.id == taskId }
+                    if (taskRes != null) {
+                        if (userRes != null) {
+                            if (taskRes.isSuccessful && userRes.isSuccessful) {
+                                val allTasks = taskRes.body() ?: emptyList()
+                                val foundTask = allTasks.find { it.id == taskId }
 
-                        val roommates = userRes.body()?.roommates ?: emptyList()
+                                val roommates = userRes.body()?.roommates ?: emptyList()
 
-                        withContext(Dispatchers.Main) {
-                            userList = roommates
-                            if (foundTask != null) {
-                                taskToEdit = foundTask
-                                title = foundTask.title
-                                description = foundTask.description ?: ""
-                                date = foundTask.deadline.substringBefore("T")
-                                time = foundTask.deadline.substringAfter("T")
-                                occurs = foundTask.frequency ?: ""
-                                repeats = foundTask.repeat ?: ""
-                                assigneeStatuses = foundTask.statuses
+                                withContext(Dispatchers.Main) {
+                                    userList = roommates
+                                    if (foundTask != null) {
+                                        taskToEdit = foundTask
+                                        title = foundTask.title
+                                        description = foundTask.description ?: ""
+                                        date = foundTask.deadline.substringBefore("T")
+                                        time = foundTask.deadline.substringAfter("T")
+                                        occurs = foundTask.frequency ?: ""
+                                        repeats = foundTask.repeat ?: ""
+                                        assigneeStatuses = foundTask.statuses
+                                    } else {
+                                        errorMessage = "Task not found"
+                                    }
+                                    isLoading = false
+                                }
                             } else {
-                                errorMessage = "Task not found"
+                                withContext(Dispatchers.Main) {
+                                    errorMessage = "Failed to fetch data"
+                                }
                             }
-                        }
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            errorMessage = "Failed to fetch data"
                         }
                     }
                 } catch (e: Exception) {
@@ -113,7 +126,7 @@ fun EditTaskScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            OutlinedTextField(
+            StyledTextField(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text("Title") },
@@ -121,7 +134,7 @@ fun EditTaskScreen(
             )
 
             Row(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
+                StyledTextField(
                     value = date,
                     onValueChange = { date = it },
                     label = { Text("Date") },
@@ -129,7 +142,7 @@ fun EditTaskScreen(
                         .weight(1f)
                         .padding(end = 8.dp)
                 )
-                OutlinedTextField(
+                StyledTextField(
                     value = time,
                     onValueChange = { time = it },
                     label = { Text("Time") },
@@ -137,7 +150,7 @@ fun EditTaskScreen(
                 )
             }
 
-            OutlinedTextField(
+            StyledTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description") },
@@ -147,7 +160,7 @@ fun EditTaskScreen(
             )
 
             Row(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
+                StyledTextField(
                     value = occurs,
                     onValueChange = { occurs = it },
                     label = { Text("Occurs") },
@@ -155,7 +168,7 @@ fun EditTaskScreen(
                         .weight(1f)
                         .padding(end = 8.dp)
                 )
-                OutlinedTextField(
+                StyledTextField(
                     value = repeats,
                     onValueChange = { repeats = it },
                     label = { Text("Number of repeats") },
@@ -164,43 +177,48 @@ fun EditTaskScreen(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            Text("Assigned Users", fontWeight = FontWeight.Bold)
 
-            userList.forEach { user ->
-                val userIdStr = user.id.toString()
-                var statusText by remember { mutableStateOf(assigneeStatuses[userIdStr] ?: "TODO") }
+            if (isLoading) {
+                StyledCircleLoader(modifier = Modifier.align(Alignment.CenterHorizontally))
+            } else {
+                Text("Assigned Users", fontWeight = FontWeight.Bold)
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp)
-                ) {
-                    Avatar(
-                        photoUrl = user.profilePictureUrl,
-                        contentDescription = "${user.name}'s avatar",
-                        size = 40.dp
-                    )
+                userList.forEach { user ->
+                    val userIdStr = user.id.toString()
+                    var statusText by remember { mutableStateOf(assigneeStatuses[userIdStr] ?: "TODO") }
 
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(user.name, modifier = Modifier.weight(1f))
-
-                    OutlinedTextField(
-                        value = statusText,
-                        onValueChange = {
-                            statusText = it
-                            assigneeStatuses = assigneeStatuses.toMutableMap().also { map ->
-                                map[userIdStr] = it
-                            }
-                        },
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .width(200.dp)
-                            .padding(start = 8.dp),
-                        singleLine = true
-                    )
-                }
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)
+                    ) {
+                        Avatar(
+                            photoUrl = user.profilePictureUrl,
+                            contentDescription = "${user.name}'s avatar",
+                            size = 40.dp
+                        )
 
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(user.name, modifier = Modifier.weight(1f))
+
+                        StyledTextField(
+                            value = statusText,
+                            onValueChange = {
+                                statusText = it
+                                assigneeStatuses = assigneeStatuses.toMutableMap().also { map ->
+                                    map[userIdStr] = it
+                                }
+                            },
+                            modifier = Modifier
+                                .width(200.dp)
+                                .padding(start = 8.dp),
+                            singleLine = true
+                        )
+                    }
+                }
             }
+
 
             Spacer(modifier = Modifier.height(8.dp))
 

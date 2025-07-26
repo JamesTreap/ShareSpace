@@ -48,17 +48,18 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import com.example.sharespace.core.ui.components.StyledTextField
+import com.example.sharespace.core.ui.components.StyledCheckbox
+import com.example.sharespace.core.ui.components.StyledCircleLoader
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(
-    roomId: Int = 7,
     onNavigateBack: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val userSessionRepository = (context.applicationContext as ShareSpaceApplication).container.userSessionRepository
-
     var token by remember { mutableStateOf<String?>(null) }
     var title by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
@@ -69,27 +70,36 @@ fun AddTaskScreen(
     var userList by remember { mutableStateOf<List<ApiUser>>(emptyList()) }
     var selectedUserIds by remember { mutableStateOf(setOf<Int>()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var roomId by remember { mutableStateOf<Int?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         userSessionRepository.userTokenFlow.collect { storedToken ->
             token = storedToken?.let { "Bearer $it" }
         }
     }
-
+    LaunchedEffect(Unit) {
+        userSessionRepository.activeRoomIdFlow.collect { storedRoomId ->
+            roomId = storedRoomId
+        }
+    }
     LaunchedEffect(token) {
         token?.let { authToken ->
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    val response = ApiClient.apiService.getRoomMembers(roomId, authToken)
-                    if (response.isSuccessful) {
-                        val roommates = response.body()?.roommates ?: emptyList()
-                        withContext(Dispatchers.Main) {
-                            userList = roommates
-                            selectedUserIds = roommates.map { it.id }.toSet()
-                        }
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            errorMessage = "Failed to fetch roommates"
+                    val response = roomId?.let { ApiClient.apiService.getRoomMembers(it, authToken) }
+                    if (response != null) {
+                        if (response.isSuccessful) {
+                            val roommates = response.body()?.roommates ?: emptyList()
+                            withContext(Dispatchers.Main) {
+                                userList = roommates
+                                selectedUserIds = roommates.map { it.id }.toSet()
+                                isLoading = false
+                            }
+                        } else {
+                            withContext(Dispatchers.Main) {
+                                errorMessage = "Failed to fetch roommates"
+                            }
                         }
                     }
                 } catch (e: Exception) {
@@ -119,7 +129,7 @@ fun AddTaskScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            OutlinedTextField(
+            StyledTextField(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text("Title") },
@@ -127,7 +137,7 @@ fun AddTaskScreen(
             )
 
             Row(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
+                StyledTextField(
                     value = date,
                     onValueChange = { date = it },
                     label = { Text("Date") },
@@ -136,7 +146,7 @@ fun AddTaskScreen(
                         .weight(1f)
                         .padding(end = 8.dp)
                 )
-                OutlinedTextField(
+                StyledTextField(
                     value = time,
                     onValueChange = { time = it },
                     label = { Text("Time") },
@@ -145,7 +155,7 @@ fun AddTaskScreen(
                 )
             }
 
-            OutlinedTextField(
+            StyledTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description") },
@@ -155,7 +165,7 @@ fun AddTaskScreen(
             )
 
             Row(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
+                StyledTextField(
                     value = occurs,
                     onValueChange = { occurs = it },
                     label = { Text("Occurs") },
@@ -163,7 +173,7 @@ fun AddTaskScreen(
                         .weight(1f)
                         .padding(end = 8.dp)
                 )
-                OutlinedTextField(
+                StyledTextField(
                     value = repeats,
                     onValueChange = { repeats = it },
                     label = { Text("Number of repeats") },
@@ -172,34 +182,40 @@ fun AddTaskScreen(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            Text("Assign To", fontWeight = FontWeight.Bold)
 
-            userList.forEach { user ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp)
-                ) {
-                    Avatar(
-                        photoUrl = user.profilePictureUrl,
-                        contentDescription = "${user.name}'s avatar",
-                        size = 40.dp
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(user.name, modifier = Modifier.weight(1f))
-                    Checkbox(
-                        checked = selectedUserIds.contains(user.id),
-                        onCheckedChange = {
-                            selectedUserIds = if (it) {
-                                selectedUserIds + user.id
-                            } else {
-                                selectedUserIds - user.id
+            if (isLoading) {
+                StyledCircleLoader(modifier = Modifier.align(Alignment.CenterHorizontally))
+            } else {
+                Text("Assign To", fontWeight = FontWeight.Bold)
+
+                userList.forEach { user ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)
+                    ) {
+                        Avatar(
+                            photoUrl = user.profilePictureUrl,
+                            contentDescription = "${user.name}'s avatar",
+                            size = 40.dp
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(user.name, modifier = Modifier.weight(1f))
+                        StyledCheckbox(
+                            checked = selectedUserIds.contains(user.id),
+                            onCheckedChange = {
+                                selectedUserIds = if (it) {
+                                    selectedUserIds + user.id
+                                } else {
+                                    selectedUserIds - user.id
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
+
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -233,18 +249,22 @@ fun AddTaskScreen(
                             Log.d("TASK_JSON", gson.toJson(request))
 
 
-                            val res = ApiClient.apiService.createTask(
-                                roomId,
-                                request = request,
-                                token = authToken
-                            )
-                            if (res.isSuccessful) {
-                                withContext(Dispatchers.Main) {
-                                    onNavigateBack?.invoke()
-                                }
-                            } else {
-                                withContext(Dispatchers.Main) {
-                                    errorMessage = "Failed to create task: ${res.code()}"
+                            val res = roomId?.let {
+                                ApiClient.apiService.createTask(
+                                    it,
+                                    request = request,
+                                    token = authToken
+                                )
+                            }
+                            if (res != null) {
+                                if (res.isSuccessful) {
+                                    withContext(Dispatchers.Main) {
+                                        onNavigateBack?.invoke()
+                                    }
+                                } else {
+                                    withContext(Dispatchers.Main) {
+                                        errorMessage = "Failed to create task: ${res.code()}"
+                                    }
                                 }
                             }
                         } catch (e: Exception) {
