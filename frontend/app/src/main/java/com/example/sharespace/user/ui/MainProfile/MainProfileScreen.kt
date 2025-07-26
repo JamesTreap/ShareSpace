@@ -1,5 +1,6 @@
 package com.example.sharespace.ui.screens.profile
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -68,8 +69,11 @@ fun MainProfileScreen(
         viewModel.onProfileScreenEntered()
     }
 
+
     viewModel.loadData()
 
+
+    Log.d("MainProfileScreen", "User: $user, Rooms: $rooms, Invites: $invites")
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -117,16 +121,16 @@ fun MainProfileScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-//            invites.forEach { room ->
-//                RoomCard(
-//                    room = room, showAction = true,
-//                    acceptInvite = { viewModel.acceptInvite() },
-//                    declineInvite = { viewModel.declineInvite() },
-//                    room.notifications,
-//                    navigateToRoom = onNavigateToRoom
-//                )
-//                Spacer(modifier = Modifier.height(8.dp))
-//            }
+            invites.forEach { room ->
+                RoomCard(
+                    room = room, showAction = true,
+                    acceptInvite = { viewModel.acceptInvite() },
+                    declineInvite = { viewModel.declineInvite() },
+                    room.alerts,
+                    navigateToRoom = onNavigateToRoom
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
             Button(
                 onClick = {
                     coroutineScope.launch {

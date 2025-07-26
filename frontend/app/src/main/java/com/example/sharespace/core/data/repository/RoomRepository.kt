@@ -24,6 +24,16 @@ interface RoomRepository {
      */
     suspend fun getJoinedRooms(token: String): List<ApiRoom>
 
+
+    /**
+     * Fetches the list of room invitations for the current user.
+     * @return A list of room invitations.
+     * @throws IllegalStateException if the HTTP call is successful (2xx) but the response body is null (and the DTO implies non-null data).
+     * @throws retrofit2.HttpException if the server returns a non-2xx HTTP status.
+     * @throws java.io.IOException for network issues or other I/O problems during the request.
+     */
+    suspend fun getRoomInvitations(token: String): List<ApiRoom>
+
     /**
      * Fetches detailed information for a specific room.
      * @param roomId The ID of the room to fetch.

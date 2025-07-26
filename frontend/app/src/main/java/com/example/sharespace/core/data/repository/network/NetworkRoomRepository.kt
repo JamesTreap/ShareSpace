@@ -1,5 +1,6 @@
 package com.example.sharespace.core.data.repository.network
 
+// Result class import is removed
 import com.example.sharespace.core.data.remote.ApiService
 import com.example.sharespace.core.data.repository.RoomRepository
 import com.example.sharespace.core.data.repository.dto.rooms.ApiCreateRoomRequest
@@ -12,6 +13,9 @@ import com.example.sharespace.core.data.repository.dto.users.ApiUser
 import retrofit2.HttpException
 
 class NetworkRoomRepository(private val apiService: ApiService) : RoomRepository {
+
+    // The safeApiCall helper function is removed.
+
     override suspend fun getRoomsAndUserInvitations(token: String): Pair<List<ApiRoom>, List<ApiRoomInvitation>> {
         val response = apiService.getRoomsAndInvites("Bearer $token")
         if (response.isSuccessful) {
@@ -26,11 +30,29 @@ class NetworkRoomRepository(private val apiService: ApiService) : RoomRepository
     override suspend fun getJoinedRooms(token: String): List<ApiRoom> {
         val response = apiService.getJoinedRooms("Bearer $token")
         if (response.isSuccessful) {
+            // Assuming joinedRooms in the DTO can be null, provide a default emptyList.
+            // If it's non-nullable in your DTO, then `response.body()?.joinedRooms!!` or
+            // handle a null body with an IllegalStateException as above.
             return response.body()?.joinedRooms ?: emptyList()
         } else {
             throw HttpException(response)
         }
     }
+
+    override suspend fun getRoomInvitations(token: String): List<ApiRoom> {
+        val response = apiService.getRoomInvites("Bearer $token")
+        if (response.isSuccessful) {
+            // Assuming roomInvitations in the DTO can be null, provide a default emptyList.
+            // If it's non-nullable in your DTO, then `response.body()?.roomInvitations!!` or
+            // handle a null body with an IllegalStateException as above.
+            return (response.body()?.invitedRooms ?: emptyList())
+        } else {
+            throw HttpException(response)
+        }
+    }
+
+    // The getPendingRoomInvitations method was commented out, so I'll keep it that way.
+    // If you uncomment it, apply the same pattern.
 
     override suspend fun getRoomDetails(token: String, roomId: Int): ApiRoom {
         val response = apiService.getRoomInfo(roomId = roomId, token = "Bearer $token")
@@ -45,6 +67,7 @@ class NetworkRoomRepository(private val apiService: ApiService) : RoomRepository
     override suspend fun getRoomMembers(token: String, roomId: Int): List<ApiUser> {
         val response = apiService.getRoomMembers(roomId = roomId, token = "Bearer $token")
         if (response.isSuccessful) {
+            // Similar to getJoinedRooms, handle potential nullability based on your DTO.
             return response.body()?.roommates ?: emptyList()
         } else {
             throw HttpException(response)
