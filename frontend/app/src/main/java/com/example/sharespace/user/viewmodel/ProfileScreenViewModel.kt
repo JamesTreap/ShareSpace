@@ -27,12 +27,12 @@ class ProfileScreenViewModel(
     // backing state
     private val _user = mutableStateOf<User?>(null)
     private val _rooms = MutableStateFlow<List<Room>>(emptyList())
-    private val _invites = MutableStateFlow<List<RoomInvitation>>(emptyList())
+    private val _invites = MutableStateFlow<List<Room>>(emptyList())
 
     // public streams
     val user: MutableState<User?> = _user
     val rooms: StateFlow<List<Room>> = _rooms
-    val invites: MutableStateFlow<List<RoomInvitation>> = _invites
+    val invites: MutableStateFlow<List<Room>> = _invites
 
 
     fun acceptInvite() {
@@ -82,7 +82,7 @@ class ProfileScreenViewModel(
                     Room(apiRoom)
                 }
                 _invites.value = apiRoomInvites.map { apiInvite ->
-                    RoomInvitation(apiInvite)
+                    Room(apiInvite)
                 }
 
             } catch (e: Exception) {

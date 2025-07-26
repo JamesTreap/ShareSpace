@@ -12,7 +12,7 @@ import com.example.sharespace.core.data.repository.dto.users.ApiUser
 import retrofit2.HttpException
 
 class NetworkRoomRepository(private val apiService: ApiService) : RoomRepository {
-    override suspend fun getRoomsAndUserInvitations(token: String): Pair<List<ApiRoom>, List<ApiRoomInvitation>> {
+    override suspend fun getRoomsAndUserInvitations(token: String): Pair<List<ApiRoom>, List<ApiRoom>> {
         val response = apiService.getRoomsAndInvites("Bearer $token")
         if (response.isSuccessful) {
             val body = response.body()

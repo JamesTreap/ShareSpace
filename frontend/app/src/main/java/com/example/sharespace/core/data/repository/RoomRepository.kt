@@ -13,7 +13,7 @@ interface RoomRepository {
      * @throws retrofit2.HttpException if the server returns a non-2xx HTTP status.
      * @throws java.io.IOException for network issues or other I/O problems during the request.
      */
-    suspend fun getRoomsAndUserInvitations(token: String): Pair<List<ApiRoom>, List<ApiRoomInvitation>>
+    suspend fun getRoomsAndUserInvitations(token: String): Pair<List<ApiRoom>, List<ApiRoom>>
 
     /**
      * Fetches only the rooms the current user has joined.

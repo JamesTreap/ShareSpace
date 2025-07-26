@@ -18,7 +18,7 @@ class ProfileRepository(var api: ApiService) {
         return response.body() ?: throw IllegalStateException("User body was null")
     }
 
-    suspend fun getRoomsAndInvites(token: String): Pair<List<ApiRoom>, List<ApiRoomInvitation>> {
+    suspend fun getRoomsAndInvites(token: String): Pair<List<ApiRoom>, List<ApiRoom>> {
         val response = api.getRoomsAndInvites("Bearer $token")
         if (!response.isSuccessful) {
             throw HttpException(response)
