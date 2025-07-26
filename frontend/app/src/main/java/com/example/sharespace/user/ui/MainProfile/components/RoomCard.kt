@@ -42,37 +42,36 @@ fun RoomCard(
     numOfNotifications: Int,
     navigateToRoom: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        border = BorderStroke(1.dp, Color.LightGray),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        onClick = navigateToRoom
-    ) {
-        Row(
-            modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+    if (showAction) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            border = BorderStroke(1.dp, Color.LightGray),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
+            Row(
+                modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-            Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(8.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = room.name,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.Black,
-                )
-                val memberLabel = if (room.members.size == 1) "member" else "members"
-                val dueColor = if (room.balanceDue > 0f) AlertRed else TextSecondary
-                Text(
-                    text = "${room.members.size} $memberLabel | ${formatCurrency(room.balanceDue)} due",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = dueColor
-                )
-            }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = room.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.Black,
+                    )
+                    val memberLabel = if (room.members.size == 1) "member" else "members"
+                    val dueColor = if (room.balanceDue > 0f) AlertRed else TextSecondary
+                    Text(
+                        text = "${room.members.size} $memberLabel | ${formatCurrency(room.balanceDue)} due",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = dueColor
+                    )
+                }
 
-            if (showAction) {
                 Row { // Use Row for side-by-side buttons
                     Button(
                         onClick = acceptInvite,
@@ -96,7 +95,39 @@ fun RoomCard(
                         )
                     }
                 }
-            } else {
+            }
+        }
+    } else {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            border = BorderStroke(1.dp, Color.LightGray),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            onClick = navigateToRoom
+        ) {
+            Row(
+                modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = room.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.Black,
+                    )
+                    val memberLabel = if (room.members.size == 1) "member" else "members"
+                    val dueColor = if (room.balanceDue > 0f) AlertRed else TextSecondary
+                    Text(
+                        text = "${room.members.size} $memberLabel | ${formatCurrency(room.balanceDue)} due",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = dueColor
+                    )
+                }
+
                 val badgeColor = if (numOfNotifications > 0) AlertRed else Color(0xFFE0E0E0)
                 Box(
                     modifier = Modifier

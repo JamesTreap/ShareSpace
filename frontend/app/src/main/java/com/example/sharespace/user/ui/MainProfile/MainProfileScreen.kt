@@ -126,7 +126,7 @@ fun MainProfileScreen(
                     acceptInvite = { viewModel.acceptInvite() },
                     declineInvite = { viewModel.declineInvite() },
                     room.alerts,
-                    navigateToRoom = onNavigateToRoom
+                    navigateToRoom = { }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
