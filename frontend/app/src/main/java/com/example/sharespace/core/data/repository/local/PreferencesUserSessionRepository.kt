@@ -30,7 +30,7 @@ class PreferencesUserSessionRepository(private val dataStore: DataStore<Preferen
             }
         }
         .map { preferences ->
-            preferences[SessionKeys.USER_TOKEN]
+            preferences[USER_TOKEN]
         }
 
     override val activeRoomIdFlow: Flow<Int?> = dataStore.data
@@ -42,7 +42,7 @@ class PreferencesUserSessionRepository(private val dataStore: DataStore<Preferen
             }
         }
         .map { preferences ->
-            preferences[SessionKeys.ACTIVE_ROOM_ID]
+            preferences[ACTIVE_ROOM_ID]
         }
 
     // New Flow for Current User ID
@@ -55,21 +55,21 @@ class PreferencesUserSessionRepository(private val dataStore: DataStore<Preferen
             }
         }
         .map { preferences ->
-            preferences[SessionKeys.CURRENT_USER_ID]
+            preferences[CURRENT_USER_ID]
         }
 
     override suspend fun saveUserToken(token: String) {
         dataStore.edit { preferences ->
-            preferences[SessionKeys.USER_TOKEN] = token
+            preferences[USER_TOKEN] = token
         }
     }
 
     override suspend fun saveActiveRoomId(roomId: Int?) {
         dataStore.edit { preferences ->
             if (roomId != null) {
-                preferences[SessionKeys.ACTIVE_ROOM_ID] = roomId
+                preferences[ACTIVE_ROOM_ID] = roomId
             } else {
-                preferences.remove(SessionKeys.ACTIVE_ROOM_ID)
+                preferences.remove(ACTIVE_ROOM_ID)
             }
         }
     }
@@ -78,29 +78,29 @@ class PreferencesUserSessionRepository(private val dataStore: DataStore<Preferen
     override suspend fun saveCurrentUserId(userId: Int?) {
         dataStore.edit { preferences ->
             if (userId != null) {
-                preferences[SessionKeys.CURRENT_USER_ID] = userId
+                preferences[CURRENT_USER_ID] = userId
             } else {
-                preferences.remove(SessionKeys.CURRENT_USER_ID)
+                preferences.remove(CURRENT_USER_ID)
             }
         }
     }
 
     override suspend fun clearUserToken() {
         dataStore.edit { preferences ->
-            preferences.remove(SessionKeys.USER_TOKEN)
+            preferences.remove(USER_TOKEN)
         }
     }
 
     override suspend fun clearActiveRoomId() {
         dataStore.edit { preferences ->
-            preferences.remove(SessionKeys.ACTIVE_ROOM_ID)
+            preferences.remove(ACTIVE_ROOM_ID)
         }
     }
 
     // New function to clear Current User ID
     override suspend fun clearCurrentUserId() {
         dataStore.edit { preferences ->
-            preferences.remove(SessionKeys.CURRENT_USER_ID)
+            preferences.remove(CURRENT_USER_ID)
         }
     }
 

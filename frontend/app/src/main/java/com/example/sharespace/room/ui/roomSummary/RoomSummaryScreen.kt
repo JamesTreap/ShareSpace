@@ -22,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.sharespace.room.ui.roomSummary.components.RecentBillsSection
 import com.example.sharespace.room.ui.roomSummary.components.RoomSummaryTopAppBar
 import com.example.sharespace.room.ui.roomSummary.components.RoommatesSection
 import com.example.sharespace.room.ui.roomSummary.components.UpcomingTasksSection
@@ -135,6 +134,7 @@ fun RoomSummaryScreen(
                         CircularProgressIndicator()
                     }
                 }
+
                 is TasksUiState.Success -> {
                     UpcomingTasksSection(
                         tasks = currentTasksState.tasks,
@@ -143,6 +143,7 @@ fun RoomSummaryScreen(
                         onViewAll = onViewTasksClick,
                     )
                 }
+
                 is TasksUiState.Empty -> {
                     // You might want a specific UI for when there are no tasks
                     Column(
@@ -158,6 +159,7 @@ fun RoomSummaryScreen(
                         }
                     }
                 }
+
                 is TasksUiState.Error -> {
                     Column(
                         modifier = Modifier
@@ -166,8 +168,7 @@ fun RoomSummaryScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            "Failed to load tasks.",
-                            color = MaterialTheme.colorScheme.error
+                            "Failed to load tasks.", color = MaterialTheme.colorScheme.error
                         )
                         Spacer(Modifier.height(8.dp))
                         Button(onClick = { viewModel.fetchTasks() }) { // Retry fetching tasks
