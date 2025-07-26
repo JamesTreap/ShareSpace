@@ -117,7 +117,7 @@ interface ApiService {
         @Body request: ApiCreateTaskRequest
     ): Response<ApiCreateTaskResponse>
 
-    @PATCH("tasks/{task_id}")
+    @PATCH("tasks/update_task/{task_id}")
     suspend fun updateTask(
         @Path("task_id") taskId: Int,
         @Header("Authorization") token: String,

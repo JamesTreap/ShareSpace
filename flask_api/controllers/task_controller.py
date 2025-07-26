@@ -62,7 +62,13 @@ def update_task_details(task_id):
     data = request.get_json(silent=True) or {}
     title = data.get("title")
     description = data.get("description")
-    deadline = data.get("date")
+    from datetime import datetime
+
+    date_str = data.get("date")
+    try:
+        deadline = datetime.fromisoformat(date_str) if date_str else None
+    except ValueError:
+        abort(400, description="Invalid date format. Use ISO 8601 (e.g., '2024-12-10T08:24:00').")
     assignees = data.get("assignees", [])
 
     TaskService.update_task(task_id, title, description, deadline, assignees)

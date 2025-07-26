@@ -1,5 +1,6 @@
 package com.example.sharespace.ui.screens.tasks
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -24,6 +25,9 @@ import com.example.sharespace.core.ui.components.Avatar
 import kotlinx.coroutines.withContext
 import com.example.sharespace.core.ui.components.StyledTextField
 import com.example.sharespace.core.ui.components.StyledCircleLoader
+import com.example.sharespace.core.data.repository.dto.tasks.ApiAssignee
+import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskRequest
+import com.google.gson.Gson
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -164,6 +168,7 @@ fun EditTaskScreen(
                     value = occurs,
                     onValueChange = { occurs = it },
                     label = { Text("Occurs") },
+                    enabled = false,
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 8.dp)
@@ -172,6 +177,7 @@ fun EditTaskScreen(
                     value = repeats,
                     onValueChange = { repeats = it },
                     label = { Text("Number of repeats") },
+                    enabled = false,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -185,7 +191,7 @@ fun EditTaskScreen(
 
                 userList.forEach { user ->
                     val userIdStr = user.id.toString()
-                    var statusText by remember { mutableStateOf(assigneeStatuses[userIdStr] ?: "TODO") }
+                    var statusText by remember { mutableStateOf(assigneeStatuses[userIdStr] ?: "NOT ASSIGNED") }
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -210,11 +216,13 @@ fun EditTaskScreen(
                                     map[userIdStr] = it
                                 }
                             },
+                            enabled = statusText != "NOT ASSIGNED",
                             modifier = Modifier
                                 .width(200.dp)
                                 .padding(start = 8.dp),
                             singleLine = true
-                        )
+
+                            )
                     }
                 }
             }
@@ -228,7 +236,52 @@ fun EditTaskScreen(
 
             Button(
                 onClick = {
-                    // Update functionality to be implemented
+                    val finalToken = token
+                    val finalRoomId = roomId
+                    val taskIdFinal = taskId
+
+                    if (finalToken != null && finalRoomId != null) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                val assigneeList = assigneeStatuses.map { (userId, status) ->
+                                    ApiAssignee(
+                                        userId = userId,
+                                        status = status.lowercase()
+                                    )
+                                }
+
+                                val finalRrequest = ApiUpdateTaskRequest(
+                                    title = title,
+                                    date = "${date}T${time}",
+                                    description = description,
+                                    assignees = assigneeList
+                                )
+
+//                                Gson().toJson(finalRrequest)
+//                                Log.d("UpdateTask", "Payload: $finalRrequest")
+//                                Log.d("UpdateTask", "Token: $token")
+//                                Log.d("UpdateTask", "taskIdFinal: $taskIdFinal")
+
+                                val response = ApiClient.apiService.updateTask(
+                                    taskId = taskIdFinal,
+                                    token = finalToken,
+                                    request = finalRrequest
+                                )
+
+                                withContext(Dispatchers.Main) {
+                                    if (response.isSuccessful) {
+                                        onNavigateBack()
+                                    } else {
+                                        errorMessage = "Failed to update task: ${response.code()}"
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
+                                    errorMessage = "Error: ${e.localizedMessage}"
+                                }
+                            }
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
