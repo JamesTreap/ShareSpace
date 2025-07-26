@@ -29,6 +29,7 @@ import com.example.sharespace.room.ui.roomSummary.components.UpcomingTasksSectio
 import com.example.sharespace.room.viewmodel.RoomDetailsUiState
 import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
 import com.example.sharespace.room.viewmodel.RoomSummaryViewModel
+import com.example.sharespace.room.viewmodel.TasksUiState
 
 @Composable
 fun RoomSummaryScreen(
@@ -41,7 +42,7 @@ fun RoomSummaryScreen(
     onNavigateBack: () -> Unit
 ) {
     val bills by viewModel.bills.collectAsState()
-//    val tasks by viewModel.tasks.collectAsState()
+    val tasksState = viewModel.tasksUiState
     val roomDetailsState = viewModel.roomDetailsUiState
     val roommatesState = viewModel.roommatesUiState
 
@@ -121,12 +122,60 @@ fun RoomSummaryScreen(
                 }
             }
 
-            UpcomingTasksSection(
-                tasks = emptyList(),
-                onToggleDone = { },
-                onAdd = onAddTaskClick,
-                onViewAll = onViewTasksClick,
-            )
+
+            // render tasks section
+            when (val currentTasksState = tasksState) { // Use the collected state
+                is TasksUiState.Loading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                is TasksUiState.Success -> {
+                    UpcomingTasksSection(
+                        tasks = currentTasksState.tasks,
+                        onToggleDone = { },
+                        onAdd = onAddTaskClick,
+                        onViewAll = onViewTasksClick,
+                    )
+                }
+                is TasksUiState.Empty -> {
+                    // You might want a specific UI for when there are no tasks
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("No upcoming tasks.")
+                        Spacer(Modifier.height(8.dp))
+                        Button(onClick = onAddTaskClick) { // Allow adding a task
+                            Text("Add Task")
+                        }
+                    }
+                }
+                is TasksUiState.Error -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            "Failed to load tasks.",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Button(onClick = { viewModel.fetchTasks() }) { // Retry fetching tasks
+                            Text("Retry")
+                        }
+                    }
+                }
+            }
         }
     }
 }

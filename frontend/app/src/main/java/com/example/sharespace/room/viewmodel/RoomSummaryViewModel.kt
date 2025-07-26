@@ -194,7 +194,7 @@ class RoomSummaryViewModel(
     }
 
     fun updateTaskStatus(
-        taskToUpdate: Task, userIdToUpdate: String, newIndividualStatus: String
+        taskToUpdate: Task, newIndividualStatus: String
     ) {
         viewModelScope.launch {
             val tasksBeforeThisUpdate: List<Task>
@@ -208,7 +208,7 @@ class RoomSummaryViewModel(
                 )
                 return@launch
             }
-
+            val userIdToUpdate = userSessionRepository.currentUserIdFlow.first()?.toString() ?: ""
             val token = userSessionRepository.userTokenFlow.first()
             if (token == null) {
                 Log.w(TAG, "Cannot update task, missing token.")

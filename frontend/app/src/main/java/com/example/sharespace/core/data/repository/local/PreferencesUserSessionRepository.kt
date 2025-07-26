@@ -14,9 +14,11 @@ import java.io.IOException
 
 class PreferencesUserSessionRepository(private val dataStore: DataStore<Preferences>) :
     UserSessionRepository {
+
     companion object SessionKeys {
         val USER_TOKEN = stringPreferencesKey("user_token")
-        val ACTIVE_ROOM_ID = intPreferencesKey("active_room_id") // Use intPreferencesKey for Int
+        val ACTIVE_ROOM_ID = intPreferencesKey("active_room_id")
+        val CURRENT_USER_ID = intPreferencesKey("current_user_id") // New key for User ID
     }
 
     override val userTokenFlow: Flow<String?> = dataStore.data
@@ -43,6 +45,19 @@ class PreferencesUserSessionRepository(private val dataStore: DataStore<Preferen
             preferences[SessionKeys.ACTIVE_ROOM_ID]
         }
 
+    // New Flow for Current User ID
+    override val currentUserIdFlow: Flow<Int?> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[SessionKeys.CURRENT_USER_ID]
+        }
+
     override suspend fun saveUserToken(token: String) {
         dataStore.edit { preferences ->
             preferences[SessionKeys.USER_TOKEN] = token
@@ -59,6 +74,17 @@ class PreferencesUserSessionRepository(private val dataStore: DataStore<Preferen
         }
     }
 
+    // New function to save Current User ID
+    override suspend fun saveCurrentUserId(userId: Int?) {
+        dataStore.edit { preferences ->
+            if (userId != null) {
+                preferences[SessionKeys.CURRENT_USER_ID] = userId
+            } else {
+                preferences.remove(SessionKeys.CURRENT_USER_ID)
+            }
+        }
+    }
+
     override suspend fun clearUserToken() {
         dataStore.edit { preferences ->
             preferences.remove(SessionKeys.USER_TOKEN)
@@ -71,9 +97,16 @@ class PreferencesUserSessionRepository(private val dataStore: DataStore<Preferen
         }
     }
 
+    // New function to clear Current User ID
+    override suspend fun clearCurrentUserId() {
+        dataStore.edit { preferences ->
+            preferences.remove(SessionKeys.CURRENT_USER_ID)
+        }
+    }
+
     override suspend fun clearAllSessionData() {
         dataStore.edit { preferences ->
-            preferences.clear()
+            preferences.clear() // This will clear token, room ID, and user ID
         }
     }
 }
