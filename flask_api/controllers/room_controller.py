@@ -52,7 +52,8 @@ def get_user_rooms_and_invitations():
     ]
 
     joined_rooms_data = room_schema.dump(joined_rooms, many=True)
-    invitations_data = invs_schema.dump(pending_invitations, many=True)
+    invites = RoomService.get_invites_for_user(user.id)
+    invitations_data = room_schema.dump(invites, many=True)
     alert_window = datetime.utcnow() + timedelta(days=1)
 
     for i, room_data in enumerate(joined_rooms_data):
