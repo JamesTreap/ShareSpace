@@ -34,7 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.sharespace.core.data.local.TokenStorage
+import com.example.sharespace.ShareSpaceApplication
 import com.example.sharespace.core.data.remote.ApiClient
 import com.example.sharespace.core.data.repository.dto.tasks.ApiAssignee
 import com.example.sharespace.core.data.repository.dto.tasks.ApiCreateTaskRequest
@@ -57,6 +57,8 @@ fun AddTaskScreen(
     onNavigateBack: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val userSessionRepository = (context.applicationContext as ShareSpaceApplication).container.userSessionRepository
+
     var token by remember { mutableStateOf<String?>(null) }
     var title by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
@@ -69,7 +71,9 @@ fun AddTaskScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
-        token = TokenStorage.getToken(context)?.let { "Bearer $it" }
+        userSessionRepository.userTokenFlow.collect { storedToken ->
+            token = storedToken?.let { "Bearer $it" }
+        }
     }
 
     LaunchedEffect(token) {

@@ -35,7 +35,7 @@ class RoomInvitation(db.Model, TimestampMixin):
     inviter_user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
     invitee_user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
     status: Mapped[str] = mapped_column(
-        db.Enum("waiting", "accepted", "declined", name="inv_status"),
+        db.Enum("waiting", "accepted", "rejected", name="inv_status"),
         default="waiting",
     )
 
