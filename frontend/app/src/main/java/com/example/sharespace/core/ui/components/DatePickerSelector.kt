@@ -37,6 +37,8 @@ fun DatePickerSelector(
         value = selectedDate,
         onValueChange = { },
         readOnly = true,
+        label = { Text("Date") },
+        placeholder = { Text("YYYY-MM-DD") },
         modifier = modifier.fillMaxWidth(),
         trailingIcon = {
             IconButton(onClick = { showDatePicker = true }) {
@@ -52,9 +54,11 @@ fun DatePickerSelector(
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
-                        val formattedDate = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-                            .format(Date(millis))
+                        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        formatter.timeZone = TimeZone.getTimeZone("UTC")
+                        val formattedDate = formatter.format(Date(millis))
                         onDateSelected(formattedDate)
+
                     }
                     showDatePicker = false
                 }) {

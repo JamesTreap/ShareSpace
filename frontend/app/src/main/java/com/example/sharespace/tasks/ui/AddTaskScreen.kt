@@ -1,6 +1,7 @@
 package com.example.sharespace.ui.screens.tasks
 
 import android.util.Log
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,13 +13,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -40,6 +37,7 @@ import com.example.sharespace.core.data.repository.dto.tasks.ApiAssignee
 import com.example.sharespace.core.data.repository.dto.tasks.ApiCreateTaskRequest
 import com.example.sharespace.core.data.repository.dto.users.ApiUser
 import com.example.sharespace.core.ui.components.Avatar
+import com.example.sharespace.core.ui.components.ButtonType
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +49,9 @@ import java.time.format.DateTimeFormatter
 import com.example.sharespace.core.ui.components.StyledTextField
 import com.example.sharespace.core.ui.components.StyledCheckbox
 import com.example.sharespace.core.ui.components.StyledCircleLoader
-
+import com.example.sharespace.core.ui.components.StyledButton
+import com.example.sharespace.core.ui.components.StyledSelect
+import com.example.sharespace.core.ui.components.DatePickerSelector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,11 +137,9 @@ fun AddTaskScreen(
             )
 
             Row(modifier = Modifier.fillMaxWidth()) {
-                StyledTextField(
-                    value = date,
-                    onValueChange = { date = it },
-                    label = { Text("Date") },
-                    placeholder = { Text("YYYY-MM-DD") },
+                DatePickerSelector(
+                    selectedDate = date,
+                    onDateSelected = { date = it },
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 8.dp)
@@ -165,21 +163,27 @@ fun AddTaskScreen(
             )
 
             Row(modifier = Modifier.fillMaxWidth()) {
-                StyledTextField(
-                    value = occurs,
-                    onValueChange = { occurs = it },
-                    label = { Text("Occurs") },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp)
-                )
-                StyledTextField(
-                    value = repeats,
-                    onValueChange = { repeats = it },
-                    label = { Text("Number of repeats") },
-                    modifier = Modifier.weight(1f)
-                )
+                Box(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                    StyledSelect(
+                        options = (0..10).map { it.toString() },
+                        label = "Number of repeats",
+                        onOptionSelected = { selected ->
+                            repeats = selected.toString()
+                        }
+                    )
+                }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    StyledSelect(
+                        options = listOf("1d", "1w", "1m", "2d", "2w", "2m"),
+                        label = "Occurs",
+                        onOptionSelected = { selected ->
+                            occurs = selected.toString()
+                        }
+                    )
+                }
             }
+
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -223,7 +227,7 @@ fun AddTaskScreen(
                 Text(errorMessage ?: "", color = Color.Red)
             }
 
-            Button(
+            StyledButton(
                 onClick = {
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
@@ -279,13 +283,11 @@ fun AddTaskScreen(
                         }
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00C2A8))
-            ) {
-                Text("Create Task", color = Color.White)
-            }
+                text = "Create Task",
+                buttonType = ButtonType.Primary,
+                enabled = !isLoading,
+                modifier = Modifier.fillMaxWidth().height(48.dp)
+            )
         }
     }
 }

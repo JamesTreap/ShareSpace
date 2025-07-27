@@ -24,9 +24,13 @@ import kotlinx.coroutines.launch
 import com.example.sharespace.core.ui.components.Avatar
 import kotlinx.coroutines.withContext
 import com.example.sharespace.core.ui.components.StyledTextField
+import com.example.sharespace.core.ui.components.StyledButton
+import com.example.sharespace.core.ui.components.StyledSelect
+import com.example.sharespace.core.ui.components.DatePickerSelector
 import com.example.sharespace.core.ui.components.StyledCircleLoader
 import com.example.sharespace.core.data.repository.dto.tasks.ApiAssignee
 import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskRequest
+import com.example.sharespace.core.ui.components.ButtonType
 import com.google.gson.Gson
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,11 +89,11 @@ fun EditTaskScreen(
                                     if (foundTask != null) {
                                         taskToEdit = foundTask
                                         title = foundTask.title
-                                        description = foundTask.description ?: ""
+                                        description = foundTask.description
                                         date = foundTask.deadline.substringBefore("T")
                                         time = foundTask.deadline.substringAfter("T")
                                         occurs = foundTask.frequency ?: ""
-                                        repeats = (foundTask.repeat ?: "").toString()
+                                        repeats = (foundTask.repeat).toString()
                                         assigneeStatuses = foundTask.statuses
                                     } else {
                                         errorMessage = "Task not found"
@@ -138,10 +142,9 @@ fun EditTaskScreen(
             )
 
             Row(modifier = Modifier.fillMaxWidth()) {
-                StyledTextField(
-                    value = date,
-                    onValueChange = { date = it },
-                    label = { Text("Date") },
+                DatePickerSelector(
+                    selectedDate = date,
+                    onDateSelected = { date = it },
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 8.dp)
@@ -154,6 +157,7 @@ fun EditTaskScreen(
                 )
             }
 
+
             StyledTextField(
                 value = description,
                 onValueChange = { description = it },
@@ -165,18 +169,17 @@ fun EditTaskScreen(
 
             Row(modifier = Modifier.fillMaxWidth()) {
                 StyledTextField(
-                    value = occurs,
-                    onValueChange = { occurs = it },
-                    label = { Text("Occurs") },
-                    enabled = false,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp)
-                )
-                StyledTextField(
                     value = repeats,
                     onValueChange = { repeats = it },
                     label = { Text("Number of repeats") },
+                    enabled = false,
+                    modifier = Modifier.weight(1f).padding(end = 8.dp)
+
+                )
+                StyledTextField(
+                    value = occurs,
+                    onValueChange = { occurs = it },
+                    label = { Text("Occurs") },
                     enabled = false,
                     modifier = Modifier.weight(1f)
                 )
@@ -208,21 +211,34 @@ fun EditTaskScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(user.name, modifier = Modifier.weight(1f))
 
-                        StyledTextField(
-                            value = statusText,
-                            onValueChange = {
-                                statusText = it
-                                assigneeStatuses = assigneeStatuses.toMutableMap().also { map ->
-                                    map[userIdStr] = it
-                                }
-                            },
-                            enabled = statusText != "NOT ASSIGNED",
+                        Box(
                             modifier = Modifier
                                 .width(200.dp)
-                                .padding(start = 8.dp),
-                            singleLine = true
+                                .padding(start = 8.dp)
+                        ) {
+                            if (statusText != "NOT ASSIGNED") {
+                                StyledSelect(
+                                    options = listOf("TODO", "IN-PROGRESS", "COMPLETE"),
+                                    label = "Status",
+                                    onOptionSelected = { selected ->
+                                        statusText = selected.toString()
+                                        assigneeStatuses = assigneeStatuses.toMutableMap().also { map ->
+                                            map[userIdStr] = statusText
+                                        }
+                                    }
+                                )
+                            } else {
+                                StyledTextField(
+                                    value = "Not Assigned",
+                                    onValueChange = {},
+                                    enabled = false,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true
+                                )
+                            }
+                        }
 
-                            )
+
                     }
                 }
             }
@@ -234,7 +250,7 @@ fun EditTaskScreen(
                 Text(errorMessage ?: "", color = Color.Red)
             }
 
-            Button(
+            StyledButton(
                 onClick = {
                     val finalToken = token
                     val finalRoomId = roomId
@@ -283,13 +299,11 @@ fun EditTaskScreen(
                         }
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00C2A8))
-            ) {
-                Text("Update Task", color = Color.White)
-            }
+                text = "Update Task",
+                buttonType = ButtonType.Primary,
+                enabled = !isLoading,
+                modifier = Modifier.fillMaxWidth().height(48.dp)
+            )
         }
     }
 }
