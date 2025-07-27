@@ -18,15 +18,17 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.sharespace.core.domain.model.Task
 import com.example.sharespace.core.ui.components.AvatarSquare
 import com.example.sharespace.core.ui.components.StyledCheckbox
 import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
 import com.example.sharespace.room.viewmodel.TasksUiState
-import java.time.format.DateTimeFormatter
+import displayDateFlexible
 
 @Composable
 fun UpcomingTasksSection(
@@ -129,8 +131,12 @@ private fun TaskRow(
     roommatesUiState: RoomSummaryRoommatesUiState,
     currentUserIdForAvatar: String
 ) {
-    val dateText = task.deadline?.format(DateTimeFormatter.ofPattern("MMMM d | h:mm a"))
-        ?: "No due date" // Added null check for deadline
+    val context = LocalContext.current
+    val dateText = remember(task.deadline) {
+        task.deadline?.let { displayDateFlexible(it, context) } ?: "No due date"
+    }
+
+
     val userPhotoUrl: String? = if (roommatesUiState is RoomSummaryRoommatesUiState.Success) {
         roommatesUiState.roommates.find { it.id.toString() == currentUserIdForAvatar }?.photoUrl
     } else {
