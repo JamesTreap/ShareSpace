@@ -16,9 +16,21 @@ import com.example.sharespace.core.domain.model.RoomInvitation
 import com.example.sharespace.core.domain.model.User
 import com.example.sharespace.user.data.repository.ProfileRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+
+// UI States for different sections
+sealed interface RoomsUiState {
+    object Loading : RoomsUiState
+    data class Success(val rooms: List<Room>) : RoomsUiState
+    object Error : RoomsUiState
+}
+
+sealed interface InvitesUiState {
+    object Loading : InvitesUiState
+    data class Success(val invites: List<Room>) : InvitesUiState
+    object Error : InvitesUiState
+}
 
 class ProfileScreenViewModel(
     private val userSessionRepository: UserSessionRepository,
@@ -26,13 +38,17 @@ class ProfileScreenViewModel(
 ) : ViewModel() {
     // backing state
     private val _user = mutableStateOf<User?>(null)
-    private val _rooms = MutableStateFlow<List<Room>>(emptyList())
-    private val _invites = MutableStateFlow<List<Room>>(emptyList())
+    private val _roomsUiState = MutableStateFlow<RoomsUiState>(RoomsUiState.Loading)
+    private val _invitesUiState = MutableStateFlow<InvitesUiState>(InvitesUiState.Loading)
 
     // public streams
     val user: MutableState<User?> = _user
-    val rooms: StateFlow<List<Room>> = _rooms
-    val invites: MutableStateFlow<List<Room>> = _invites
+    val roomsUiState: MutableStateFlow<RoomsUiState> = _roomsUiState
+    val invitesUiState: MutableStateFlow<InvitesUiState> = _invitesUiState
+
+    // Legacy properties for backward compatibility
+    val rooms: MutableStateFlow<List<Room>> = MutableStateFlow(emptyList())
+    val invites: MutableStateFlow<List<RoomInvitation>> = MutableStateFlow(emptyList())
 
 
     fun acceptInvite(roomId: Int) {
@@ -93,15 +109,17 @@ class ProfileScreenViewModel(
                     photoUrl = apiUser.profilePictureUrl
                 )
                 val (apiJoinedRooms, apiRoomInvites) = profileRepository.getRoomsAndInvites(token)
-                _rooms.value = apiJoinedRooms.map { apiRoom ->
+                _roomsUiState.value = RoomsUiState.Success(apiJoinedRooms.map { apiRoom ->
                     Room(apiRoom)
-                }
-                _invites.value = apiRoomInvites.map { apiInvite ->
+                })
+                _invitesUiState.value = InvitesUiState.Success(apiRoomInvites.map { apiInvite ->
                     Room(apiInvite)
-                }
+                })
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading profile data", e)
+                _roomsUiState.value = RoomsUiState.Error
+                _invitesUiState.value = InvitesUiState.Error
             }
         }
     }
