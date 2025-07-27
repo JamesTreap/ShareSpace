@@ -55,7 +55,8 @@ import com.example.sharespace.core.ui.theme.TextSecondary
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: () -> Unit,
+    onSignupClick: () -> Unit
 ) {
     val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModel.Factory)
     val uiState = loginViewModel.loginUiState
@@ -174,8 +175,7 @@ fun LoginScreen(
                     text = "Sign up",
                     color = AquaAccent,
                     modifier = Modifier.clickable {
-                        // Handle sign-up click action here
-                        println("Sign up clicked")
+                        onSignupClick()
                     }
                 )
             }
