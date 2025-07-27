@@ -99,7 +99,7 @@ fun RoommatesSection(
                                 modifier = Modifier
                                     .size(56.dp)
                                     .clickable(onClick = onAdd),
-                                shape = CircleShape
+                                shape = RoundedCornerShape(8.dp)
                             ) {
                                 Box(
                                     contentAlignment = Alignment.Center,
