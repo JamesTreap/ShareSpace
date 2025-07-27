@@ -26,12 +26,14 @@ StyledSelect(options = intOptions, label = "Choose a number") { selected ->
 fun StyledSelect(
     options: List<Any>,
     label: String = "Select an option",
+    initialSelected: String? = null,
     onOptionSelected: (Any) -> Unit
 ) {
     val displayOptions = options.map { it.toString() }
     var expanded by remember { mutableStateOf(false) }
-    var selectedOptionText by remember { mutableStateOf(displayOptions.firstOrNull().orEmpty()) }
-
+    var selectedOptionText by remember {
+        mutableStateOf(initialSelected?.takeIf { it in displayOptions } ?: displayOptions.firstOrNull().orEmpty())
+    }
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded }
