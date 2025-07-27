@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">ShareSpace</string>
     <string name="login_screen">Login</string>
+    <string name="signup_screen">Signup</string>
     <string name="home_overview_screen">Overview</string>
     <string name="main_profile_screen">Update Profile</string>
     <string name="edit_profile_screen">Edit Profile</string>

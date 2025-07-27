@@ -138,7 +138,7 @@ fun EditProfileScreen(
                                 .size(64.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .border(
-                                    width = 2.dp,
+                                    width = 4.dp,
                                     color = if (index == selectedIconIndex) AquaAccent else Color.Transparent,
                                     shape = RoundedCornerShape(8.dp)
                                 )
