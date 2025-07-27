@@ -104,7 +104,7 @@ fun UpcomingTasksSection(
                                     task = task,
                                     isDone = isDone,
                                     onToggle = {
-                                        val newStatus = if (isDone) "pending" else "complete"
+                                        val newStatus = if (isDone) "todo" else "complete"
                                         onToggleDone(task, newStatus)
                                     },
                                     roommatesUiState = roommatesUiState,
@@ -136,7 +136,7 @@ private fun TaskRow(
     val dateText = task.deadline?.format(DateTimeFormatter.ofPattern("MMMM d | h:mm a"))
         ?: "No due date" // Added null check for deadline
     val userPhotoUrl: String? =
-        if (roommatesUiState is RoomSummaryRoommatesUiState.Success && currentUserIdForAvatar != null) {
+        if (roommatesUiState is RoomSummaryRoommatesUiState.Success) {
             roommatesUiState.roommates.find { it.id.toString() == currentUserIdForAvatar }?.photoUrl
         } else {
             null
