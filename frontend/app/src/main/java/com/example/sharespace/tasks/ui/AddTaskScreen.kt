@@ -65,8 +65,8 @@ fun AddTaskScreen(
     var date by remember { mutableStateOf("") }
     var time by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var occurs by remember { mutableStateOf("") }
-    var repeats by remember { mutableStateOf("") }
+    var occurs by remember { mutableStateOf("1d") }
+    var repeats by remember { mutableStateOf("0") }
     var userList by remember { mutableStateOf<List<ApiUser>>(emptyList()) }
     var selectedUserIds by remember { mutableStateOf(setOf<Int>()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -167,6 +167,7 @@ fun AddTaskScreen(
                     StyledSelect(
                         options = (0..10).map { it.toString() },
                         label = "Number of repeats",
+                        initialSelected = repeats,
                         onOptionSelected = { selected ->
                             repeats = selected.toString()
                         }
@@ -177,6 +178,7 @@ fun AddTaskScreen(
                     StyledSelect(
                         options = listOf("1d", "1w", "1m", "2d", "2w", "2m"),
                         label = "Occurs",
+                        initialSelected = occurs,
                         onOptionSelected = { selected ->
                             occurs = selected.toString()
                         }
