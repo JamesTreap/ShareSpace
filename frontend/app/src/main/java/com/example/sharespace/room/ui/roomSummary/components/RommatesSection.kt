@@ -1,5 +1,6 @@
 package com.example.sharespace.room.ui.roomSummary.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
@@ -27,8 +29,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.example.sharespace.core.ui.components.Avatar
+import com.example.sharespace.core.ui.components.AvatarSquare
 import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
 
 @Composable
@@ -38,7 +41,12 @@ fun RoommatesSection(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        SectionHeader(title = "Roommates", actionText = "View All", onAction = onViewAll)
+        SectionHeader(
+            title = "Roommates",
+            actionText = "View All",
+            onAction = onViewAll,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         when (roommatesUiState) {
             is RoomSummaryRoommatesUiState.Loading -> {
@@ -58,7 +66,7 @@ fun RoommatesSection(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                            .padding(12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -67,7 +75,7 @@ fun RoommatesSection(
                             modifier = Modifier
                                 .size(56.dp)
                                 .clickable(onClick = onAdd),
-                            shape = CircleShape
+                            shape = RoundedCornerShape(8.dp)
                         ) {
                             Box(
                                 contentAlignment = Alignment.Center,
@@ -80,7 +88,10 @@ fun RoommatesSection(
                 } else {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surface)
                     ) {
                         // "Add roommate" button as the first item for consistency
                         item {
@@ -100,10 +111,8 @@ fun RoommatesSection(
                             Spacer(modifier = Modifier.width(8.dp)) // Add space after the button
                         }
                         items(roommates) { user ->
-                            Avatar(
-                                photoUrl = user.photoUrl,
-                                size = 56.dp, // Ensure Avatars have a defined size
-                                contentDescription = "Avatar of ${user.name}"
+                            AvatarSquare(
+                                photoUrl = user.photoUrl, size = 56.dp, cornerRadius = 8.dp
                             )
                         }
                     }

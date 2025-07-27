@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -55,10 +56,12 @@ fun RoomSummaryScreen(
                     topBarSubtitle =
                         currentRoomDetails.roomDetails.pictureUrl ?: "Details available"
                 }
+
                 is RoomDetailsUiState.Loading -> {
                     topBarTitle = "Loading Room..."
                     topBarSubtitle = "Please wait"
                 }
+
                 is RoomDetailsUiState.Error -> {
                     topBarTitle = "Error"
                     topBarSubtitle = "Could not load room details"
@@ -83,7 +86,8 @@ fun RoomSummaryScreen(
                 roommatesUiState = roommatesUiState, // Pass the UiState directly
                 onAdd = onAddRoommateClick,
                 onViewAll = { /* TODO: Navigate to all roommates screen */ },
-                onRetry = viewModel::fetchRoomMembers
+                onRetry = viewModel::fetchRoomMembers,
+                modifier = Modifier.padding(horizontal = 12.dp)
             )
 
             Spacer(Modifier.height(16.dp))
@@ -96,7 +100,8 @@ fun RoomSummaryScreen(
                     viewModel.updateTaskStatus(task, newStatus)
                 },
                 onViewAll = onViewTasksClick,
-                onRetry = viewModel::fetchTasks
+                onRetry = viewModel::fetchTasks,
+                modifier = Modifier.heightIn(max = 400.dp).padding(horizontal = 12.dp)
             )
         }
     }
