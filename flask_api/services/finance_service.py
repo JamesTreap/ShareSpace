@@ -43,6 +43,7 @@ class FinanceService:
                 "amount": float(bill.amount),
                 "category": bill.category,
                 "payer_user_id": bill.payer_user_id,
+                "meta_data": bill.meta_data,
                 "scheduled_date": bill.scheduled_date.isoformat() if bill.scheduled_date else None,
                 "created_at": bill.created_at.isoformat(),
                 "_sort_key": scheduled_sort_key
