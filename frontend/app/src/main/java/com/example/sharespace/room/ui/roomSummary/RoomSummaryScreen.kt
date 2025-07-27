@@ -79,13 +79,13 @@ fun RoomSummaryScreen(
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(innerPadding).padding(vertical = 16.dp)
+                .padding(innerPadding)
+                .padding(vertical = 16.dp)
                 .fillMaxSize()
         ) {
             RoommatesSection(
-                roommatesUiState = roommatesUiState, // Pass the UiState directly
+                roommatesUiState = roommatesUiState,
                 onAdd = onAddRoommateClick,
-//                onViewAll = { /* TODO: Navigate to all roommates screen */ },
                 onRetry = viewModel::fetchRoomMembers,
                 modifier = Modifier.padding(horizontal = 12.dp)
             )
@@ -93,7 +93,8 @@ fun RoomSummaryScreen(
             Spacer(Modifier.height(16.dp))
 
             UpcomingTasksSection(
-                tasksUiState = tasksUiState, // Pass the UiState directly
+                tasksUiState = tasksUiState,
+                roommatesUiState = roommatesUiState,
                 currentUserId = currentUserId,
                 onAdd = onAddTaskClick,
                 onToggleDone = { task, newStatus ->
@@ -101,7 +102,9 @@ fun RoomSummaryScreen(
                 },
                 onViewAll = onViewTasksClick,
                 onRetry = viewModel::fetchTasks,
-                modifier = Modifier.heightIn(max = 400.dp).padding(horizontal = 12.dp)
+                modifier = Modifier
+                    .heightIn(max = 400.dp)
+                    .padding(horizontal = 12.dp)
             )
         }
     }
