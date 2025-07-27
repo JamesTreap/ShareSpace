@@ -14,20 +14,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.example.sharespace.core.domain.model.Task
 import com.example.sharespace.core.ui.components.AvatarSquare
+import com.example.sharespace.core.ui.components.StyledCheckbox
 import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
 import com.example.sharespace.room.viewmodel.TasksUiState
 import java.time.format.DateTimeFormatter
@@ -135,12 +131,11 @@ private fun TaskRow(
 ) {
     val dateText = task.deadline?.format(DateTimeFormatter.ofPattern("MMMM d | h:mm a"))
         ?: "No due date" // Added null check for deadline
-    val userPhotoUrl: String? =
-        if (roommatesUiState is RoomSummaryRoommatesUiState.Success) {
-            roommatesUiState.roommates.find { it.id.toString() == currentUserIdForAvatar }?.photoUrl
-        } else {
-            null
-        }
+    val userPhotoUrl: String? = if (roommatesUiState is RoomSummaryRoommatesUiState.Success) {
+        roommatesUiState.roommates.find { it.id.toString() == currentUserIdForAvatar }?.photoUrl
+    } else {
+        null
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
@@ -169,15 +164,10 @@ private fun TaskRow(
         Box(
             modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center
         ) {
-            Checkbox(
+            StyledCheckbox(
                 checked = isDone,
                 onCheckedChange = { _ -> onToggle() },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    checkmarkColor = MaterialTheme.colorScheme.onPrimary
-                ),
-                modifier = Modifier.semantics { this.role = Role.Checkbox })
+            )
         }
     }
 }
