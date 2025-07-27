@@ -91,6 +91,9 @@ fun ShareSpaceApp(
                 onViewProfileClick = {
                     navController.navigate(ShareSpaceScreens.ViewProfile.name)
                 },
+                onFinanceManagerClick = { // Add this line
+                    navController.navigate(ShareSpaceScreens.FinanceManager.name)
+                }
             )
         }
         composable(route = ShareSpaceScreens.EditProfile.name) {
@@ -116,7 +119,7 @@ fun ShareSpaceApp(
                 onAddRoommateClick = { navController.navigate(ShareSpaceScreens.AddRoommate.name) },
                 onAddTaskClick = { navController.navigate(ShareSpaceScreens.AddTask.name) },
                 onViewTasksClick = { navController.navigate(ShareSpaceScreens.TasksList.name) },
-//                onFinanceManagerClick = { navController.navigate(ShareSpaceScreens.FinanceManager.name) }
+                onFinanceManagerClick = { navController.navigate(ShareSpaceScreens.FinanceManager.name) }
             )
         }
         composable(route = ShareSpaceScreens.AddRoommate.name) {

@@ -5,12 +5,14 @@ import com.example.sharespace.auth.data.repository.NetworkAuthRepository
 import com.example.sharespace.core.data.local.sessionDataStore
 import com.example.sharespace.core.data.remote.ApiClient
 import com.example.sharespace.core.data.remote.ApiService
+import com.example.sharespace.core.data.repository.FinanceRepository
 import com.example.sharespace.core.data.repository.RoomRepository
 import com.example.sharespace.core.data.repository.TaskRepository
 import com.example.sharespace.core.data.repository.UserSessionRepository
 import com.example.sharespace.core.data.repository.local.PreferencesUserSessionRepository
 import com.example.sharespace.core.data.repository.network.NetworkRoomRepository
 import com.example.sharespace.core.data.repository.network.NetworkTaskRepository
+import com.example.sharespace.core.data.repository.network.NetworkFinanceRepository
 import com.example.sharespace.data.repository.AuthRepository
 import com.example.sharespace.user.data.repository.ProfileRepository
 
@@ -20,6 +22,7 @@ interface ShareSpaceAppContainer {
     val authRepository: AuthRepository
     val profileRepository: ProfileRepository
     val taskRepository: TaskRepository
+    val financeRepository: FinanceRepository
 }
 
 class DefaultShareSpaceAppContainer(applicationContext: Context) : ShareSpaceAppContainer {
@@ -49,6 +52,10 @@ class DefaultShareSpaceAppContainer(applicationContext: Context) : ShareSpaceApp
         NetworkTaskRepository(
             apiService = apiService
         )
+    }
+
+    override val financeRepository: FinanceRepository by lazy {
+        NetworkFinanceRepository(apiService) // Fixed parameter name and added override
     }
 
 //    val userRepository: UserRepository = UserRepository(

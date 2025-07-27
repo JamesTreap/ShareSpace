@@ -43,7 +43,7 @@ def create_bill(room_id):
         category=category,
         users=users,
         payer_id=int(payer_id),
-        amount=int(amount),
+        amount=float(amount),
         frequency=frequency,
         repeat=repeat
     )

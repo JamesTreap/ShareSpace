@@ -5,15 +5,27 @@ package com.example.sharespace.room.ui.roomSummary
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sharespace.room.ui.roomSummary.components.RoomSummaryTopAppBar
@@ -31,7 +43,7 @@ fun RoomSummaryScreen(
     onAddRoommateClick: () -> Unit,
     onAddTaskClick: () -> Unit,
     onViewTasksClick: () -> Unit,
-    // onFinanceManagerClick: () -> Unit, // Assuming this is for a future feature
+    onFinanceManagerClick: () -> Unit, // Assuming this is for a future feature
     onNavigateBack: () -> Unit
 ) {
     // val bills by viewModel.bills.collectAsState() // Keep if used
@@ -82,6 +94,30 @@ fun RoomSummaryScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
+            // Add Finance Manager Button here
+            Button(
+                onClick = onFinanceManagerClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person, // You might need to import this or use a different icon
+                    contentDescription = "Finance Manager",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Finance Manager",
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+                )
+            }
             RoommatesSection(
                 roommatesUiState = roommatesUiState, // Pass the UiState directly
                 onAdd = onAddRoommateClick,

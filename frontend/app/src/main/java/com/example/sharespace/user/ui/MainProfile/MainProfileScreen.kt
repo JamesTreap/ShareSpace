@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -53,6 +54,7 @@ fun MainProfileScreen(
     onNavigateToRoom: () -> Unit,
     onLogOut: () -> Unit,
     onViewProfileClick: () -> Unit,
+    onFinanceManagerClick: () -> Unit, // Add this parameter
 ) {
 
     val user by viewModel.user
@@ -61,9 +63,6 @@ fun MainProfileScreen(
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-//    val tokenState = produceState<String?>(initialValue = null) {
-//        value = TokenStorage.getToken(context)
-//    }
 
     LaunchedEffect(Unit) {
         viewModel.onProfileScreenEntered()
@@ -92,7 +91,6 @@ fun MainProfileScreen(
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
-
 
             rooms.forEach { room ->
                 RoomCard(
@@ -128,6 +126,7 @@ fun MainProfileScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
+
             Button(
                 onClick = {
                     coroutineScope.launch {
@@ -157,7 +156,5 @@ fun MainProfileScreen(
                 )
             }
         }
-
     }
-
 }

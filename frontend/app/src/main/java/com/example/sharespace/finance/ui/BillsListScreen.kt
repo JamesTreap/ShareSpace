@@ -55,20 +55,6 @@ fun BillsListScreen(
     }
 }
 
-// Continue for all finance screens...
-@Composable
-fun AddBillScreen(onNavigateBack: (() -> Unit)? = null) {
-    Scaffold(
-        topBar = {
-            NavigationHeader(title = "Add Bill", onNavigateBack = onNavigateBack)
-        }
-    ) { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            Text("Add Bill Screen - Content Coming Soon")
-        }
-    }
-}
-
 @Composable
 fun EditBillScreen(onNavigateBack: (() -> Unit)? = null) {
     Scaffold(
