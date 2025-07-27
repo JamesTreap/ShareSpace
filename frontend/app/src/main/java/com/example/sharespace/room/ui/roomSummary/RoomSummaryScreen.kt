@@ -79,13 +79,13 @@ fun RoomSummaryScreen(
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(innerPadding)
+                .padding(innerPadding).padding(vertical = 16.dp)
                 .fillMaxSize()
         ) {
             RoommatesSection(
                 roommatesUiState = roommatesUiState, // Pass the UiState directly
                 onAdd = onAddRoommateClick,
-                onViewAll = { /* TODO: Navigate to all roommates screen */ },
+//                onViewAll = { /* TODO: Navigate to all roommates screen */ },
                 onRetry = viewModel::fetchRoomMembers,
                 modifier = Modifier.padding(horizontal = 12.dp)
             )
