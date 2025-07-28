@@ -4,6 +4,8 @@ import com.example.sharespace.core.data.repository.dto.auth.ApiCreateAccountRequ
 import com.example.sharespace.core.data.repository.dto.auth.ApiCreateAccountResponse
 import com.example.sharespace.core.data.repository.dto.auth.ApiLoginRequest
 import com.example.sharespace.core.data.repository.dto.auth.ApiLoginResponse
+import com.example.sharespace.core.data.repository.dto.calendar.ApiCalendarRequest
+import com.example.sharespace.core.data.repository.dto.calendar.ApiCalendarResponse
 import com.example.sharespace.core.data.repository.dto.rooms.ApiCreateRoomRequest
 import com.example.sharespace.core.data.repository.dto.rooms.ApiInviteUserToRoomRequest
 import com.example.sharespace.core.data.repository.dto.rooms.ApiJoinedRoomsResponse
@@ -157,4 +159,11 @@ interface ApiService {
 //        @Header("Authorization") token: String,
 //        @Body request: PayUserRequest // TODO: Define PayUserRequest & Response
 //    ): Response<PayUserResponse>
+
+    @POST("calendar/{roomId}")
+    suspend fun getCalendarData(
+        @Path("roomId") roomId: Int,
+        @Header("Authorization") token: String,
+        @Body request: ApiCalendarRequest
+    ): Response<ApiCalendarResponse>
 }
