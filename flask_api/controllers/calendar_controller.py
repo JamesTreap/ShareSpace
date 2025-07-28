@@ -11,7 +11,7 @@ from services.calendar_service import CalendarService
 
 calendar_bp = Blueprint('calendar', __name__, url_prefix='/calendar')
 
-@calendar_bp.route('/<room_id>', methods=['GET'])
+@calendar_bp.route('/<room_id>', methods=['POST'])
 @token_required
 def fetch_calendar(room_id):
     user: User = g.current_user
