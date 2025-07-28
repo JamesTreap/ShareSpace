@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.sharespace.ShareSpaceApplication
+import com.example.sharespace.core.data.repository.CalendarRepository
 import com.example.sharespace.core.data.repository.RoomRepository
 import com.example.sharespace.core.data.repository.TaskRepository
 import com.example.sharespace.core.data.repository.UserSessionRepository
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
+import java.time.LocalDate
 
 // Sealed Interface for Room Details
 sealed interface RoomDetailsUiState {
@@ -54,10 +56,17 @@ sealed interface TasksUiState {
     object Empty : TasksUiState
 }
 
+sealed class CalendarUiState {
+    object Loading : CalendarUiState()
+    data class Success(val tasks: List<Task>, val bills: List<Bill>) : CalendarUiState()
+    data class Error(val message: String) : CalendarUiState()
+}
+
 class RoomSummaryViewModel(
     private val roomRepository: RoomRepository,
     private val userSessionRepository: UserSessionRepository,
     private val taskRepository: TaskRepository,
+    private val calendarRepository: CalendarRepository
 ) : ViewModel() {
 
     // Properties for UI states
@@ -69,6 +78,16 @@ class RoomSummaryViewModel(
 
     var tasksUiState: TasksUiState by mutableStateOf(TasksUiState.Loading) // Start as Loading
         private set
+
+    private val _selectedDate = MutableStateFlow(LocalDate.now())
+    val selectedDate: StateFlow<LocalDate> = _selectedDate.asStateFlow()
+
+    private val _selectedRoommates = MutableStateFlow<Set<Int>>(emptySet())
+    val selectedRoommates: StateFlow<Set<Int>> = _selectedRoommates.asStateFlow()
+
+    private val _calendarUiState = MutableStateFlow<CalendarUiState>(CalendarUiState.Loading)
+    val calendarUiState: StateFlow<CalendarUiState> = _calendarUiState.asStateFlow()
+
 
     // StateFlows for bills (if needed)
     private val _bills = MutableStateFlow<List<Bill>>(emptyList())
@@ -109,6 +128,7 @@ class RoomSummaryViewModel(
                 fetchRoomDetails()
                 fetchRoomMembers()
                 fetchTasks()
+                fetchCalendarData()
             } else {
                 // This case should ideally not be reached if `first { it != null }` works as expected
                 // and UserSessionRepository correctly provides these IDs.
@@ -288,6 +308,78 @@ class RoomSummaryViewModel(
         }
     }
 
+    // Add this function to fetch calendar data
+    // In your RoomSummaryViewModel.kt or wherever fetchCalendarData is located
+
+// Ensure you have a TAG in your ViewModel
+// companion object {
+//     private const val TAG = "YourViewModelName"
+// }
+
+    fun fetchCalendarData() {
+        Log.d(TAG, "fetchCalendarData called. Current selectedDate: ${_selectedDate.value}")
+        viewModelScope.launch {
+            _calendarUiState.value = CalendarUiState.Loading
+            Log.d(TAG, "Set CalendarUiState to Loading.")
+            try {
+                val token = userSessionRepository.userTokenFlow.first()
+                if (token == null) {
+                    Log.w(TAG, "Token is null. Aborting fetchCalendarData.")
+                    _calendarUiState.value = CalendarUiState.Error("Authentication token not found.")
+                    return@launch
+                }
+                Log.d(TAG, "Token retrieved successfully.") // Avoid logging the token itself for security
+
+                val roomId = userSessionRepository.activeRoomIdFlow.first()
+                if (roomId == null) {
+                    Log.w(TAG, "RoomId is null. Aborting fetchCalendarData.")
+                    _calendarUiState.value = CalendarUiState.Error("Active room not found.")
+                    return@launch
+                }
+                Log.d(TAG, "RoomId retrieved: $roomId")
+
+                Log.d(TAG, "Calling calendarRepository.getCalendarData with roomId: $roomId, date: ${_selectedDate.value}")
+                val calendarData = calendarRepository.getCalendarData(token, roomId, _selectedDate.value)
+                Log.i(TAG, "Calendar data received from repository: $calendarData")
+
+                val tasks = calendarData.tasks.map { Task(it) } // Assuming Task(ApiTask) constructor
+                val bills = calendarData.bills.map { Bill(it) } // Assuming Bill(ApiBill) constructor
+                Log.d(TAG, "Mapped tasks count: ${tasks.size}, Mapped bills count: ${bills.size}")
+
+                _calendarUiState.value = CalendarUiState.Success(tasks, bills)
+                Log.i(TAG, "Set CalendarUiState to Success with ${tasks.size} tasks and ${bills.size} bills.")
+
+            } catch (e: HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                Log.e(TAG, "HttpException in fetchCalendarData. Code: ${e.code()}, Response: ${e.message()}, ErrorBody: $errorBody", e)
+                _calendarUiState.value = CalendarUiState.Error("HTTP Error: ${e.code()} - ${e.message()} ${errorBody?.let { "- $it" } ?: ""}")
+            } catch (e: IOException) {
+                Log.e(TAG, "IOException in fetchCalendarData: ${e.message}", e)
+                _calendarUiState.value = CalendarUiState.Error("Network Error: ${e.message}")
+            } catch (e: IllegalStateException) {
+                // Catching the specific exception from the repository if body is null
+                Log.e(TAG, "IllegalStateException in fetchCalendarData: ${e.message}", e)
+                _calendarUiState.value = CalendarUiState.Error("Data Error: ${e.message}")
+            }
+            catch (e: Exception) {
+                Log.e(TAG, "Generic exception in fetchCalendarData: ${e.message}", e)
+                _calendarUiState.value = CalendarUiState.Error(e.message ?: "An unknown error occurred")
+            }
+        }
+    }
+
+
+    // Update date and trigger data fetch
+    fun updateSelectedDate(date: LocalDate) {
+        _selectedDate.value = date
+        fetchCalendarData()
+    }
+
+    // Update selected roommates for filtering
+    fun updateSelectedRoommates(roommates: Set<Int>) {
+        _selectedRoommates.value = roommates
+    }
+
     companion object {
         private const val TAG = "RoomSummaryViewModel"
 
@@ -297,10 +389,12 @@ class RoomSummaryViewModel(
                 val roomRepository = application.container.roomRepository
                 val userSessionRepository = application.container.userSessionRepository
                 val taskRepository = application.container.taskRepository
+                val calendarRepository = application.container.calendarRepository
                 RoomSummaryViewModel(
                     roomRepository = roomRepository,
                     userSessionRepository = userSessionRepository,
-                    taskRepository = taskRepository
+                    taskRepository = taskRepository,
+                    calendarRepository = calendarRepository
                 )
             }
         }

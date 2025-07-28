@@ -2,9 +2,11 @@ package com.example.sharespace
 
 import android.content.Context
 import com.example.sharespace.auth.data.repository.NetworkAuthRepository
+import com.example.sharespace.calendar.data.repository.NetworkCalendarRepository
 import com.example.sharespace.core.data.local.sessionDataStore
 import com.example.sharespace.core.data.remote.ApiClient
 import com.example.sharespace.core.data.remote.ApiService
+import com.example.sharespace.core.data.repository.CalendarRepository
 import com.example.sharespace.core.data.repository.RoomRepository
 import com.example.sharespace.core.data.repository.TaskRepository
 import com.example.sharespace.core.data.repository.UserSessionRepository
@@ -20,6 +22,7 @@ interface ShareSpaceAppContainer {
     val authRepository: AuthRepository
     val profileRepository: ProfileRepository
     val taskRepository: TaskRepository
+    val calendarRepository: CalendarRepository
 }
 
 class DefaultShareSpaceAppContainer(applicationContext: Context) : ShareSpaceAppContainer {
@@ -49,6 +52,10 @@ class DefaultShareSpaceAppContainer(applicationContext: Context) : ShareSpaceApp
         NetworkTaskRepository(
             apiService = apiService
         )
+    }
+
+    override val calendarRepository: CalendarRepository by lazy {
+        NetworkCalendarRepository(apiService = apiService)
     }
 
 //    val userRepository: UserRepository = UserRepository(

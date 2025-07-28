@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.sharespace.room.ui.roomSummary.components.CalendarSection
 import com.example.sharespace.room.ui.roomSummary.components.RoomSummaryTopAppBar
 import com.example.sharespace.room.ui.roomSummary.components.RoommatesSection
 import com.example.sharespace.room.ui.roomSummary.components.UpcomingTasksSection
@@ -42,6 +43,10 @@ fun RoomSummaryScreen(
 
     // Correctly collect StateFlow
     val currentUserId: String? by viewModel.currentUserIdString.collectAsState()
+
+    val calendarUiState by viewModel.calendarUiState.collectAsState()
+    val selectedDate by viewModel.selectedDate.collectAsState()
+    val selectedRoommates by viewModel.selectedRoommates.collectAsState()
 
     Scaffold(
         topBar = {
@@ -106,6 +111,21 @@ fun RoomSummaryScreen(
                     .heightIn(max = 400.dp)
                     .padding(horizontal = 12.dp)
             )
+
+            Spacer(Modifier.height(16.dp))
+
+//            CalendarSection(
+//                calendarUiState = calendarUiState,
+//                selectedDate = selectedDate,
+//                onDateSelected = viewModel::updateSelectedDate,
+//                roommates = if (roommatesUiState is RoomSummaryRoommatesUiState.Success)
+//                    roommatesUiState.roommates else emptyList(),
+//                selectedRoommates = selectedRoommates,
+//                onRoommateSelectionChanged = viewModel::updateSelectedRoommates,
+//                currentUserId = currentUserId,
+//                onRetry = viewModel::fetchCalendarData,
+//                modifier = Modifier.padding(horizontal = 12.dp)
+//            )
         }
     }
 }

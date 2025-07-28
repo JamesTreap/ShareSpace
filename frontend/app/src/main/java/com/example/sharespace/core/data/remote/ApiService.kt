@@ -160,7 +160,7 @@ interface ApiService {
 //        @Body request: PayUserRequest // TODO: Define PayUserRequest & Response
 //    ): Response<PayUserResponse>
 
-    @POST("calendar/{roomId}")
+    @GET("calendar/{roomId}")
     suspend fun getCalendarData(
         @Path("roomId") roomId: Int,
         @Header("Authorization") token: String,
