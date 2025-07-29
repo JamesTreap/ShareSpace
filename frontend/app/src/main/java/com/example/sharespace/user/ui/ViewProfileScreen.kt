@@ -23,6 +23,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.sharespace.core.ui.components.ButtonType
+import com.example.sharespace.core.ui.components.StyledButton
+import com.example.sharespace.core.ui.theme.AlertRed
 import com.example.sharespace.core.ui.theme.TextSecondary
 import com.example.sharespace.user.viewmodel.ViewProfileScreenViewModel
 
@@ -115,20 +118,19 @@ fun ViewProfileScreen(
                     .fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Button(
+                StyledButton(
                     onClick = onEditProfile,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Edit Profile")
-                }
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Edit Profile"
+                )
 
-                Button(
+                StyledButton(
                     onClick = onLogout,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
-                ) {
-                    Text("Log Out")
-                }
+                    text = "Log Out",
+                    buttonType = ButtonType.Danger
+                )
+
             }
         }
     }

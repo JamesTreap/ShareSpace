@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.sharespace.core.domain.model.Task
 import com.example.sharespace.core.ui.components.AvatarSquare
+import com.example.sharespace.core.ui.components.StyledButton
 import com.example.sharespace.core.ui.components.StyledCheckbox
 import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
 import com.example.sharespace.room.viewmodel.TasksUiState
@@ -205,6 +206,6 @@ private fun EmptyMini(onAdd: () -> Unit) {
     ) {
         Text("No upcoming tasks.")
         Spacer(Modifier.height(8.dp))
-        Button(onClick = onAdd) { Text("Add Task") }
+        StyledButton(onClick = onAdd, text = "Add Task")
     }
 }
