@@ -61,6 +61,13 @@ fun AddBillScreen(
     val debtorsCount = roommates.count { it.currentBalance < 0 }
     val hasDebtors = debtorsCount > 0
 
+    LaunchedEffect(billCreated) {
+        if (billCreated) {
+            onNavigateBack()
+            viewModel.resetBillCreated()
+        }
+    }
+
     // Handle successful bill creation
     LaunchedEffect(Unit) {
         viewModel.loadRoommatesForBill()
@@ -69,8 +76,6 @@ fun AddBillScreen(
     // Show error messages
     errorMessage?.let { message ->
         LaunchedEffect(message) {
-            // In a real app, you'd show a Snackbar here
-            // For now, the error will be visible in the UI
         }
     }
 
@@ -139,9 +144,8 @@ fun AddBillScreen(
 
                 item { Spacer(modifier = Modifier.height(24.dp)) }
 
-                // NEW: Enhanced split method section with debt awareness
                 item {
-                    EnhancedSplitMethodSection(
+                    SplitMethodSection(
                         totalAmount = totalCost,
                         debtorsCount = debtorsCount,
                         hasDebtors = hasDebtors,
@@ -151,9 +155,8 @@ fun AddBillScreen(
 
                 item { Spacer(modifier = Modifier.height(16.dp)) }
 
-                // Enhanced roommate splits section showing debt information
                 item {
-                    EnhancedRoommateSplitSection(
+                    RoommateSplitSection(
                         roommates = roommates,
                         onAmountChange = { userId, amount ->
                             viewModel.updateRoommateAmount(userId, amount)
@@ -304,28 +307,13 @@ fun BillInfoSection(
 }
 
 @Composable
-fun EnhancedSplitMethodSection(
+fun SplitMethodSection(
     totalAmount: String,
     debtorsCount: Int,
     hasDebtors: Boolean,
     onSplitEvenly: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = "Split Options",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Split evenly button
             OutlinedButton(
                 onClick = onSplitEvenly,
                 modifier = Modifier.fillMaxWidth(),
@@ -335,25 +323,10 @@ fun EnhancedSplitMethodSection(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Split Evenly Among All")
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-
-
-
-            // Explanation text
-            Text(
-                text = "Smart split considers current balances to help settle debts more fairly",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        }
-    }
 }
 
 @Composable
-fun EnhancedRoommateSplitSection(
+fun RoommateSplitSection(
     roommates: List<RoommateSplit>,
     onAmountChange: (Int, String) -> Unit
 ) {

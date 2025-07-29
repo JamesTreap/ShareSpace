@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -108,7 +109,7 @@ fun RoomSummaryScreen(
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Person, // You might need to import this or use a different icon
+                    imageVector = Icons.Default.Star,
                     contentDescription = "Finance Manager",
                     modifier = Modifier.size(20.dp)
                 )
@@ -119,7 +120,7 @@ fun RoomSummaryScreen(
                 )
             }
             RoommatesSection(
-                roommatesUiState = roommatesUiState, // Pass the UiState directly
+                roommatesUiState = roommatesUiState,
                 onAdd = onAddRoommateClick,
                 onViewAll = { /* TODO: Navigate to all roommates screen */ },
                 onRetry = viewModel::fetchRoomMembers,

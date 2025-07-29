@@ -62,14 +62,11 @@ class FinanceManagerViewModel(
 
     private val _debtSummaries = MutableStateFlow<List<DebtSummary>>(emptyList())
     val debtSummaries: StateFlow<List<DebtSummary>> = _debtSummaries
-
-    // --- ADDED FROM AddBillViewModel ---
     private val _addBillRoommates = MutableStateFlow<List<RoommateSplit>>(emptyList())
     val addBillRoommates: StateFlow<List<RoommateSplit>> = _addBillRoommates
 
     private val _billCreated = mutableStateOf(false)
     val billCreated = _billCreated
-    // --- END ADDED SECTION ---
 
     fun loadTransactions() {
         viewModelScope.launch {
@@ -136,10 +133,8 @@ class FinanceManagerViewModel(
         }
     }
 
-    // --- PASTE ALL METHODS FROM AddBillViewModel HERE ---
-    // (loadRoommates, calculateCurrentBalance, updateRoommateAmount, splits, etc.)
 
-    fun loadRoommatesForBill() { // Renamed from loadRoommates to avoid conflict
+    fun loadRoommatesForBill() {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
@@ -195,9 +190,6 @@ class FinanceManagerViewModel(
         }
     }
 
-    // (Add splitAmongDebtors and smartSplit here too if you need them)
-
-    // --- THIS IS THE NEW, MERGED createBill FUNCTION ---
     fun createBill(
         title: String,
         category: String,
@@ -327,10 +319,6 @@ class FinanceManagerViewModel(
     fun clearError() {
         _errorMessage.value = null
     }
-
-    // Updated ViewModel methods to match your DTO structure
-
-
     private fun calculateDebtSummaries(membersWithDebts: List<ApiUserWithDebts>, currentUserId: Int): List<DebtSummary> {
         val summaries = mutableListOf<DebtSummary>()
 
@@ -381,42 +369,6 @@ class FinanceManagerViewModel(
         return summaries.sortedByDescending { it.netBalance }
     }
 
-    // Remove the old calculateRoommateBalances() method since we now get this from backend
-
-    fun cleanupRoomDebts() {
-        viewModelScope.launch {
-            try {
-                _isLoading.value = true
-                _errorMessage.value = null
-
-                val token = userSessionRepository.userTokenFlow.first()
-                val activeRoomId = userSessionRepository.activeRoomIdFlow.first()
-
-                if (token == null || activeRoomId == null) {
-                    _errorMessage.value = "Missing authentication or room information"
-                    return@launch
-                }
-
-                val response = userRepository.cleanupRoomDebts(token, activeRoomId)
-                if (response != null) {
-                    Log.d(TAG, "✅ Room debts cleaned up successfully")
-                    // Reload data
-                    loadRoomMembersWithDebts()
-                    loadTransactions()
-                } else {
-                    _errorMessage.value = "Failed to cleanup room debts"
-                }
-
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ Error cleaning up room debts: ${e.message}", e)
-                _errorMessage.value = "Failed to cleanup room debts: ${e.message}"
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
-
-
     fun createPayment(
         payeeId: Int,
         amount: String,
@@ -446,8 +398,8 @@ class FinanceManagerViewModel(
                     title = description,
                     category = "Payment",
                     amount = paymentAmount,
-                    payerId = currentUserId.toString(), // Convert to string as expected by backend
-                    payeeId = payeeId.toString() // Convert to string as expected by backend
+                    payerId = currentUserId.toString(),
+                    payeeId = payeeId.toString()
                 )
 
                 val response = financeRepository.createPayment(token, activeRoomId, request)
@@ -473,12 +425,12 @@ class FinanceManagerViewModel(
                 val userSessionRepository = application.container.userSessionRepository
                 val financeRepository = application.container.financeRepository
                 val roomRepository = application.container.roomRepository
-                val userRepository = application.container.userRepository // Add this
+                val userRepository = application.container.userRepository
                 FinanceManagerViewModel(
                     userSessionRepository = userSessionRepository,
                     financeRepository = financeRepository,
                     roomRepository = roomRepository,
-                    userRepository = userRepository // Add this
+                    userRepository = userRepository
                 )
             }
         }

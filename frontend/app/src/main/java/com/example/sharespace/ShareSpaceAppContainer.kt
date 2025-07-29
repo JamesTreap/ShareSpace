@@ -26,7 +26,7 @@ interface ShareSpaceAppContainer {
     val profileRepository: ProfileRepository
     val taskRepository: TaskRepository
     val financeRepository: FinanceRepository
-    val userRepository: UserRepository // Add this line
+    val userRepository: UserRepository
 }
 
 class DefaultShareSpaceAppContainer(applicationContext: Context) : ShareSpaceAppContainer {

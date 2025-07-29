@@ -507,9 +507,6 @@ class FinanceService:
     @staticmethod
     def get_user_debt_summary(room_id: int, user_id: int) -> dict:
         """Get debt summary for a specific user in a room"""
-        
-        # db.session.commit()
-        # db.session.close()
         summary = FinanceSummary.query.filter_by(
             room_id=room_id, user_id=user_id
         ).first()
