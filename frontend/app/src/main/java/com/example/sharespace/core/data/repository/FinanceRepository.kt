@@ -3,6 +3,8 @@ package com.example.sharespace.core.data.repository
 
 import com.example.sharespace.core.data.repository.dto.finance.ApiCreateBillRequest
 import com.example.sharespace.core.data.repository.dto.finance.ApiCreateBillResponse
+import com.example.sharespace.core.data.repository.dto.finance.ApiCreatePaymentRequest
+import com.example.sharespace.core.data.repository.dto.finance.ApiCreatePaymentResponse
 import com.example.sharespace.core.data.repository.dto.finance.ApiTransaction
 
 interface FinanceRepository {
@@ -17,4 +19,11 @@ interface FinanceRepository {
     suspend fun deleteBill(token: String, billId: Int): String
 
     suspend fun deletePayment(token: String, paymentId: Int): String
+
+    suspend fun createPayment(
+        token: String,
+        roomId: Int,
+        request: ApiCreatePaymentRequest
+    ): ApiCreatePaymentResponse
+
 }

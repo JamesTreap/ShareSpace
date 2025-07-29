@@ -3,8 +3,8 @@ package com.example.sharespace.ui.screens.finance
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -16,11 +16,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sharespace.R
 import com.example.sharespace.core.ui.components.NavigationHeader
 import com.example.sharespace.core.ui.components.SectionHeader
+import com.example.sharespace.core.ui.components.StyledButton
+import com.example.sharespace.core.ui.components.ButtonType
+import com.example.sharespace.ui.screens.finance.components.DebtSummarySection
+import com.example.sharespace.ui.screens.finance.components.DebtDetailsDialog
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -28,6 +33,7 @@ import java.util.*
 val TealPrimary = Color(0xFF4DB6AC)
 val LightGreyBackground = Color(0xFFF5F5F5)
 val LightRed = Color(0xFFE57373)
+val LightGreen = Color(0xFF81C784)
 val LightGrayBorder = Color.LightGray.copy(alpha = 0.5f)
 
 @Composable
@@ -38,22 +44,33 @@ fun FinanceManagerScreen(
 ) {
     val transactions by viewModel.transactions.collectAsState()
     val roommates by viewModel.roommates.collectAsState()
+    val debtSummaries by viewModel.debtSummaries.collectAsState()
+    val roomMembersWithDebts by viewModel.roomMembersWithDebts.collectAsState()
     val isLoading by viewModel.isLoading
     val errorMessage by viewModel.errorMessage
 
     // State for expanding/collapsing transaction list
     var showAllTransactions by remember { mutableStateOf(false) }
 
-    // Load transactions when screen appears
+    // State for payment dialog
+    var selectedPayee by remember { mutableStateOf<com.example.sharespace.core.data.repository.dto.users.ApiUser?>(null) }
+
+    // State for debt details dialog
+    var showDebtDetailsDialog by remember { mutableStateOf(false) }
+
+    // State for preselected payment values (when clicking Pay from debt summary)
+    var preselectedPayeeId by remember { mutableStateOf<Int?>(null) }
+    var preselectedPayeeName by remember { mutableStateOf("") }
+
+    // Load data when screen appears
     LaunchedEffect(Unit) {
         viewModel.loadTransactions()
+        viewModel.loadRoomMembersWithDebts()
     }
 
-    // Show error messages as snackbar or dialog
+    // Show error messages
     errorMessage?.let { message ->
         LaunchedEffect(message) {
-            // You can implement a snackbar here if needed
-            // For now, we'll just log it and clear after showing
             viewModel.clearError()
         }
     }
@@ -61,14 +78,34 @@ fun FinanceManagerScreen(
     Scaffold(
         topBar = {
             NavigationHeader(
-                title = "Bill Overview",
-                onNavigateBack = onNavigateBack
+                title = "Finance Manager",
+                onNavigateBack = onNavigateBack,
+                actions = {
+                    // Debt details button
+                    IconButton(onClick = { showDebtDetailsDialog = true }) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = "Debt Details",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    // Refresh button
+                    IconButton(onClick = {
+                        viewModel.loadTransactions()
+                        viewModel.loadRoomMembersWithDebts()
+                    }) {
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = "Refresh",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
             )
         },
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         if (isLoading) {
-            // Show loading indicator
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -86,25 +123,72 @@ fun FinanceManagerScreen(
             ) {
                 item { Spacer(modifier = Modifier.height(16.dp)) }
 
+                // Debt Summary Section (NEW - replaces old balance calculation)
+                item {
+                    DebtSummarySection(
+                        debtSummaries = debtSummaries,
+                        onPayUser = { userId, userName ->
+                            // Find the actual user object for the payment dialog
+                            val payeeUser = roommates.find { it.id == userId }
+                            if (payeeUser != null) {
+                                selectedPayee = payeeUser
+                                preselectedPayeeId = userId
+                                preselectedPayeeName = userName
+                            }
+                        }
+                    )
+                }
+
+                item { Spacer(modifier = Modifier.height(16.dp)) }
+
+                // Bill Summary Section
                 item { BillSummarySection(transactions) }
 
                 item { Spacer(modifier = Modifier.height(16.dp)) }
 
-                item { RoommatesSection(roommates = roommates) }
+                // Action Buttons Section
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        StyledButton(
+                            onClick = onAddBillClick,
+                            text = "Add Bill",
+                            buttonType = ButtonType.Primary,
+                            icon = Icons.Default.Add,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        StyledButton(
+                            onClick = {
+                                // Show payment dialog without preselected user
+                                selectedPayee = roommates.firstOrNull()
+                                preselectedPayeeId = null
+                                preselectedPayeeName = ""
+                            },
+                            text = "Make Payment",
+                            buttonType = ButtonType.Secondary,
+                            icon = Icons.Default.CheckCircle,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
 
                 item { Spacer(modifier = Modifier.height(16.dp)) }
 
+                // Transaction History Section
                 item {
                     TransactionHistorySection(
                         transactions = transactions,
                         showAllTransactions = showAllTransactions,
-                        onAddBillClick = onAddBillClick,
                         onDeleteTransaction = { transactionId, transactionType ->
                             viewModel.deleteTransaction(transactionId, transactionType)
                         }
                     )
                 }
 
+                // View More Button
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
                     ViewMoreButton(
@@ -117,13 +201,172 @@ fun FinanceManagerScreen(
             }
         }
     }
+
+    // Payment Dialog
+    selectedPayee?.let { payee ->
+        PaymentDialog(
+            payee = payee,
+            roommates = roommates,
+            preselectedPayeeId = preselectedPayeeId,
+            onDismiss = {
+                selectedPayee = null
+                preselectedPayeeId = null
+                preselectedPayeeName = ""
+            },
+            onPayment = { payeeId, amount, description ->
+                viewModel.createPayment(payeeId, amount, description)
+                selectedPayee = null
+                preselectedPayeeId = null
+                preselectedPayeeName = ""
+            },
+            isLoading = isLoading
+        )
+    }
+
+    // Debt Details Dialog
+    if (showDebtDetailsDialog) {
+        DebtDetailsDialog(
+            isVisible = showDebtDetailsDialog,
+            onDismiss = { showDebtDetailsDialog = false },
+            roomMembersWithDebts = roomMembersWithDebts,
+            currentUserId = 1 // TODO: Get this from user session repository
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PaymentDialog(
+    payee: com.example.sharespace.core.data.repository.dto.users.ApiUser,
+    roommates: List<com.example.sharespace.core.data.repository.dto.users.ApiUser>,
+    preselectedPayeeId: Int? = null,
+    onDismiss: () -> Unit,
+    onPayment: (Int, String, String) -> Unit, // payeeId, amount, description
+    isLoading: Boolean = false
+) {
+    var selectedPayeeId by remember(preselectedPayeeId) {
+        mutableStateOf(preselectedPayeeId ?: payee.id)
+    }
+    var amount by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) }
+
+    val selectedPayeeName = roommates.find { it.id == selectedPayeeId }?.let {
+        it.name ?: it.username
+    } ?: "Unknown User"
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Make Payment")
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Payee selection dropdown
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }
+                ) {
+                    OutlinedTextField(
+                        value = selectedPayeeName,
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text("Pay to") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        roommates.forEach { roommate ->
+                            DropdownMenuItem(
+                                text = { Text(roommate.name ?: roommate.username) },
+                                onClick = {
+                                    selectedPayeeId = roommate.id
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Amount field
+                OutlinedTextField(
+                    value = amount,
+                    onValueChange = { value ->
+                        // Allow numbers with optional decimal places
+                        if (value.isEmpty() || value.matches(Regex("^\\d*\\.?\\d*$"))) {
+                            amount = value
+                        }
+                    },
+                    label = { Text("Amount") },
+                    placeholder = { Text("Enter amount") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    leadingIcon = {
+                        Text(
+                            text = "$",
+                            modifier = Modifier.padding(start = 12.dp)
+                        )
+                    }
+                )
+
+                // Description field
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Description (Optional)") },
+                    placeholder = { Text("What's this payment for?") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (amount.isNotBlank()) {
+                        val finalDescription = if (description.isBlank()) {
+                            "Payment to $selectedPayeeName"
+                        } else {
+                            description
+                        }
+                        onPayment(selectedPayeeId, amount, finalDescription)
+                    }
+                },
+                enabled = amount.isNotBlank() && !isLoading
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Send Payment")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Composable
 fun TransactionHistorySection(
     transactions: List<com.example.sharespace.core.data.repository.dto.finance.ApiTransaction>,
     showAllTransactions: Boolean,
-    onAddBillClick: () -> Unit,
     onDeleteTransaction: (Int, String) -> Unit
 ) {
     // Determine which transactions to show
@@ -134,12 +377,18 @@ fun TransactionHistorySection(
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        // Using SectionHeader component
-        SectionHeader(
-            title = "Transaction History (${transactions.size})",
-            actionText = "+ Add Bill",
-            onAction = onAddBillClick
-        )
+        // Section header
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Transaction History (${transactions.size})",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -152,7 +401,7 @@ fun TransactionHistorySection(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No transactions yet\nTap + Add Bill to get started",
+                    text = "No transactions yet\nAdd bills or make payments to get started",
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -197,48 +446,27 @@ fun ViewMoreButton(
     // Only show the button if there are more than 5 transactions
     if (transactions.size <= 5) return
 
-    Button(
+    StyledButton(
         onClick = onToggleShowAll,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (showAllTransactions)
-                MaterialTheme.colorScheme.outline else TealPrimary,
-            contentColor = if (showAllTransactions)
-                MaterialTheme.colorScheme.onSurface else Color.White
-        )
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = if (showAllTransactions)
-                    Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = if (showAllTransactions)
-                    "Show Less" else "View More (${transactions.size - 5} more)",
-                fontSize = 16.sp
-            )
-        }
-    }
+        text = if (showAllTransactions)
+            "Show Less" else "View More (${transactions.size - 5} more)",
+        buttonType = if (showAllTransactions) ButtonType.Secondary else ButtonType.Primary,
+        icon = if (showAllTransactions)
+            Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @Composable
 fun BillSummarySection(transactions: List<com.example.sharespace.core.data.repository.dto.finance.ApiTransaction>) {
     // Calculate total from real transactions
-    val totalAmount = transactions.sumOf { it.amount }
+    val billTransactions = transactions.filter { it.type == "bill" }
+    val totalAmount = billTransactions.sumOf { it.amount }
 
     // Group by category for breakdown - handle null categories
-    val categoryTotals = transactions
+    val categoryTotals = billTransactions
         .groupBy { it.category ?: "Unknown" } // Handle null categories
-        .mapValues { (_, transactions) -> transactions.sumOf { it.amount } }
+        .mapValues { (_, billTransactions) -> billTransactions.sumOf { it.amount } }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -308,100 +536,6 @@ fun BillBreakdownItem(category: String, amount: String) {
 }
 
 @Composable
-fun RoommatesSection(roommates: List<com.example.sharespace.core.data.repository.dto.users.ApiUser>) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = "Roommates (${roommates.size})",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        if (roommates.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "No roommates found",
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        } else {
-            roommates.forEach { roommate ->
-                RoommateCard(
-                    name = roommate.name ?: roommate.username, // Use name or fallback to username
-                    amountOwed = "$0", // TODO: Calculate real amounts from transactions
-                    imageRes = R.drawable.ic_launcher_background // TODO: Use real profile images
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-        }
-    }
-}
-
-@Composable
-fun RoommateCard(
-    name: String,
-    imageRes: Int,
-    amountOwed: String? = null,
-    amountOwing: String? = null,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, LightGrayBorder, RoundedCornerShape(12.dp))
-            .background(Color.White, RoundedCornerShape(12.dp))
-            .clip(RoundedCornerShape(12.dp))
-            .clickable { }
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(id = imageRes),
-                contentDescription = name,
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column {
-                Text(
-                    text = name,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                when {
-                    amountOwed != null -> Text(
-                        text = "Amount owed: $amountOwed",
-                        fontSize = 14.sp,
-                        color = if (amountOwed != "$0") LightRed else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    amountOwing != null -> Text(
-                        text = "Amount owing: $amountOwing",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-        Icon(
-            imageVector = Icons.Default.MoreVert,
-            contentDescription = "View Details",
-            tint = MaterialTheme.colorScheme.outline
-        )
-    }
-}
-
-@Composable
 fun TransactionItem(
     transaction: com.example.sharespace.core.data.repository.dto.finance.ApiTransaction,
     onDelete: () -> Unit
@@ -423,7 +557,7 @@ fun TransactionItem(
             Icon(
                 imageVector = when (transaction.type) {
                     "bill" -> Icons.Default.MailOutline
-                    "payment" -> Icons.Default.ShoppingCart
+                    "payment" -> Icons.Default.CheckCircle
                     else -> Icons.Default.ArrowForward
                 },
                 contentDescription = transaction.title,
@@ -483,25 +617,144 @@ fun TransactionItem(
                 Text("Are you sure you want to delete \"${transaction.title ?: "this transaction"}\"? This action cannot be undone.")
             },
             confirmButton = {
-                Button(
+                StyledButton(
                     onClick = {
                         showDeleteDialog = false
                         onDelete()
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Red,
-                        contentColor = Color.White
-                    )
-                ) {
-                    Text("Delete")
-                }
+                    text = "Delete",
+                    buttonType = ButtonType.Danger
+                )
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
-                }
+                StyledButton(
+                    onClick = { showDeleteDialog = false },
+                    text = "Cancel",
+                    buttonType = ButtonType.Tertiary
+                )
             }
         )
+    }
+}
+
+@Composable
+fun RoommatesSection(
+    roommates: List<com.example.sharespace.core.data.repository.dto.users.ApiUser>,
+    debtSummaries: List<com.example.sharespace.core.data.repository.dto.users.DebtSummary>,
+    onPayClick: (com.example.sharespace.core.data.repository.dto.users.ApiUser) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Roommates (${roommates.size})",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        if (roommates.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No roommates found",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            roommates.forEach { roommate ->
+                // Find debt summary for this roommate
+                val debtSummary = debtSummaries.find { it.userId == roommate.id }
+                val balance = debtSummary?.netBalance ?: 0.0
+
+                RoommateCard(
+                    roommate = roommate,
+                    balance = balance,
+                    onPayClick = { onPayClick(roommate) }
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun RoommateCard(
+    roommate: com.example.sharespace.core.data.repository.dto.users.ApiUser,
+    balance: Double,
+    onPayClick: () -> Unit
+) {
+    val balanceText = when {
+        balance > 0 -> "Owes you: ${String.format("%.2f", balance)}"
+        balance < 0 -> "You owe: ${String.format("%.2f", -balance)}"
+        else -> "Even"
+    }
+
+    val balanceColor = when {
+        balance > 0 -> LightGreen
+        balance < 0 -> LightRed
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, LightGrayBorder, RoundedCornerShape(12.dp))
+            .background(Color.White, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_launcher_background),
+                contentDescription = roommate.name,
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column {
+                Text(
+                    text = roommate.name ?: roommate.username,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = balanceText,
+                    fontSize = 14.sp,
+                    color = balanceColor,
+                    fontWeight = if (balance != 0.0) FontWeight.Medium else FontWeight.Normal
+                )
+            }
+        }
+
+        // Show pay button only if current user owes this roommate money
+        if (balance < 0) {
+            Button(
+                onClick = onPayClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = TealPrimary,
+                    contentColor = Color.White
+                ),
+                modifier = Modifier.height(36.dp)
+            ) {
+                Text("Pay", fontSize = 14.sp)
+            }
+        } else {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = "View Details",
+                tint = MaterialTheme.colorScheme.outline
+            )
+        }
     }
 }
 

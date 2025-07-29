@@ -99,3 +99,28 @@ data class ApiTransactionListResponse(
 data class ApiDeleteResponse(
     val message: String
 )
+
+data class ApiCreatePaymentRequest(
+    @SerializedName("title")
+    val title: String,
+
+    @SerializedName("category")
+    val category: String,
+
+    @SerializedName("amount")
+    val amount: Double, // Backend expects double for payments
+
+    @SerializedName("payer_id")
+    val payerId: String, // Backend expects string that gets converted to int
+
+    @SerializedName("payee_id")
+    val payeeId: String // Backend expects string that gets converted to int
+)
+
+data class ApiCreatePaymentResponse(
+    @SerializedName("message")
+    val message: String,
+
+    @SerializedName("payment_id")
+    val paymentId: Int? = null
+)

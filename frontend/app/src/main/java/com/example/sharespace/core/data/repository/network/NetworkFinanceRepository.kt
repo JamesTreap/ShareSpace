@@ -4,6 +4,8 @@ import com.example.sharespace.core.data.remote.ApiService
 import com.example.sharespace.core.data.repository.FinanceRepository
 import com.example.sharespace.core.data.repository.dto.finance.ApiCreateBillRequest
 import com.example.sharespace.core.data.repository.dto.finance.ApiCreateBillResponse
+import com.example.sharespace.core.data.repository.dto.finance.ApiCreatePaymentRequest
+import com.example.sharespace.core.data.repository.dto.finance.ApiCreatePaymentResponse
 import com.example.sharespace.core.data.repository.dto.finance.ApiTransaction
 import retrofit2.HttpException
 import retrofit2.Response
@@ -59,6 +61,24 @@ class NetworkFinanceRepository(private val apiService: ApiService) : FinanceRepo
         if (response.isSuccessful) {
             return response.body()?.message
                 ?: throw IllegalStateException("API response body was null for deletePayment")
+        } else {
+            throw HttpException(response)
+        }
+    }
+
+    override suspend fun createPayment(
+        token: String,
+        roomId: Int,
+        request: ApiCreatePaymentRequest
+    ): ApiCreatePaymentResponse {
+        val response = apiService.createPayment(
+            roomId = roomId,
+            authorization = "Bearer $token",
+            request = request
+        )
+        if (response.isSuccessful) {
+            return response.body()
+                ?: throw IllegalStateException("API response body was null for createPayment")
         } else {
             throw HttpException(response)
         }

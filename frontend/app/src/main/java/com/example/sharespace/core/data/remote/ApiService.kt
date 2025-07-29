@@ -6,6 +6,8 @@ import com.example.sharespace.core.data.repository.dto.auth.ApiLoginRequest
 import com.example.sharespace.core.data.repository.dto.auth.ApiLoginResponse
 import com.example.sharespace.core.data.repository.dto.finance.ApiCreateBillRequest
 import com.example.sharespace.core.data.repository.dto.finance.ApiCreateBillResponse
+import com.example.sharespace.core.data.repository.dto.finance.ApiCreatePaymentRequest
+import com.example.sharespace.core.data.repository.dto.finance.ApiCreatePaymentResponse
 import com.example.sharespace.core.data.repository.dto.finance.ApiTransaction
 import com.example.sharespace.core.data.repository.dto.finance.ApiDeleteResponse
 import com.example.sharespace.core.data.repository.dto.rooms.ApiCreateRoomRequest
@@ -26,6 +28,7 @@ import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskReques
 import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskResponse
 import com.example.sharespace.core.data.repository.dto.users.ApiPatchProfileRequest
 import com.example.sharespace.core.data.repository.dto.users.ApiUser
+import com.example.sharespace.core.data.repository.dto.users.ApiUserWithDebts
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -167,13 +170,22 @@ interface ApiService {
         @Header("Authorization") authorization: String
     ): Response<ApiDeleteResponse>
 
-    // Add this data class for delete responses
+    @POST("finance/pay_user/{room_id}")
+    suspend fun createPayment(
+        @Path("room_id") roomId: Int,
+        @Header("Authorization") authorization: String,
+        @Body request: ApiCreatePaymentRequest
+    ): Response<ApiCreatePaymentResponse>
 
-//
-//    @POST("finance/pay_user/{room_id}")
-//    suspend fun payUser(
-//        @Path("room_id") roomId: Int,
-//        @Header("Authorization") token: String,
-//        @Body request: PayUserRequest // TODO: Define PayUserRequest & Response
-//    ): Response<PayUserResponse>
+    @GET("users/room_members_with_debts/{room_id}")
+    suspend fun getRoomMembersWithDebts(
+        @Path("room_id") roomId: Int,
+        @Header("Authorization") token: String
+    ): Response<List<ApiUserWithDebts>> // Backend returns array directly
+
+    @POST("users/cleanup_room_debts/{room_id}")
+    suspend fun cleanupRoomDebts(
+        @Path("room_id") roomId: Int,
+        @Header("Authorization") token: String
+    ): Response<ApiDeleteResponse>
 }

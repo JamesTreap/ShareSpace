@@ -9,7 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -25,11 +26,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sharespace.R
 import com.example.sharespace.core.ui.components.NavigationHeader
+import java.text.NumberFormat
+import java.util.*
 
-// Using the same colors for consistency with FinanceManagerScreen
-//val TealPrimary = Color(0xFF4DB6AC)
-//val LightGreyBackground = Color(0xFFF5F5F5)
-//val LightGrayBorder = Color.LightGray.copy(alpha = 0.5f)
+
+
 @Composable
 fun whiteTextFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedContainerColor = Color.White,
@@ -41,12 +42,13 @@ fun whiteTextFieldColors() = OutlinedTextFieldDefaults.colors(
 @Composable
 fun AddBillScreen(
     onNavigateBack: () -> Unit,
-    viewModel: AddBillViewModel = viewModel(factory = AddBillViewModel.Factory)
+    viewModel: FinanceManagerViewModel = viewModel(factory = FinanceManagerViewModel.Factory)
 ) {
-    val roommates by viewModel.roommates.collectAsState()
+    val roommates by viewModel.addBillRoommates.collectAsState()
     val isLoading by viewModel.isLoading
     val errorMessage by viewModel.errorMessage
     val billCreated by viewModel.billCreated
+
 
     // Form state
     var title by remember { mutableStateOf("") }
@@ -55,17 +57,13 @@ fun AddBillScreen(
     var occurs by remember { mutableStateOf("1w") } // Default to weekly
     var repeats by remember { mutableStateOf("1") }
 
-    // Load roommates when screen appears
-    LaunchedEffect(Unit) {
-        viewModel.loadRoommates()
-    }
+    // Calculate debt-related statistics
+    val debtorsCount = roommates.count { it.currentBalance < 0 }
+    val hasDebtors = debtorsCount > 0
 
     // Handle successful bill creation
-    LaunchedEffect(billCreated) {
-        if (billCreated) {
-            onNavigateBack() // Go back to previous screen
-            viewModel.resetBillCreated()
-        }
+    LaunchedEffect(Unit) {
+        viewModel.loadRoommatesForBill()
     }
 
     // Show error messages
@@ -131,13 +129,7 @@ fun AddBillScreen(
                         category = category,
                         onCategoryChange = { category = it },
                         totalCost = totalCost,
-                        onTotalCostChange = {
-                            totalCost = it
-                            // Auto-split evenly when total changes
-                            if (it.isNotBlank()) {
-                                viewModel.splitEvenly(it)
-                            }
-                        },
+                        onTotalCostChange = { totalCost = it },
                         occurs = occurs,
                         onOccursChange = { occurs = it },
                         repeats = repeats,
@@ -147,19 +139,21 @@ fun AddBillScreen(
 
                 item { Spacer(modifier = Modifier.height(24.dp)) }
 
-                // Section for the split method tabs
+                // NEW: Enhanced split method section with debt awareness
                 item {
-                    SplitMethodTabs(
+                    EnhancedSplitMethodSection(
                         totalAmount = totalCost,
+                        debtorsCount = debtorsCount,
+                        hasDebtors = hasDebtors,
                         onSplitEvenly = { viewModel.splitEvenly(totalCost) }
                     )
                 }
 
                 item { Spacer(modifier = Modifier.height(16.dp)) }
 
-                // Section for roommate splits with real data
+                // Enhanced roommate splits section showing debt information
                 item {
-                    RoommateSplitSection(
+                    EnhancedRoommateSplitSection(
                         roommates = roommates,
                         onAmountChange = { userId, amount ->
                             viewModel.updateRoommateAmount(userId, amount)
@@ -189,7 +183,7 @@ fun AddBillScreen(
                             containerColor = TealPrimary,
                             contentColor = Color.White
                         ),
-                        enabled = !isLoading
+                        enabled = !isLoading && title.isNotBlank() && totalCost.isNotBlank()
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
@@ -253,8 +247,8 @@ fun BillInfoSection(
         OutlinedTextField(
             value = totalCost,
             onValueChange = { value ->
-                // Only allow numbers
-                if (value.isEmpty() || value.matches(Regex("^\\d+$"))) {
+                // Allow numbers with optional decimal places
+                if (value.isEmpty() || value.matches(Regex("^\\d*\\.?\\d*$"))) {
                     onTotalCostChange(value)
                 }
             },
@@ -263,6 +257,12 @@ fun BillInfoSection(
             modifier = Modifier.fillMaxWidth(),
             colors = whiteTextFieldColors(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            leadingIcon = {
+                Text(
+                    text = "$",
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            },
             trailingIcon = {
                 if (totalCost.isNotEmpty()) {
                     IconButton(onClick = { onTotalCostChange("") }) {
@@ -303,39 +303,57 @@ fun BillInfoSection(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SplitMethodTabs(
+fun EnhancedSplitMethodSection(
     totalAmount: String,
+    debtorsCount: Int,
+    hasDebtors: Boolean,
     onSplitEvenly: () -> Unit
 ) {
-    var selectedTabIndex by remember { mutableStateOf(0) }
-    val tabs = listOf("Split Evenly", "Custom Amount")
-
-    PrimaryTabRow(
-        selectedTabIndex = selectedTabIndex,
-        containerColor = LightGreyBackground,
-        contentColor = TealPrimary
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        tabs.forEachIndexed { index, title ->
-            Tab(
-                selected = selectedTabIndex == index,
-                onClick = {
-                    selectedTabIndex = index
-                    if (index == 0 && totalAmount.isNotBlank()) {
-                        onSplitEvenly()
-                    }
-                },
-                text = { Text(title) },
-                selectedContentColor = TealPrimary,
-                unselectedContentColor = Color.Gray
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Split Options",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Split evenly button
+            OutlinedButton(
+                onClick = onSplitEvenly,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = totalAmount.isNotBlank()
+            ) {
+                Icon(Icons.Default.Person, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Split Evenly Among All")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+
+
+
+            // Explanation text
+            Text(
+                text = "Smart split considers current balances to help settle debts more fairly",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp)
             )
         }
     }
 }
 
 @Composable
-fun RoommateSplitSection(
+fun EnhancedRoommateSplitSection(
     roommates: List<RoommateSplit>,
     onAmountChange: (Int, String) -> Unit
 ) {
@@ -343,6 +361,12 @@ fun RoommateSplitSection(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        Text(
+            text = "Roommate Splits",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+
         if (roommates.isEmpty()) {
             Text(
                 text = "Loading roommates...",
@@ -352,7 +376,7 @@ fun RoommateSplitSection(
             )
         } else {
             roommates.forEach { split ->
-                RoommateSplitItem(
+                EnhancedRoommateSplitItem(
                     roommateSplit = split,
                     onAmountChange = { amount ->
                         onAmountChange(split.user.id, amount)
@@ -364,44 +388,98 @@ fun RoommateSplitSection(
 }
 
 @Composable
-fun RoommateSplitItem(
+fun EnhancedRoommateSplitItem(
     roommateSplit: RoommateSplit,
     onAmountChange: (String) -> Unit
 ) {
-    Row(
+    val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US)
+
+    Card(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        colors = CardDefaults.cardColors(
+            containerColor = when {
+                roommateSplit.currentBalance > 0 -> Color(0xFF4CAF50).copy(alpha = 0.1f) // They owe you
+                roommateSplit.currentBalance < 0 -> Color(0xFFF44336).copy(alpha = 0.1f) // You owe them
+                else -> Color.White
+            }
+        )
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_background), // TODO: Use real profile images
-                contentDescription = roommateSplit.user.name,
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_background),
+                    contentDescription = roommateSplit.user.name,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column {
+                    Text(
+                        text = roommateSplit.user.name ?: roommateSplit.user.username,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+
+                    // Show current balance
+                    if (roommateSplit.currentBalance != 0.0) {
+                        Text(
+                            text = when {
+                                roommateSplit.currentBalance > 0 -> "Owes you ${currencyFormatter.format(roommateSplit.currentBalance)}"
+                                else -> "You owe ${currencyFormatter.format(-roommateSplit.currentBalance)}"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = when {
+                                roommateSplit.currentBalance > 0 -> Color(0xFF4CAF50)
+                                else -> Color(0xFFF44336)
+                            }
+                        )
+                    } else {
+                        Text(
+                            text = "Even",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = roommateSplit.user.name ?: roommateSplit.user.username,
-                fontSize = 16.sp
+
+            // Amount input
+            OutlinedTextField(
+                value = roommateSplit.amount,
+                onValueChange = { value ->
+                    // Allow numbers with optional decimal places
+                    if (value.isEmpty() || value.matches(Regex("^\\d*\\.?\\d*$"))) {
+                        onAmountChange(value)
+                    }
+                },
+                label = { Text("Amount") },
+                modifier = Modifier.width(120.dp),
+                colors = whiteTextFieldColors(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                leadingIcon = {
+                    Text(
+                        text = "$",
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                },
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Right),
+                singleLine = true
             )
         }
-
-        OutlinedTextField(
-            value = roommateSplit.amount,
-            onValueChange = { value ->
-                // Allow numbers with optional decimal places
-                if (value.isEmpty() || value.matches(Regex("^\\d*\\.?\\d*$"))) {
-                    onAmountChange(value)
-                }
-            },
-            label = { Text("Owes") },
-            modifier = Modifier.width(100.dp),
-            colors = whiteTextFieldColors(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Right)
-        )
     }
 }

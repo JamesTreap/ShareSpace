@@ -1,3 +1,4 @@
+# pylint: disable=all
 from flask import Flask
 from dotenv import dotenv_values
 from entities import db

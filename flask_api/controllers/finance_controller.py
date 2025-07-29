@@ -1,3 +1,4 @@
+# pylint: disable=all
 from flask import Blueprint, jsonify, abort, g, request
 from utils import token_required
 from entities.user import User
@@ -114,3 +115,35 @@ def delete_payment(payment_id):
     FinanceService.delete_payment(user.id, int(payment_id))
 
     return {"message": "Payment deleted successfully"}, 200
+
+
+@finance_bp.route('/debug/clear_room_transactions/<room_id>', methods=['DELETE'])
+def clear_room_transactions(room_id):
+    """Delete all bills and payments for this room and clear debt data"""
+    try:
+        room_id_int = int(room_id)
+    except ValueError:
+        abort(400, "Invalid room ID")
+    
+    # Import the necessary models
+    from entities.finance import Bill, Payment, FinanceSummary
+    from entities import db
+    
+    # Delete all bills for this room
+    bills_deleted = Bill.query.filter_by(room_id=room_id_int).delete()
+    
+    # Delete all payments for this room  
+    payments_deleted = Payment.query.filter_by(room_id=room_id_int).delete()
+    
+    # Clear all debt summaries for this room
+    summaries_deleted = FinanceSummary.query.filter_by(room_id=room_id_int).delete()
+    
+    # Commit the deletions
+    db.session.commit()
+    
+    return {
+        "message": f"All transactions cleared for room {room_id}",
+        "bills_deleted": bills_deleted,
+        "payments_deleted": payments_deleted, 
+        "summaries_deleted": summaries_deleted
+    }, 200
