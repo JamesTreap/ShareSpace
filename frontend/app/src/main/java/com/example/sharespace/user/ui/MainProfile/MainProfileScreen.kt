@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -58,6 +59,7 @@ fun MainProfileScreen(
     onNavigateToRoom: () -> Unit,
     onLogOut: () -> Unit,
     onViewProfileClick: () -> Unit,
+    onFinanceManagerClick: () -> Unit, // Add this parameter
 ) {
 
     val user by viewModel.user
@@ -93,6 +95,17 @@ fun MainProfileScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
+            rooms.forEach { room ->
+                RoomCard(
+                    room = room, showAction = false,
+                    acceptInvite = {  },
+                    declineInvite = {  },
+                    room.alerts,
+                    navigateToRoom = {
+                        viewModel.setActiveRoom(room.id)
+                        onNavigateToRoom()
+                    })
+                Spacer(modifier = Modifier.height(8.dp))
             when (roomsUiState) {
                 is com.example.sharespace.user.viewmodel.RoomsUiState.Loading -> {
                     CircularProgressIndicator(
@@ -151,6 +164,23 @@ fun MainProfileScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            invites.forEach { room ->
+                RoomCard(
+                    room = room, showAction = true,
+                    acceptInvite = { viewModel.acceptInvite(room.id) },
+                    declineInvite = { viewModel.declineInvite(room.id) },
+                    room.alerts,
+                    navigateToRoom = { }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        TokenStorage.clearToken(context)
+                        onLogOut()
+
             when (invitesUiState) {
                 is com.example.sharespace.user.viewmodel.InvitesUiState.Loading -> {
                     CircularProgressIndicator(
@@ -198,7 +228,5 @@ fun MainProfileScreen(
 
 
         }
-
     }
-
 }

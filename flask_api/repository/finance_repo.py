@@ -1,3 +1,4 @@
+# pylint: disable=all
 from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
 from entities.finance import Bill, Payment

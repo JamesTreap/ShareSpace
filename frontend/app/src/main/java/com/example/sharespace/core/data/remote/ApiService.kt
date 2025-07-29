@@ -4,6 +4,12 @@ import com.example.sharespace.core.data.repository.dto.auth.ApiCreateAccountRequ
 import com.example.sharespace.core.data.repository.dto.auth.ApiCreateAccountResponse
 import com.example.sharespace.core.data.repository.dto.auth.ApiLoginRequest
 import com.example.sharespace.core.data.repository.dto.auth.ApiLoginResponse
+import com.example.sharespace.core.data.repository.dto.finance.ApiCreateBillRequest
+import com.example.sharespace.core.data.repository.dto.finance.ApiCreateBillResponse
+import com.example.sharespace.core.data.repository.dto.finance.ApiCreatePaymentRequest
+import com.example.sharespace.core.data.repository.dto.finance.ApiCreatePaymentResponse
+import com.example.sharespace.core.data.repository.dto.finance.ApiTransaction
+import com.example.sharespace.core.data.repository.dto.finance.ApiDeleteResponse
 import com.example.sharespace.core.data.repository.dto.calendar.ApiCalendarRequest
 import com.example.sharespace.core.data.repository.dto.calendar.ApiCalendarResponse
 import com.example.sharespace.core.data.repository.dto.rooms.ApiCreateRoomRequest
@@ -24,6 +30,7 @@ import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskReques
 import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskResponse
 import com.example.sharespace.core.data.repository.dto.users.ApiPatchProfileRequest
 import com.example.sharespace.core.data.repository.dto.users.ApiUser
+import com.example.sharespace.core.data.repository.dto.users.ApiUserWithDebts
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -139,6 +146,51 @@ interface ApiService {
 //        @Body request: UpdateTaskRequest
 //    ): Response<UpdateTaskResponse>
 //
+    // --- Finance ---
+    @GET("finance/transaction_list/{room_id}")
+    suspend fun getTransactionList(
+        @Path("room_id") roomId: Int,
+        @Header("Authorization") token: String
+    ): Response<List<ApiTransaction>> // Backend returns array directly, not wrapped
+
+    @POST("finance/create_bill/{room_id}")
+    suspend fun createBill(
+        @Path("room_id") roomId: Int,
+        @Header("Authorization") token: String,
+        @Body request: ApiCreateBillRequest
+    ): Response<ApiCreateBillResponse>
+
+    @DELETE("finance/delete/bill/{bill_id}")
+    suspend fun deleteBill(
+        @Path("bill_id") billId: Int,
+        @Header("Authorization") authorization: String
+    ): Response<ApiDeleteResponse>
+
+    @DELETE("finance/delete/payment/{payment_id}")
+    suspend fun deletePayment(
+        @Path("payment_id") paymentId: Int,
+        @Header("Authorization") authorization: String
+    ): Response<ApiDeleteResponse>
+
+    @POST("finance/pay_user/{room_id}")
+    suspend fun createPayment(
+        @Path("room_id") roomId: Int,
+        @Header("Authorization") authorization: String,
+        @Body request: ApiCreatePaymentRequest
+    ): Response<ApiCreatePaymentResponse>
+
+    @GET("users/room_members_with_debts/{room_id}")
+    suspend fun getRoomMembersWithDebts(
+        @Path("room_id") roomId: Int,
+        @Header("Authorization") token: String
+    ): Response<List<ApiUserWithDebts>> // Backend returns array directly
+
+    @POST("users/cleanup_room_debts/{room_id}")
+    suspend fun cleanupRoomDebts(
+        @Path("room_id") roomId: Int,
+        @Header("Authorization") token: String
+    ): Response<ApiDeleteResponse>
+
 //    // --- Finance ---
 //    @GET("finance/transaction_list/{room_id}")
 //    suspend fun getTransactionList(

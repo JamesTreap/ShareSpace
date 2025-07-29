@@ -44,12 +44,12 @@ class Payment(db.Model, TimestampMixin):
 
 class FinanceSummary(db.Model):
 
-    __tablename__ = "finance_summaries"
+    __tablename__ = "finance_summary"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     room_id: Mapped[int] = mapped_column(db.ForeignKey("rooms.id"))
     user_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
-    owes:  Mapped[dict] = mapped_column(JSON)
-    debts: Mapped[dict] = mapped_column(JSON)
+    owes:  Mapped[dict] = mapped_column(JSON, default=dict) 
+    debts: Mapped[dict] = mapped_column(JSON, default=dict)
 
     __table_args__ = (
         db.UniqueConstraint("room_id", "user_id", name="uniq_room_user"),

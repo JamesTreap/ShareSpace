@@ -29,7 +29,7 @@ def task_details(room_id):
     description = data.get("description")
     deadline = data.get("date")
     assignees = data.get("assignees", [])
-    frequency = (data.get("frequency")).strip()
+    frequency = (data.get("frequency") or "").strip()
     repeat = data.get("repeat", 0)
 
     try:
