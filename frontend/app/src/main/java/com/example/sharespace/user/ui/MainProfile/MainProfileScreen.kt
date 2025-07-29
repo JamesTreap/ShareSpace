@@ -7,18 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -47,6 +39,7 @@ import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
+// This utility function is fine, no changes needed.
 fun formatCurrency(amount: Float): String {
     return NumberFormat.getCurrencyInstance(Locale.getDefault()).format(amount)
 }
@@ -55,11 +48,11 @@ fun formatCurrency(amount: Float): String {
 fun MainProfileScreen(
     viewModel: ProfileScreenViewModel = viewModel(factory = ProfileScreenViewModel.Factory),
     onCreateRoomClick: () -> Unit,
-    onNavigateBack: () -> Unit,
+    onNavigateBack: () -> Unit, // This parameter is unused. Consider using it in a TopAppBar.
     onNavigateToRoom: () -> Unit,
     onLogOut: () -> Unit,
     onViewProfileClick: () -> Unit,
-    onFinanceManagerClick: () -> Unit, // Add this parameter
+    onFinanceManagerClick: () -> Unit, // This parameter is unused.
 ) {
 
     val user by viewModel.user
@@ -76,13 +69,13 @@ fun MainProfileScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .padding(vertical = 24.dp)
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
+                .padding(vertical = 24.dp) // Moved padding here to apply to the content
         ) {
             user?.let { UserHeader(name = it.name, photoUrl = it.photoUrl, onViewProfileClick) }
             Spacer(modifier = Modifier.height(16.dp))
@@ -95,43 +88,34 @@ fun MainProfileScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            rooms.forEach { room ->
-                RoomCard(
-                    room = room, showAction = false,
-                    acceptInvite = {  },
-                    declineInvite = {  },
-                    room.alerts,
-                    navigateToRoom = {
-                        viewModel.setActiveRoom(room.id)
-                        onNavigateToRoom()
-                    })
-                Spacer(modifier = Modifier.height(8.dp))
             when (roomsUiState) {
-                is com.example.sharespace.user.viewmodel.RoomsUiState.Loading -> {
+                is RoomsUiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
                             .padding(16.dp)
                     )
                 }
-                is com.example.sharespace.user.viewmodel.RoomsUiState.Success -> {
-                    if ((roomsUiState as RoomsUiState.Success).rooms.isEmpty()) {
+                is RoomsUiState.Success -> {
+                    val rooms = (roomsUiState as RoomsUiState.Success).rooms
+                    if (rooms.isEmpty()) {
                         Text(
                             text = "You are not in any rooms yet.",
                             modifier = Modifier
-                                .padding(horizontal = 16.dp)
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
                                 .fillMaxWidth(),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                             color = TextSecondary,
                             textAlign = TextAlign.Center
                         )
                     } else {
-                        (roomsUiState as RoomsUiState.Success).rooms.forEach { room ->
+                        rooms.forEach { room ->
                             RoomCard(
-                                room = room, showAction = false,
+                                room = room,
+                                showAction = false,
                                 acceptInvite = { },
                                 declineInvite = { },
-                                room.alerts,
+                                numOfNotifications = room.alerts,
                                 navigateToRoom = {
                                     viewModel.setActiveRoom(room.id)
                                     onNavigateToRoom()
@@ -140,7 +124,7 @@ fun MainProfileScreen(
                         }
                     }
                 }
-                is com.example.sharespace.user.viewmodel.RoomsUiState.Error -> {
+                is RoomsUiState.Error -> {
                     Text(
                         text = "Failed to load rooms. Please try again.",
                         modifier = Modifier
@@ -164,56 +148,42 @@ fun MainProfileScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            invites.forEach { room ->
-                RoomCard(
-                    room = room, showAction = true,
-                    acceptInvite = { viewModel.acceptInvite(room.id) },
-                    declineInvite = { viewModel.declineInvite(room.id) },
-                    room.alerts,
-                    navigateToRoom = { }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            Button(
-                onClick = {
-                    coroutineScope.launch {
-                        TokenStorage.clearToken(context)
-                        onLogOut()
-
             when (invitesUiState) {
-                is com.example.sharespace.user.viewmodel.InvitesUiState.Loading -> {
+                is InvitesUiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
                             .padding(16.dp)
                     )
                 }
-                is com.example.sharespace.user.viewmodel.InvitesUiState.Success -> {
-                    if ((invitesUiState as InvitesUiState.Success).invites.isEmpty()) {
+                is InvitesUiState.Success -> {
+                    val invites = (invitesUiState as InvitesUiState.Success).invites
+                    if (invites.isEmpty()) {
                         Text(
                             text = "You have no pending invites.",
                             modifier = Modifier
-                                .padding(horizontal = 16.dp)
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
                                 .fillMaxWidth(),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                             color = TextSecondary,
                             textAlign = TextAlign.Center
                         )
                     } else {
-                        (invitesUiState as InvitesUiState.Success).invites.forEach { room ->
+                        invites.forEach { room ->
                             RoomCard(
-                                room = room, showAction = true,
+                                room = room,
+                                showAction = true,
                                 acceptInvite = { viewModel.acceptInvite(room.id) },
                                 declineInvite = { viewModel.declineInvite(room.id) },
-                                room.alerts,
+                                // FIXED: Changed `alerts` to `numOfNotifications` and passed the size.
+                                numOfNotifications = room.alerts,
                                 navigateToRoom = { }
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
                 }
-                is com.example.sharespace.user.viewmodel.InvitesUiState.Error -> {
+                is InvitesUiState.Error -> {
                     Text(
                         text = "Failed to load invites. Please try again.",
                         modifier = Modifier
@@ -226,7 +196,21 @@ fun MainProfileScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
 
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        TokenStorage.clearToken(context)
+                        onLogOut()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text("Log Out")
+            }
         }
     }
 }
