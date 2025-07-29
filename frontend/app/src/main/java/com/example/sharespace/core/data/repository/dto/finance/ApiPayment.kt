@@ -1,14 +1,9 @@
 package com.example.sharespace.core.data.repository.dto.finance
-
-data class ApiBill(
+data class ApiPayment(
     override val id: Int,
     override val amount: Double,
     override val type: String,
     override val createdAt: String,
     override val payerUserId: Int,
-    val title: String,
-    val category: String,
-    val scheduledDate: String,
-    val metadata: ApiBillMetadata?,
-    val deadline: String?
+    val payeeUserId: Int
 ) : ApiTransaction

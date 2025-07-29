@@ -18,10 +18,10 @@ data class Bill(
         title = apiBill.title,
         amount = apiBill.amount,
         category = apiBill.category,
-        createdAt = apiBill.created_at,
+        createdAt = apiBill.createdAt,
         deadline = apiBill.deadline,
-        payerUserId = apiBill.payer_user_id,
-        scheduledDate = apiBill.scheduled_date,
+        payerUserId = apiBill.payerUserId,
+        scheduledDate = apiBill.scheduledDate,
         type = apiBill.type,
         metadata = apiBill.metadata?.let {
             BillMetadata(

@@ -191,28 +191,8 @@ interface ApiService {
         @Header("Authorization") token: String
     ): Response<ApiDeleteResponse>
 
-//    // --- Finance ---
-//    @GET("finance/transaction_list/{room_id}")
-//    suspend fun getTransactionList(
-//        @Path("room_id") roomId: Int,
-//        @Header("Authorization") token: String
-//    ): Response<TransactionListResponse>
-//
-//    @POST("finance/create_bill/{room_id}")
-//    suspend fun createBill(
-//        @Path("room_id") roomId: Int,
-//        @Header("Authorization") token: String,
-//        @Body request: CreateBillRequest // TODO: Define CreateBillRequest & Response
-//    ): Response<CreateBillResponse>
-//
-//    @POST("finance/pay_user/{room_id}")
-//    suspend fun payUser(
-//        @Path("room_id") roomId: Int,
-//        @Header("Authorization") token: String,
-//        @Body request: PayUserRequest // TODO: Define PayUserRequest & Response
-//    ): Response<PayUserResponse>
-
-    @GET("calendar/{roomId}")
+    // --- Calendar ---
+    @POST("calendar/{roomId}")
     suspend fun getCalendarData(
         @Path("roomId") roomId: Int,
         @Header("Authorization") token: String,

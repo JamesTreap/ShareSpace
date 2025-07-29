@@ -45,34 +45,34 @@ data class ApiCreateBillResponse(
 )
 
 // Update your ApiTransaction DTO to handle null values:
-data class ApiTransaction(
-    @SerializedName("id")
-    val id: Int,
-
-    @SerializedName("title")
-    val title: String?, // Make nullable
-
-    @SerializedName("amount")
-    val amount: Double,
-
-    @SerializedName("category")
-    val category: String?, // Make nullable
-
-    @SerializedName("created_at")
-    val createdAt: String,
-
-    @SerializedName("payer_user_id")
-    val payerUserId: Int,
-
-    @SerializedName("scheduled_date")
-    val scheduledDate: String,
-
-    @SerializedName("type")
-    val type: String,
-
-    @SerializedName("meta_data")
-    val metaData: ApiTransactionMetaData?
-)
+//data class ApiTransaction(
+//    @SerializedName("id")
+//    val id: Int,
+//
+//    @SerializedName("title")
+//    val title: String?, // Make nullable
+//
+//    @SerializedName("amount")
+//    val amount: Double,
+//
+//    @SerializedName("category")
+//    val category: String?, // Make nullable
+//
+//    @SerializedName("created_at")
+//    val createdAt: String,
+//
+//    @SerializedName("payer_user_id")
+//    val payerUserId: Int,
+//
+//    @SerializedName("scheduled_date")
+//    val scheduledDate: String,
+//
+//    @SerializedName("type")
+//    val type: String,
+//
+//    @SerializedName("meta_data")
+//    val metaData: ApiTransactionMetaData?
+//)
 
 // ApiTransactionMetaData.kt
 data class ApiTransactionMetaData(

@@ -2,6 +2,7 @@ package com.example.sharespace.core.data.repository.network
 
 import com.example.sharespace.core.data.remote.ApiService
 import com.example.sharespace.core.data.repository.FinanceRepository
+import com.example.sharespace.core.data.repository.dto.finance.ApiBill
 import com.example.sharespace.core.data.repository.dto.finance.ApiCreateBillRequest
 import com.example.sharespace.core.data.repository.dto.finance.ApiCreateBillResponse
 import com.example.sharespace.core.data.repository.dto.finance.ApiCreatePaymentRequest
@@ -13,6 +14,14 @@ import retrofit2.Response
 
 class NetworkFinanceRepository(private val apiService: ApiService) : FinanceRepository {
 
+//    override suspend fun getTransactionList(token: String, roomId: Int): List<ApiTransaction> {
+//        val response = apiService.getTransactionList(roomId = roomId, token = "Bearer $token")
+//        if (response.isSuccessful) {
+//            return response.body() ?: emptyList()
+//        } else {
+//            throw HttpException(response)
+//        }
+//    }
     override suspend fun getTransactionList(token: String, roomId: Int): List<ApiTransaction> {
         val response = apiService.getTransactionList(roomId = roomId, token = "Bearer $token")
         if (response.isSuccessful) {
@@ -20,6 +29,11 @@ class NetworkFinanceRepository(private val apiService: ApiService) : FinanceRepo
         } else {
             throw HttpException(response)
         }
+    }
+
+    override suspend fun getBillList(token: String, roomId: Int): List<ApiBill> {
+        val transactions = getTransactionList(token, roomId)
+        return transactions.filterIsInstance<ApiBill>()
     }
 
     override suspend fun createBill(

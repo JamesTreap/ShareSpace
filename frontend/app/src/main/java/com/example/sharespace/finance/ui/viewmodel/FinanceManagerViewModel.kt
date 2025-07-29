@@ -13,6 +13,7 @@ import com.example.sharespace.core.data.repository.FinanceRepository
 import com.example.sharespace.core.data.repository.RoomRepository
 import com.example.sharespace.core.data.repository.UserRepository
 import com.example.sharespace.core.data.repository.UserSessionRepository
+import com.example.sharespace.core.data.repository.dto.finance.ApiBill
 import com.example.sharespace.core.data.repository.dto.finance.ApiCreateBillRequest
 import com.example.sharespace.core.data.repository.dto.finance.ApiBillUser
 import com.example.sharespace.core.data.repository.dto.finance.ApiCreatePaymentRequest
@@ -41,8 +42,8 @@ class FinanceManagerViewModel(
 ) : ViewModel() {
 
     // State for transactions
-    private val _transactions = MutableStateFlow<List<ApiTransaction>>(emptyList())
-    val transactions: StateFlow<List<ApiTransaction>> = _transactions
+    private val _transactions = MutableStateFlow<List<ApiBill>>(emptyList())
+    val transactions: StateFlow<List<ApiBill>> = _transactions
 
     // State for roommates
     private val _roommates = MutableStateFlow<List<ApiUser>>(emptyList())
@@ -68,35 +69,82 @@ class FinanceManagerViewModel(
     private val _billCreated = mutableStateOf(false)
     val billCreated = _billCreated
 
+//    fun loadTransactions() {
+//        viewModelScope.launch {
+//            try {
+//                _isLoading.value = true
+//                _errorMessage.value = null
+//
+//                val token = userSessionRepository.userTokenFlow.first()
+//                val activeRoomId = userSessionRepository.activeRoomIdFlow.first()
+//
+//                if (token == null || activeRoomId == null) {
+//                    _errorMessage.value = "Authentication or room information is missing."
+//                    return@launch
+//                }
+//
+//                val transactionList = financeRepository.getTransactionList(token, activeRoomId)
+//                val roommatesList = roomRepository.getRoomMembers(token, activeRoomId)
+//
+//                _transactions.value = transactionList
+//                _roommates.value = roommatesList
+//
+////                Log.d(TAG, "✅ Loaded ${transactionList.size} transactions and ${roommatesList.size} roommates")
+//
+//                loadRoomMembersWithDebtsInternal(token, activeRoomId)
+//
+//            } catch (e: Exception) {
+//                Log.e(TAG, "❌ Error loading data: ${e.message}", e)
+//                _errorMessage.value = "Failed to load data: ${e.message}"
+//            } finally {
+//                _isLoading.value = false
+//            }
+//        }
+//    }
+
     fun loadTransactions() {
         viewModelScope.launch {
+            Log.d(TAG, "loadTransactions called.") // Log when the function starts
             try {
                 _isLoading.value = true
                 _errorMessage.value = null
+                Log.d(TAG, "isLoading set to true, errorMessage cleared.")
 
                 val token = userSessionRepository.userTokenFlow.first()
                 val activeRoomId = userSessionRepository.activeRoomIdFlow.first()
 
                 if (token == null || activeRoomId == null) {
                     _errorMessage.value = "Authentication or room information is missing."
+                    Log.w(TAG, "Token or activeRoomId is null. Token present: ${token != null}, RoomId present: ${activeRoomId != null}. Aborting.")
                     return@launch
                 }
+                Log.d(TAG, "Token and activeRoomId retrieved. RoomId: $activeRoomId.")
 
-                val transactionList = financeRepository.getTransactionList(token, activeRoomId)
-                val roommatesList = roomRepository.getRoomMembers(token, activeRoomId)
+
+                Log.d(TAG, "Fetching transaction list...")
+                val transactionList = financeRepository.getBillList(token, activeRoomId)
+                Log.i(TAG, "Fetched ${transactionList.size} transactions.")
+
 
                 _transactions.value = transactionList
+
+                Log.d(TAG, "Fetching roommates list...")
+                val roommatesList = roomRepository.getRoomMembers(token, activeRoomId)
+                Log.i(TAG, "Fetched ${roommatesList.size} roommates.")
+                // You could also log roommates here if needed, similar to transactions
                 _roommates.value = roommatesList
 
-                Log.d(TAG, "✅ Loaded ${transactionList.size} transactions and ${roommatesList.size} roommates")
+                Log.d(TAG, "✅ Successfully loaded ${transactionList.size} transactions and ${roommatesList.size} roommates.")
 
+                Log.d(TAG, "Calling loadRoomMembersWithDebtsInternal...")
                 loadRoomMembersWithDebtsInternal(token, activeRoomId)
 
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Error loading data: ${e.message}", e)
+                Log.e(TAG, "❌ Error in loadTransactions: ${e.message}", e)
                 _errorMessage.value = "Failed to load data: ${e.message}"
             } finally {
                 _isLoading.value = false
+                Log.d(TAG, "isLoading set to false. loadTransactions finished.")
             }
         }
     }
@@ -110,7 +158,7 @@ class FinanceManagerViewModel(
             val summaries = calculateDebtSummaries(membersWithDebts, currentUserId)
             _debtSummaries.value = summaries
 
-            Log.d(TAG, "✅ Loaded debt information.")
+//            Log.d(TAG, "✅ Loaded debt information.")
         } catch (e: Exception) {
             Log.e(TAG, "❌ Error loading debt data: ${e.message}", e)
         }
@@ -157,7 +205,7 @@ class FinanceManagerViewModel(
                     val currentBalance = calculateCurrentBalance(currentUserId, user.id, currentUserDebts)
                     RoommateSplit(user = user, currentBalance = currentBalance)
                 }
-                Log.d(TAG, "✅ Loaded ${roommatesList.size} roommates for bill creation.")
+//                Log.d(TAG, "✅ Loaded ${roommatesList.size} roommates for bill creation.")
 
             } catch (e: Exception) {
                 Log.e(TAG, "❌ Error loading roommates: ${e.message}", e)

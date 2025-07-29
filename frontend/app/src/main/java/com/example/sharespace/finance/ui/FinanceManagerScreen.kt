@@ -20,6 +20,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sharespace.R
+import com.example.sharespace.core.data.repository.dto.finance.ApiBill
 import com.example.sharespace.core.ui.components.NavigationHeader
 import com.example.sharespace.core.ui.components.SectionHeader
 import com.example.sharespace.core.ui.components.StyledButton
@@ -365,7 +366,7 @@ fun PaymentDialog(
 
 @Composable
 fun TransactionHistorySection(
-    transactions: List<com.example.sharespace.core.data.repository.dto.finance.ApiTransaction>,
+    transactions: List<ApiBill>,
     showAllTransactions: Boolean,
     onDeleteTransaction: (Int, String) -> Unit
 ) {
@@ -439,7 +440,7 @@ fun TransactionHistorySection(
 
 @Composable
 fun ViewMoreButton(
-    transactions: List<com.example.sharespace.core.data.repository.dto.finance.ApiTransaction>,
+    transactions: List<ApiBill>,
     showAllTransactions: Boolean,
     onToggleShowAll: () -> Unit
 ) {
@@ -458,7 +459,7 @@ fun ViewMoreButton(
 }
 
 @Composable
-fun BillSummarySection(transactions: List<com.example.sharespace.core.data.repository.dto.finance.ApiTransaction>) {
+fun BillSummarySection(transactions: List<ApiBill>) {
     // Calculate total from real transactions
     val billTransactions = transactions.filter { it.type == "bill" }
     val totalAmount = billTransactions.sumOf { it.amount }
@@ -537,7 +538,7 @@ fun BillBreakdownItem(category: String, amount: String) {
 
 @Composable
 fun TransactionItem(
-    transaction: com.example.sharespace.core.data.repository.dto.finance.ApiTransaction,
+    transaction: ApiBill,
     onDelete: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
