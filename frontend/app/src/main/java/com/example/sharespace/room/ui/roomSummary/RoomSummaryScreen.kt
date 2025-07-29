@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.sharespace.room.ui.roomSummary.components.CalendarSection
 import com.example.sharespace.room.ui.roomSummary.components.RoomSummaryTopAppBar
 import com.example.sharespace.room.ui.roomSummary.components.RoommatesSection
 import com.example.sharespace.room.ui.roomSummary.components.UpcomingTasksSection
@@ -55,6 +56,10 @@ fun RoomSummaryScreen(
 
     // Correctly collect StateFlow
     val currentUserId: String? by viewModel.currentUserIdString.collectAsState()
+
+    val calendarUiState by viewModel.calendarUiState.collectAsState()
+    val selectedDate by viewModel.selectedDate.collectAsState()
+    val selectedRoommates by viewModel.selectedRoommates.collectAsState()
 
     Scaffold(
         topBar = {
@@ -93,6 +98,7 @@ fun RoomSummaryScreen(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
+                .padding(vertical = 16.dp)
                 .fillMaxSize()
         ) {
             // Add Finance Manager Button here
@@ -122,7 +128,6 @@ fun RoomSummaryScreen(
             RoommatesSection(
                 roommatesUiState = roommatesUiState,
                 onAdd = onAddRoommateClick,
-                onViewAll = { /* TODO: Navigate to all roommates screen */ },
                 onRetry = viewModel::fetchRoomMembers,
                 modifier = Modifier.padding(horizontal = 12.dp)
             )
@@ -130,7 +135,8 @@ fun RoomSummaryScreen(
             Spacer(Modifier.height(16.dp))
 
             UpcomingTasksSection(
-                tasksUiState = tasksUiState, // Pass the UiState directly
+                tasksUiState = tasksUiState,
+                roommatesUiState = roommatesUiState,
                 currentUserId = currentUserId,
                 onAdd = onAddTaskClick,
                 onToggleDone = { task, newStatus ->
@@ -138,8 +144,25 @@ fun RoomSummaryScreen(
                 },
                 onViewAll = onViewTasksClick,
                 onRetry = viewModel::fetchTasks,
-                modifier = Modifier.heightIn(max = 400.dp).padding(horizontal = 12.dp)
+                modifier = Modifier
+                    .heightIn(max = 400.dp)
+                    .padding(horizontal = 12.dp)
             )
+
+            Spacer(Modifier.height(16.dp))
+
+//            CalendarSection(
+//                calendarUiState = calendarUiState,
+//                selectedDate = selectedDate,
+//                onDateSelected = viewModel::updateSelectedDate,
+//                roommates = if (roommatesUiState is RoomSummaryRoommatesUiState.Success)
+//                    roommatesUiState.roommates else emptyList(),
+//                selectedRoommates = selectedRoommates,
+//                onRoommateSelectionChanged = viewModel::updateSelectedRoommates,
+//                currentUserId = currentUserId,
+//                onRetry = viewModel::fetchCalendarData,
+//                modifier = Modifier.padding(horizontal = 12.dp)
+//            )
         }
     }
 }

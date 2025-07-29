@@ -45,7 +45,7 @@ fun RecentBillsSection(
                         Spacer(Modifier.height(4.dp))
                         Text("$${bill.amount}", style = MaterialTheme.typography.headlineSmall)
                         Spacer(Modifier.height(8.dp))
-                        Text(bill.subtitle, style = MaterialTheme.typography.bodySmall)
+//                        Text(bill.subtitle, style = MaterialTheme.typography.bodySmall)
                         Spacer(Modifier.height(12.dp))
                         Button(
                             onClick = { onPay(bill) },

@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.sharespace.auth.ui.SignupScreen
 import com.example.sharespace.room.ui.AddRoommateScreen
 import com.example.sharespace.room.ui.roomSummary.RoomSummaryScreen
 import com.example.sharespace.ui.screens.auth.LoginScreen
@@ -27,6 +28,7 @@ import com.example.sharespace.user.ui.ViewProfileScreen
 
 enum class ShareSpaceScreens(@StringRes val title: Int) {
     Login(title = R.string.login_screen),
+    Signup(title = R.string.signup_screen),
     HomeOverview(title = R.string.home_overview_screen),
     MainProfile(title = R.string.main_profile_screen),
     EditProfile(title = R.string.edit_profile_screen),
@@ -73,8 +75,15 @@ fun ShareSpaceApp(
         }
         composable(route = ShareSpaceScreens.Login.name) {
             LoginScreen(
-                onLoginSuccess = { navController.navigate(ShareSpaceScreens.MainProfile.name) }
+                onLoginSuccess = { navController.navigate(ShareSpaceScreens.MainProfile.name) },
+                onSignupClick = { navController.navigate(ShareSpaceScreens.Signup.name) }
             )
+        }
+        composable(route = ShareSpaceScreens.Signup.name) {
+             SignupScreen(
+                 onSignupSuccess = { navController.navigate(ShareSpaceScreens.MainProfile.name) },
+                 onNavigateBack = { navController.popBackStack() }
+             )
         }
         composable(route = ShareSpaceScreens.MainProfile.name) {
             MainProfileScreen(

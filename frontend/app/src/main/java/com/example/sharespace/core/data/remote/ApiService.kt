@@ -10,6 +10,8 @@ import com.example.sharespace.core.data.repository.dto.finance.ApiCreatePaymentR
 import com.example.sharespace.core.data.repository.dto.finance.ApiCreatePaymentResponse
 import com.example.sharespace.core.data.repository.dto.finance.ApiTransaction
 import com.example.sharespace.core.data.repository.dto.finance.ApiDeleteResponse
+import com.example.sharespace.core.data.repository.dto.calendar.ApiCalendarRequest
+import com.example.sharespace.core.data.repository.dto.calendar.ApiCalendarResponse
 import com.example.sharespace.core.data.repository.dto.rooms.ApiCreateRoomRequest
 import com.example.sharespace.core.data.repository.dto.rooms.ApiInviteUserToRoomRequest
 import com.example.sharespace.core.data.repository.dto.rooms.ApiJoinedRoomsResponse
@@ -188,4 +190,32 @@ interface ApiService {
         @Path("room_id") roomId: Int,
         @Header("Authorization") token: String
     ): Response<ApiDeleteResponse>
+
+//    // --- Finance ---
+//    @GET("finance/transaction_list/{room_id}")
+//    suspend fun getTransactionList(
+//        @Path("room_id") roomId: Int,
+//        @Header("Authorization") token: String
+//    ): Response<TransactionListResponse>
+//
+//    @POST("finance/create_bill/{room_id}")
+//    suspend fun createBill(
+//        @Path("room_id") roomId: Int,
+//        @Header("Authorization") token: String,
+//        @Body request: CreateBillRequest // TODO: Define CreateBillRequest & Response
+//    ): Response<CreateBillResponse>
+//
+//    @POST("finance/pay_user/{room_id}")
+//    suspend fun payUser(
+//        @Path("room_id") roomId: Int,
+//        @Header("Authorization") token: String,
+//        @Body request: PayUserRequest // TODO: Define PayUserRequest & Response
+//    ): Response<PayUserResponse>
+
+    @GET("calendar/{roomId}")
+    suspend fun getCalendarData(
+        @Path("roomId") roomId: Int,
+        @Header("Authorization") token: String,
+        @Body request: ApiCalendarRequest
+    ): Response<ApiCalendarResponse>
 }

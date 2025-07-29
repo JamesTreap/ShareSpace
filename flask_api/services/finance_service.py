@@ -23,7 +23,8 @@ class FinanceService:
                 "amount": float(bill.amount),
                 "category": bill.category,
                 "payer_user_id": bill.payer_user_id,
-                "deadline": bill.deadline.isoformat() if bill.deadline else None,
+                "metadata": bill.meta_data,
+                "deadline": bill.deadline.isoformat() if hasattr(bill, 'deadline') else None,
                 "scheduled_date": bill.scheduled_date.isoformat() if bill.scheduled_date else None,
                 "created_at": bill.created_at.isoformat(),
             })

@@ -3,10 +3,12 @@ package com.example.sharespace
 
 import android.content.Context
 import com.example.sharespace.auth.data.repository.NetworkAuthRepository
+import com.example.sharespace.calendar.data.repository.NetworkCalendarRepository
 import com.example.sharespace.core.data.local.sessionDataStore
 import com.example.sharespace.core.data.remote.ApiClient
 import com.example.sharespace.core.data.remote.ApiService
 import com.example.sharespace.core.data.repository.FinanceRepository
+import com.example.sharespace.core.data.repository.CalendarRepository
 import com.example.sharespace.core.data.repository.RoomRepository
 import com.example.sharespace.core.data.repository.TaskRepository
 import com.example.sharespace.core.data.repository.UserRepository // Add this import
@@ -27,6 +29,7 @@ interface ShareSpaceAppContainer {
     val taskRepository: TaskRepository
     val financeRepository: FinanceRepository
     val userRepository: UserRepository
+    val calendarRepository: CalendarRepository
 }
 
 class DefaultShareSpaceAppContainer(applicationContext: Context) : ShareSpaceAppContainer {
@@ -60,6 +63,22 @@ class DefaultShareSpaceAppContainer(applicationContext: Context) : ShareSpaceApp
     override val financeRepository: FinanceRepository by lazy {
         NetworkFinanceRepository(apiService)
     }
+    
+    override val calendarRepository: CalendarRepository by lazy {
+        NetworkCalendarRepository(apiService = apiService)
+    }
+
+//    val userRepository: UserRepository = UserRepository(
+//        apiService = apiService,
+//        tokenStorage = tokenStorage
+//    )
+//
+
+//
+//    val financeRepository: FinanceRepository = FinanceRepository(
+//        apiService = apiService,
+//        tokenStorage = tokenStorage
+//    )
 
     // Add this new repository
     override val userRepository: UserRepository by lazy {

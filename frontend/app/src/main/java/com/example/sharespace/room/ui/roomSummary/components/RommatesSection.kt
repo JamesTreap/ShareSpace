@@ -37,14 +37,14 @@ import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
 @Composable
 fun RoommatesSection(
     roommatesUiState: RoomSummaryRoommatesUiState, // Changed to accept UiState
-    onAdd: () -> Unit, onViewAll: () -> Unit, onRetry: () -> Unit, // Add a retry callback
+    onAdd: () -> Unit, onRetry: () -> Unit, // Add a retry callback
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         SectionHeader(
             title = "Roommates",
-            actionText = "View All",
-            onAction = onViewAll,
+//            actionText = "View All",
+            onAction = { },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -99,7 +99,7 @@ fun RoommatesSection(
                                 modifier = Modifier
                                     .size(56.dp)
                                     .clickable(onClick = onAdd),
-                                shape = CircleShape
+                                shape = RoundedCornerShape(8.dp)
                             ) {
                                 Box(
                                     contentAlignment = Alignment.Center,
