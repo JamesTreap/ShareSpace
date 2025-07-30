@@ -1,4 +1,5 @@
 # pylint: disable=all
+import argparse
 from flask import Flask
 from dotenv import dotenv_values
 from entities import db
@@ -78,4 +79,9 @@ scheduler.start()
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host", default="127.0.0.1", help="Host to run the server on (default: localhost)")
+    args = parser.parse_args()
+
+    app.run(debug=True, host=args.host)
+    
