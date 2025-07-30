@@ -110,5 +110,21 @@ class NetworkRoomRepository(private val apiService: ApiService) : RoomRepository
             throw HttpException(response) // Propagates error
         }
     }
+
+    override suspend fun createRoom(
+        token: String,
+        updateRequest: ApiCreateRoomRequest
+    ): ApiRoom {
+        val response = apiService.createRoom(
+            token = "Bearer $token",
+            request = updateRequest
+        )
+        if (response.isSuccessful) {
+            return response.body()
+                ?: throw IllegalStateException("API response body was null for updateRoomDetails")
+        } else {
+            throw HttpException(response) // Propagates error
+        }
+    }
 }
 

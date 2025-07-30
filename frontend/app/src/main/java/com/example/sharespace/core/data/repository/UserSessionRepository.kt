@@ -1,5 +1,8 @@
 package com.example.sharespace.core.data.repository
 
+import com.example.sharespace.core.data.repository.dto.rooms.ApiCreateRoomRequest
+import com.example.sharespace.core.data.repository.dto.rooms.ApiRoom
+import com.example.sharespace.core.data.repository.dto.rooms.ApiUpdateRoomRequest
 import kotlinx.coroutines.flow.Flow
 
 interface UserSessionRepository {

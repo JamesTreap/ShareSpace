@@ -1,6 +1,8 @@
 // DebtSummaryCard.kt - New composable for displaying debt summaries
 package com.example.sharespace.ui.screens.finance.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -28,6 +31,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.sharespace.core.data.repository.dto.users.ApiUserWithDebts
 import com.example.sharespace.core.data.repository.dto.users.DebtSummary
+import com.example.sharespace.core.ui.components.StyledButton
+import com.example.sharespace.core.ui.theme.BackgroundAccent
+import com.example.sharespace.core.ui.theme.BorderPrimary
+import com.example.sharespace.core.ui.theme.ButtonRadius
+import com.example.sharespace.core.ui.theme.TextPrimary
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -40,9 +48,19 @@ fun DebtSummarySection(
     val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US)
 
     Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = BorderPrimary,
+                shape = RoundedCornerShape(ButtonRadius)
+            ),
+        shape = RoundedCornerShape(ButtonRadius),
+        colors = CardDefaults.cardColors(
+            containerColor = BackgroundAccent
+        )
+//        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
@@ -58,7 +76,7 @@ fun DebtSummarySection(
                 Text(
                     text = "All debts are settled! 🎉",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
+                    color = TextPrimary
                 )
             } else {
                 LazyColumn(
@@ -121,14 +139,18 @@ private fun DebtSummaryItem(
             }
 
             if (summary.netBalance < 0) { // You owe them money
-                Button(
+                StyledButton(
                     onClick = { onPayUser(summary.userId, summary.userName) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text("Pay")
-                }
+                    text = "Pay"
+                )
+//                Button(
+//                    onClick = { onPayUser(summary.userId, summary.userName) },
+//                    colors = ButtonDefaults.buttonColors(
+//                        containerColor = MaterialTheme.colorScheme.primary
+//                    )
+//                ) {
+//                    Text("Pay")
+//                }
             }
         }
     }

@@ -8,16 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -34,7 +30,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.sharespace.core.ui.components.ButtonType
 import com.example.sharespace.core.ui.components.NavigationHeader
+import com.example.sharespace.core.ui.components.StyledButton
+import com.example.sharespace.core.ui.components.StyledTextField
 import com.example.sharespace.room.viewmodel.EditRoomViewModel
 import kotlinx.coroutines.launch
 
@@ -129,7 +128,7 @@ fun EditRoomScreen(
                     .verticalScroll(rememberScrollState()), // Make content scrollable
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                OutlinedTextField(
+                StyledTextField(
                     value = uiState.roomName,
                     onValueChange = viewModel::onRoomNameChange,
                     label = { Text("Room Name *") },
@@ -142,7 +141,7 @@ fun EditRoomScreen(
                 )
                 Spacer(Modifier.height(16.dp))
 
-                OutlinedTextField(
+                StyledTextField(
                     value = uiState.description,
                     onValueChange = viewModel::onDescriptionChange,
                     label = { Text("Description (Optional)") },
@@ -159,56 +158,41 @@ fun EditRoomScreen(
                 )
                 Spacer(Modifier.height(16.dp))
 
-                OutlinedTextField(
-                    value = uiState.address,
-                    onValueChange = viewModel::onAddressChange,
-                    label = { Text("Address (Optional)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = uiState.updateError?.contains("address", ignoreCase = true) == true,
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        capitalization = KeyboardCapitalization.Words,
-                        imeAction = ImeAction.Done // Last field
-                    ),
-                )
-                Spacer(Modifier.height(24.dp))
+//                OutlinedTextField(
+//                    value = uiState.address,
+//                    onValueChange = viewModel::onAddressChange,
+//                    label = { Text("Address (Optional)") },
+//                    modifier = Modifier.fillMaxWidth(),
+//                    isError = uiState.updateError?.contains("address", ignoreCase = true) == true,
+//                    keyboardOptions = KeyboardOptions.Default.copy(
+//                        capitalization = KeyboardCapitalization.Words,
+//                        imeAction = ImeAction.Done // Last field
+//                    ),
+//                )
+//                Spacer(Modifier.height(24.dp))
 
-                Button(
+                StyledButton(
                     onClick = {
                         keyboardController?.hide()
                         viewModel.saveRoomChanges()
                     },
-                    enabled = !uiState.isUpdating && uiState.initialLoadError == null,
+                    text = "Save Changes",
+                    buttonType = ButtonType.Primary,
+                    enabled = uiState.initialLoadError == null,
+                    loading = uiState.isUpdating,
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (uiState.isUpdating) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    } else {
-                        Text("Save Changes")
-                    }
-                }
+                )
 
-                Button(
+                StyledButton(
                     onClick = {
                         keyboardController?.hide()
                     },
-                    enabled = !uiState.isUpdating && uiState.initialLoadError == null,
+                    enabled = uiState.initialLoadError == null,
+                    loading = uiState.isUpdating,
+                    text = "Leave Room",
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
-                ) {
-                    if (uiState.isUpdating) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                        )
-                    } else {
-                        Text("Leave Room")
-                    }
-                }
+                    buttonType = ButtonType.Danger
+                )
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.example.sharespace.room.ui.roomSummary.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.example.sharespace.core.ui.components.AvatarSquare
+import com.example.sharespace.core.ui.theme.BorderPrimary
+import com.example.sharespace.core.ui.theme.ButtonRadius
 import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
 
 @Composable
@@ -90,8 +93,13 @@ fun RoommatesSection(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
+//                            .clip(RoundedCornerShape(8.dp))
                             .background(MaterialTheme.colorScheme.surface)
+                            .border(
+                                width = 1.dp,
+                                color = BorderPrimary,
+                                shape = RoundedCornerShape(ButtonRadius)
+                            )
                     ) {
                         item {
                             OutlinedCard(

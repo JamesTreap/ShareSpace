@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.example.sharespace.core.domain.model.Room
 import com.example.sharespace.core.ui.theme.AlertRed
 import com.example.sharespace.core.ui.theme.AquaAccent
+import com.example.sharespace.core.ui.theme.BorderPrimary
 import com.example.sharespace.core.ui.theme.TextSecondary
 import com.example.sharespace.ui.screens.profile.formatCurrency
 
@@ -47,7 +48,7 @@ fun RoomCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            border = BorderStroke(1.dp, Color.LightGray),
+            border = BorderStroke(1.dp, BorderPrimary),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Row(
@@ -102,7 +103,7 @@ fun RoomCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            border = BorderStroke(1.dp, Color.LightGray),
+            border = BorderStroke(1.dp, BorderPrimary),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             onClick = navigateToRoom
         ) {

@@ -1,4 +1,5 @@
 package com.example.sharespace.core.data.repository
+import com.example.sharespace.core.data.repository.dto.rooms.ApiCreateRoomRequest
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRespondToRoomInviteResponse
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRoom
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomInvitation
@@ -101,5 +102,10 @@ interface RoomRepository {
         token: String,
         roomId: Int,
         updateRequest: ApiUpdateRoomRequest
+    ): ApiRoom
+
+    suspend fun createRoom(
+        token: String,
+        updateRequest: ApiCreateRoomRequest
     ): ApiRoom
 }

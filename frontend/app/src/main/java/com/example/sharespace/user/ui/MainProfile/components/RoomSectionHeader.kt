@@ -17,6 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.sharespace.core.ui.components.ButtonType
+import com.example.sharespace.core.ui.components.StyledButton
 import com.example.sharespace.core.ui.theme.AquaAccent
 import com.example.sharespace.core.ui.theme.TextSecondary
 
@@ -34,20 +36,27 @@ fun RoomSectionHeader(
         Text(
             text = title, style = MaterialTheme.typography.bodyMedium, color = TextSecondary
         )
-        Button(
-            modifier = Modifier.height(30.dp),
+
+        StyledButton(
             onClick = onAction,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.White, contentColor = AquaAccent
-            ),
-            shape = RoundedCornerShape(25),
-            border = BorderStroke(1.dp, Color.LightGray),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 3.dp),
-        ) {
-            Text(
-                text = "+ Create Room", style = MaterialTheme.typography.bodyMedium
-            )
-        }
+            buttonType = ButtonType.Tertiary,
+            text = "+ Create Room",
+            contentPadding = PaddingValues(0.dp),
+        )
+//        Button(
+//            modifier = Modifier.height(30.dp),
+//            onClick = onAction,
+//            colors = ButtonDefaults.buttonColors(
+//                containerColor = Color.White, contentColor = AquaAccent
+//            ),
+//            shape = RoundedCornerShape(25),
+//            border = BorderStroke(1.dp, Color.LightGray),
+//            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+//            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 3.dp),
+//        ) {
+//            Text(
+//                text = "+ Create Room", style = MaterialTheme.typography.bodyMedium
+//            )
+//        }
     }
 }

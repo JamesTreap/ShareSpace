@@ -1,6 +1,7 @@
 package com.example.sharespace.core.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -70,6 +71,8 @@ StyledButton(
 )
 */
 
+
+
 @Composable
 fun StyledButton(
     onClick: () -> Unit,
@@ -79,6 +82,7 @@ fun StyledButton(
     loading: Boolean = false,
     icon: ImageVector? = null,
     buttonType: ButtonType = ButtonType.Primary,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding
 ) {
     val containerColor = if (loading) {
         BorderPrimary
@@ -109,7 +113,8 @@ fun StyledButton(
         ),
         border = border,
         modifier = modifier,
-        shape = RoundedCornerShape(ButtonRadius)
+        shape = RoundedCornerShape(ButtonRadius),
+        contentPadding = contentPadding
     ) {
         if (loading) {
             CircularProgressIndicator(

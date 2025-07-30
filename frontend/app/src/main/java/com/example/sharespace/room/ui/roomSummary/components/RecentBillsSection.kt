@@ -1,6 +1,7 @@
 package com.example.sharespace.room.ui.roomSummary.components
 
 import android.util.Log
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.sharespace.core.ui.components.SectionHeader
 import com.example.sharespace.core.ui.components.StyledButton
+import com.example.sharespace.core.ui.theme.BorderPrimary
+import com.example.sharespace.core.ui.theme.ButtonRadius
 import com.example.sharespace.room.viewmodel.BillsUiState
 import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
 
@@ -234,7 +237,12 @@ fun BillsLazyRow(
                 title = bill.title,
                 amount = share.amountDue,
                 owingTo = payerName,
-                onPayClick = onPayClick
+                onPayClick = onPayClick,
+                modifier = Modifier.border(
+                    width = 1.dp,
+                    color = BorderPrimary,
+                    shape = RoundedCornerShape(ButtonRadius)
+                )
             )
         }
     }
@@ -251,7 +259,7 @@ private fun BillCard(
     Card(
         shape = RoundedCornerShape(8.dp), modifier = modifier, colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
-        )
+        ),
     ) {
         Column(
             modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.SpaceBetween
