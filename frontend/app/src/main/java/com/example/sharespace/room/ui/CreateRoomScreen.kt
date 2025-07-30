@@ -35,24 +35,29 @@ import kotlinx.coroutines.launch
 @Composable
 fun CreateRoomScreen(
     viewModel: CreateRoomViewModel = viewModel(factory = CreateRoomViewModel.Factory),
-    onNavigateBack: (() -> Unit)? = null
+    onNavigateBack: () -> Unit
 ) {
     val uiState = viewModel.uiState
     val keyboardController = LocalSoftwareKeyboardController.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(uiState.roomCreateError) {
+        uiState.roomCreateError?.let { error ->
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = error, duration = SnackbarDuration.Short
+                )
+                viewModel.consumeUpdateError()
+            }
+        }
+    }
+
     LaunchedEffect(uiState.roomCreateSuccess) {
         if (uiState.roomCreateSuccess) {
-            scope.launch {
-                keyboardController?.hide()
-                snackbarHostState.showSnackbar(
-                    message = "Room details updated successfully!",
-                    duration = SnackbarDuration.Short
-                )
-                viewModel.consumeUpdateSuccess()
-//                onUpdateSuccessAndNavigateBack() // Navigate back after success
-            }
+            keyboardController?.hide()
+            onNavigateBack()
+            viewModel.consumeUpdateSuccess()
         }
     }
 

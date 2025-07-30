@@ -1,6 +1,5 @@
 package com.example.sharespace.room.viewmodel
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -105,7 +104,6 @@ class CreateRoomViewModel(
     }
 
     companion object {
-        private const val TAG = "CreateRoomViewModel"
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as ShareSpaceApplication)
