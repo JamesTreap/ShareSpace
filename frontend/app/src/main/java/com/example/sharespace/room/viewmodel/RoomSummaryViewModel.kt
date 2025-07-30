@@ -122,37 +122,51 @@ class RoomSummaryViewModel(
     private var currentRoomIdInternal: Int? = null
 
     init {
+        refreshAllData()
+    }
+
+    fun refreshAllData() {
+        Log.d(TAG, "refreshAllData called.")
         viewModelScope.launch {
+            // 1. Set UI states to Loading
             roomDetailsUiState = RoomDetailsUiState.Loading
             roommatesUiState = RoomSummaryRoommatesUiState.Loading
             tasksUiState = TasksUiState.Loading
-            billsUiState = BillsUiState.Loading // Initialize bills state to Loading
+            billsUiState = BillsUiState.Loading
+            _calendarUiState.value = CalendarUiState.Loading // For calendar section
 
-            val roomId = userSessionRepository.activeRoomIdFlow.first { it != null }
-            currentRoomIdInternal = roomId
-            Log.i(TAG, "Active Room ID received: $roomId")
+            try {
+                // 2. Re-fetch essential IDs (Room ID, User IDs)
+                // Wait for non-null values to ensure critical info is available.
+                val roomId = userSessionRepository.activeRoomIdFlow.first { it != null }
+                currentRoomIdInternal = roomId // Update the internal cached room ID
+                Log.i(TAG, "Refresh: Active Room ID received: $roomId")
 
-            // Wait for currentUserIdInt for bill-related operations if they need Int
-            val userIdInt = currentUserIdInt.first { it != null } // Using Int version for bills
-            Log.i(TAG, "Current User ID (Int) received: $userIdInt")
+                // Ensure user IDs are also available. The .first { it != null } ensures this.
+                val userIdInt = currentUserIdInt.first { it != null }
+                Log.i(TAG, "Refresh: Current User ID (Int) received: $userIdInt")
 
-            // Wait for currentUserIdString for other operations
-            val userIdString = currentUserIdString.first { it != null }
-            Log.i(TAG, "Current User ID (String) received: $userIdString")
+                val userIdString = currentUserIdString.first { it != null }
+                Log.i(TAG, "Refresh: Current User ID (String) received: $userIdString")
 
-
-            if (roomId != null && userIdInt != null && userIdString != null) {
+                // 3. Call individual fetch methods
+                // These methods use currentRoomIdInternal and currentUserIdString/Int values
                 fetchRoomDetails()
                 fetchRoomMembers()
-                fetchTasks() // Uses userIdString implicitly via currentUserIdString.value
-                fetchCalendarData() // Uses _selectedDate, token, roomId
-                fetchBillsForSummary() // Add call to fetch bills
-            } else {
-                Log.e(TAG, "Critical error: RoomID or UserID is null after waiting. RoomId: $roomId, UserIdInt: $userIdInt, UserIdString: $userIdString")
+                fetchTasks()
+                fetchBillsForSummary()
+                fetchCalendarData() // Uses _selectedDate.value, which is fine
+
+            } catch (e: Exception) {
+                // This catch block handles errors during the critical ID fetching phase
+                // (activeRoomIdFlow.first, currentUserIdFlow.first).
+                Log.e(TAG, "Critical error during refreshAllData ID fetching: ${e.message}", e)
                 roomDetailsUiState = RoomDetailsUiState.Error
                 roommatesUiState = RoomSummaryRoommatesUiState.Error
                 tasksUiState = TasksUiState.Error
-                billsUiState = BillsUiState.Error("User or room info missing.") // Set bills error state
+                billsUiState = BillsUiState.Error("User or room info missing for refresh.")
+                _calendarUiState.value = CalendarUiState.Error("Failed to get session info for refresh.")
+                // Individual fetch methods have their own try-catch for network/parsing errors.
             }
         }
     }
@@ -239,62 +253,6 @@ class RoomSummaryViewModel(
             }
         }
     }
-
-//    fun fetchBillsForSummary() {
-//        val roomId = currentRoomIdInternal ?: run {
-//            Log.w(TAG, "Cannot fetch bills, Room ID not yet available.")
-//            billsUiState = BillsUiState.Error("Room ID not available.")
-//            return
-//        }
-//        // currentUserIdInt is used by RecentBillsSection for filtering logic with bills.
-//        // The fetch itself might not need userId, but the display logic does.
-//        if (currentUserIdInt.value == null) {
-//            Log.w(TAG, "Cannot fetch bills for display, User ID (Int) not yet available.")
-//            billsUiState = BillsUiState.Loading // Or Error, depending on whether it's recoverable
-//            return
-//        }
-//
-//        viewModelScope.launch {
-//            billsUiState = BillsUiState.Loading
-//            try {
-//                val token = userSessionRepository.userTokenFlow.first()
-//                if (token == null) {
-//                    Log.w(TAG, "No token available. Cannot fetch bills.")
-//                    billsUiState = BillsUiState.Error("Authentication required.")
-//                    return@launch
-//                }
-//
-//                // Use the dedicated getBillList method from FinanceRepository
-//                val apiBillDtos = financeRepository.getBillList(token, roomId)
-//
-//                // Map ApiBill DTOs to domain Bill model
-//                val domainBills = apiBillDtos.map { apiBillDto -> Bill(apiBillDto) }
-//
-//                billsUiState = if (domainBills.isEmpty()) {
-//                    BillsUiState.Empty
-//                } else {
-//                    BillsUiState.Success(domainBills)
-//                }
-//                Log.i(TAG, "Bills for summary fetched successfully using getBillList for roomId: $roomId, Count: ${domainBills.size}")
-//
-//            } catch (e: HttpException) {
-//                val errorBody = e.response()?.errorBody()?.string()
-//                Log.e(TAG, "HTTP error fetching bills: ${e.code()}, $errorBody", e)
-//                billsUiState = BillsUiState.Error("Network error: ${e.code()}")
-//            } catch (e: IOException) {
-//                Log.e(TAG, "Network error fetching bills", e)
-//                billsUiState = BillsUiState.Error("Network connection issue.")
-//            } catch (e: Exception) {
-//                Log.e(TAG, "Error fetching bills", e)
-//                billsUiState = BillsUiState.Error(e.message ?: "Unknown error fetching bills.")
-//            }
-//        }
-//    }
-
-    // ... (existing imports)
-// import com.example.sharespace.core.domain.model.Bill // Make sure Bill is imported
-
-// ... (inside your RoomSummaryViewModel class)
 
     fun fetchBillsForSummary() {
         val roomId = currentRoomIdInternal ?: run {

@@ -111,6 +111,7 @@ fun ShareSpaceApp(
                 onFinanceManagerClick = { navController.navigate(ShareSpaceScreens.FinanceManager.name) },
                 onNavigateBack = { navController.popBackStack() },
                 onAddBillClick = { navController.navigate(ShareSpaceScreens.AddBill.name) },
+                onEditClick = { navController.navigate(ShareSpaceScreens.EditRoom.name) },
             )
         }
         composable(route = ShareSpaceScreens.AddRoommate.name) {
@@ -130,7 +131,8 @@ fun ShareSpaceApp(
         }
         composable(route = ShareSpaceScreens.EditRoom.name) {
             EditRoomScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onUpdateSuccessAndNavigateBack = { navController.popBackStack() },
             )
         }
         composable(route = ShareSpaceScreens.BillsList.name) {

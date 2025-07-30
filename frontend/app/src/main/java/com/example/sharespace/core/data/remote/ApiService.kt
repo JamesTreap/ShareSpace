@@ -22,6 +22,7 @@ import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomInvitation
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomInvitesResponse
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomMembersResponse
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomsAndInvitationsResponse
+import com.example.sharespace.core.data.repository.dto.rooms.ApiUpdateRoomRequest
 import com.example.sharespace.core.data.repository.dto.tasks.ApiCreateTaskRequest
 import com.example.sharespace.core.data.repository.dto.tasks.ApiCreateTaskResponse
 import com.example.sharespace.core.data.repository.dto.tasks.ApiDeleteTaskResponse
@@ -112,6 +113,12 @@ interface ApiService {
         @Body request: ApiRespondToRoomInviteRequest
     ): Response<ApiRespondToRoomInviteResponse>
 
+    @PATCH("rooms/update/{room_id}") // {{baseURL}} is handled by Retrofit's .baseUrl()
+    suspend fun updateRoomDetails(
+        @Header("Authorization") token: String,
+        @Path("room_id") roomId: Int,
+        @Body requestBody: ApiUpdateRoomRequest
+    ): Response<ApiRoom>
 
     // --- Tasks ---
     @GET("tasks/list/{roomId}")

@@ -2,40 +2,31 @@
 
 package com.example.sharespace.room.ui.roomSummary
 
+// import androidx.compose.material.icons.filled.Person // Not used directly in this screen
+// import com.example.sharespace.room.ui.roomSummary.components.CalendarSection // Keep if re-added
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState // Import for scrollable column
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll // Import for scrollable column
-import androidx.compose.material.icons.Icons
-// import androidx.compose.material.icons.filled.Person // Not used directly in this screen
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-// import com.example.sharespace.room.ui.roomSummary.components.CalendarSection // Keep if re-added
-import com.example.sharespace.room.ui.roomSummary.components.RecentBillsSection // Import new section
+import com.example.sharespace.room.ui.roomSummary.components.RecentBillsSection
 import com.example.sharespace.room.ui.roomSummary.components.RoomSummaryTopAppBar
 import com.example.sharespace.room.ui.roomSummary.components.RoommatesSection
 import com.example.sharespace.room.ui.roomSummary.components.UpcomingTasksSection
-import com.example.sharespace.room.viewmodel.BillsUiState // Import BillsUiState
+import com.example.sharespace.room.viewmodel.BillsUiState
 import com.example.sharespace.room.viewmodel.RoomDetailsUiState
 import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
 import com.example.sharespace.room.viewmodel.RoomSummaryViewModel
@@ -50,6 +41,7 @@ fun RoomSummaryScreen(
     onFinanceManagerClick: () -> Unit,
     onNavigateBack: () -> Unit,
     onAddBillClick: () -> Unit,
+    onEditClick: () -> Unit,
 ) {
     val roomDetailsState: RoomDetailsUiState = viewModel.roomDetailsUiState
     val roommatesUiState: RoomSummaryRoommatesUiState = viewModel.roommatesUiState
@@ -64,6 +56,17 @@ fun RoomSummaryScreen(
     val selectedDate by viewModel.selectedDate.collectAsState()
     val selectedRoommates by viewModel.selectedRoommates.collectAsState()
 
+    val lifecycleOwner = LocalLifecycleOwner.current // Get the lifecycle owner
+
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            // This block will execute when the lifecycle is RESUMED
+            // and cancel when it's PAUSED.
+            Log.d("RoomSummaryScreen", "Lifecycle RESUMED, refreshing data.")
+            viewModel.refreshAllData()
+        }
+    }
+
     Scaffold(
         topBar = {
             val topBarTitle: String
@@ -74,8 +77,7 @@ fun RoomSummaryScreen(
             when (val currentRoomDetails = roomDetailsState) {
                 is RoomDetailsUiState.Success -> {
                     topBarTitle = currentRoomDetails.roomDetails.name
-                    topBarSubtitle =
-                        currentRoomDetails.roomDetails.pictureUrl ?: "Details available"
+                    topBarSubtitle = currentRoomDetails.roomDetails.description ?: ""
                 }
 
                 is RoomDetailsUiState.Loading -> {
@@ -94,7 +96,8 @@ fun RoomSummaryScreen(
                 subtitle = topBarSubtitle,
                 onNavigateBack = onNavigateBack,
                 showRetry = showRetryDetailsButton,
-                onRetry = viewModel::fetchRoomDetails
+                onRetry = viewModel::fetchRoomDetails,
+                onEditClick = onEditClick,
             )
         }, modifier = Modifier.fillMaxSize()
     ) { innerPadding ->

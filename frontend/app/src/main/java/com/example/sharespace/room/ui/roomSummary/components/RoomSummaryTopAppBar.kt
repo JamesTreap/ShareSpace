@@ -19,7 +19,8 @@ fun RoomSummaryTopAppBar(
     subtitle: String,
     onNavigateBack: () -> Unit,
     showRetry: Boolean = false,
-    onRetry: () -> Unit = {}
+    onRetry: () -> Unit = {},
+    onEditClick: () -> Unit = {}
 ) {
     TopAppBar(title = {
         Column {
@@ -31,6 +32,9 @@ fun RoomSummaryTopAppBar(
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
         }
     }, actions = {
+        TextButton(onClick = onEditClick) { // Or IconButton as preferred
+            Text("Edit")
+        }
         if (showRetry) {
             TextButton(onClick = onRetry) {
                 Text("Retry")

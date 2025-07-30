@@ -8,6 +8,7 @@ import com.example.sharespace.core.data.repository.dto.rooms.ApiRespondToRoomInv
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRespondToRoomInviteResponse
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRoom
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomInvitation
+import com.example.sharespace.core.data.repository.dto.rooms.ApiUpdateRoomRequest
 import com.example.sharespace.core.data.repository.dto.users.ApiUser
 import retrofit2.HttpException
 
@@ -89,6 +90,24 @@ class NetworkRoomRepository(private val apiService: ApiService) : RoomRepository
                 ?: throw IllegalStateException("API response body was null for respondToRoomInvite")
         } else {
             throw HttpException(response)
+        }
+    }
+
+    override suspend fun updateRoomDetails(
+        token: String,
+        roomId: Int,
+        updateRequest: ApiUpdateRoomRequest
+    ): ApiRoom {
+        val response = apiService.updateRoomDetails(
+            token = "Bearer $token",
+            roomId = roomId,
+            requestBody = updateRequest
+        )
+        if (response.isSuccessful) {
+            return response.body()
+                ?: throw IllegalStateException("API response body was null for updateRoomDetails")
+        } else {
+            throw HttpException(response) // Propagates error
         }
     }
 }

@@ -2,6 +2,7 @@ package com.example.sharespace.core.data.repository
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRespondToRoomInviteResponse
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRoom
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomInvitation
+import com.example.sharespace.core.data.repository.dto.rooms.ApiUpdateRoomRequest
 import com.example.sharespace.core.data.repository.dto.users.ApiUser
 
 interface RoomRepository {
@@ -83,4 +84,22 @@ interface RoomRepository {
         roomIdFromInvite: Int,
         status: String
     ): ApiRespondToRoomInviteResponse
+
+    /**
+     * Updates the details of a specific room.
+     * Only non-null fields in the [updateRequest] will be sent for update.
+     * @param token The authorization token.
+     * @param roomId The ID of the room to update.
+     * @param updateRequest An [ApiUpdateRoomRequest] object containing the new details.
+     *                      Fields set to null in this object will not be updated.
+     * @return The updated room details as [ApiRoom].
+     * @throws IllegalStateException if the HTTP call is successful (2xx) but the response body is null.
+     * @throws retrofit2.HttpException if the server returns a non-2xx HTTP status.
+     * @throws java.io.IOException for network issues or other I/O problems during the request.
+     */
+    suspend fun updateRoomDetails(
+        token: String,
+        roomId: Int,
+        updateRequest: ApiUpdateRoomRequest
+    ): ApiRoom
 }
