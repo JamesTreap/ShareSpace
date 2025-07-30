@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.sharespace.auth.ui.SignupScreen
+import com.example.sharespace.calendar.ui.CalendarScreen
 import com.example.sharespace.room.ui.AddRoommateScreen
 import com.example.sharespace.room.ui.roomSummary.RoomSummaryScreen
 import com.example.sharespace.ui.screens.auth.LoginScreen
@@ -43,6 +44,7 @@ enum class ShareSpaceScreens(@StringRes val title: Int) {
     TasksList(title = R.string.tasks_list_screen),
     AddTask(title = R.string.add_task_screen),
     EditTask(title = R.string.edit_task_screen),
+    Calendar(title = R.string.calendar_screen)
 }
 
 @Composable
@@ -112,6 +114,7 @@ fun ShareSpaceApp(
                 onNavigateBack = { navController.popBackStack() },
                 onAddBillClick = { navController.navigate(ShareSpaceScreens.AddBill.name) },
                 onEditClick = { navController.navigate(ShareSpaceScreens.EditRoom.name) },
+                onCalendarClick = { navController.navigate(ShareSpaceScreens.Calendar.name) }
             )
         }
         composable(route = ShareSpaceScreens.AddRoommate.name) {
@@ -178,6 +181,11 @@ fun ShareSpaceApp(
             val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull() ?: -1
             EditTaskScreen(
                 taskId = taskId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(route = ShareSpaceScreens.Calendar.name) {
+            CalendarScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

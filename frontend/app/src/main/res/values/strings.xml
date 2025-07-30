@@ -18,4 +18,5 @@
     <string name="tasks_list_screen">Task Overview</string>
     <string name="add_task_screen">Add Task</string>
     <string name="edit_task_screen">Edit Task</string>
+    <string name="calendar_screen">Calendar</string>
 </resources>

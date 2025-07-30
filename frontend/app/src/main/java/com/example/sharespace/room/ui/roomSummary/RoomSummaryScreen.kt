@@ -42,6 +42,7 @@ fun RoomSummaryScreen(
     onNavigateBack: () -> Unit,
     onAddBillClick: () -> Unit,
     onEditClick: () -> Unit,
+    onCalendarClick: () -> Unit = {},
 ) {
     val roomDetailsState: RoomDetailsUiState = viewModel.roomDetailsUiState
     val roommatesUiState: RoomSummaryRoommatesUiState = viewModel.roommatesUiState
@@ -98,6 +99,7 @@ fun RoomSummaryScreen(
                 showRetry = showRetryDetailsButton,
                 onRetry = viewModel::fetchRoomDetails,
                 onEditClick = onEditClick,
+                onCalendarClick = onCalendarClick
             )
         }, modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
