@@ -29,8 +29,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -40,6 +42,7 @@ import com.example.sharespace.calendar.viewmodel.CalendarViewModel
 import com.example.sharespace.core.domain.model.Bill
 import com.example.sharespace.core.domain.model.Task
 import com.example.sharespace.room.ui.roomSummary.components.DateSelector
+import displayDateFlexible
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
@@ -188,8 +191,16 @@ fun SectionHeader(title: String, modifier: Modifier = Modifier) {
     )
 }
 
+
 @Composable
 fun BillRow(bill: Bill, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val scheduledDateText = remember(bill.scheduledDate, context) {
+        bill.scheduledDate?.let { date ->
+            "Scheduled: ${displayDateFlexible(date, context)}"
+        } ?: "Not scheduled"
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -212,12 +223,11 @@ fun BillRow(bill: Bill, modifier: Modifier = Modifier) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                bill.deadline?.let {
-                    Text(
-                        "Due: ${it.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))}",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
+                Text(
+                    text = scheduledDateText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             Text(
                 "$${"%.2f".format(bill.amount)}",
@@ -231,6 +241,13 @@ fun BillRow(bill: Bill, modifier: Modifier = Modifier) {
 
 @Composable
 fun CalendarTaskRow(task: Task, currentUserId: String?, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val deadlineText = remember(task.deadline, context) {
+        task.deadline?.let { deadlineDate ->
+            "Deadline: ${displayDateFlexible(deadlineDate, context)}"
+        } ?: "Deadline: Not set"
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -252,16 +269,20 @@ fun CalendarTaskRow(task: Task, currentUserId: String?, modifier: Modifier = Mod
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
                 Text(
-                    "Deadline: ${task.deadline.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))}",
-                    style = MaterialTheme.typography.bodySmall
+                    text = deadlineText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+
                 task.description?.takeIf { it.isNotBlank() }?.let {
                     Text(
                         it,
                         style = MaterialTheme.typography.bodySmall,
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 2.dp)
                     )
                 }
             }
