@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -187,6 +188,26 @@ fun EditRoomScreen(
                         )
                     } else {
                         Text("Save Changes")
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        keyboardController?.hide()
+                    },
+                    enabled = !uiState.isUpdating && uiState.initialLoadError == null,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    if (uiState.isUpdating) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                        )
+                    } else {
+                        Text("Leave Room")
                     }
                 }
             }
