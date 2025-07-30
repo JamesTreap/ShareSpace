@@ -44,14 +44,12 @@ import com.example.sharespace.room.viewmodel.TasksUiState
 @Composable
 fun RoomSummaryScreen(
     viewModel: RoomSummaryViewModel = viewModel(factory = RoomSummaryViewModel.Factory),
-    // onViewBillsClick: () -> Unit, // Replaced by onNavigateToAllBills
     onAddRoommateClick: () -> Unit,
     onAddTaskClick: () -> Unit,
     onViewTasksClick: () -> Unit,
     onFinanceManagerClick: () -> Unit,
     onNavigateBack: () -> Unit,
-    onNavigateToAddBill: () -> Unit, // New: For navigating to add bill screen
-    onNavigateToAllBills: () -> Unit // New: For navigating to the full bills list
+    onAddBillClick: () -> Unit,
 ) {
     val roomDetailsState: RoomDetailsUiState = viewModel.roomDetailsUiState
     val roommatesUiState: RoomSummaryRoommatesUiState = viewModel.roommatesUiState
@@ -106,30 +104,30 @@ fun RoomSummaryScreen(
                 .padding(vertical = 16.dp)
                 .fillMaxSize()
         ) {
-            // Add Finance Manager Button here
-            Button(
-                onClick = onFinanceManagerClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ),
-                shape = RoundedCornerShape(12.dp),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = "Finance Manager",
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Finance Manager",
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
-                )
-            }
+//            // Add Finance Manager Button here
+//            Button(
+//                onClick = onFinanceManagerClick,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(horizontal = 16.dp, vertical = 8.dp),
+//                colors = ButtonDefaults.buttonColors(
+//                    containerColor = MaterialTheme.colorScheme.primary,
+//                    contentColor = MaterialTheme.colorScheme.onPrimary
+//                ),
+//                shape = RoundedCornerShape(12.dp),
+//                elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Default.Star,
+//                    contentDescription = "Finance Manager",
+//                    modifier = Modifier.size(20.dp)
+//                )
+//                Spacer(modifier = Modifier.width(8.dp))
+//                Text(
+//                    text = "Finance Manager",
+//                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+//                )
+//            }
             RoommatesSection(
                 roommatesUiState = roommatesUiState,
                 onAdd = onAddRoommateClick,
@@ -144,11 +142,9 @@ fun RoomSummaryScreen(
                 billsUiState = billsUiState,
                 roommatesUiState = roommatesUiState,
                 currentUserId = currentUserIdInt, // Pass the Int version
-                onAddBill = onNavigateToAddBill,
-                onPayBill = { billId, amount ->
-                    viewModel.onPayBillClicked(billId, amount) // Handle via ViewModel
-                },
-                onViewAllBills = onNavigateToAllBills,
+                onAddBill = onAddBillClick,
+                onPayBill = onFinanceManagerClick,
+                onViewAllBills = onFinanceManagerClick,
                 onRetry = viewModel::fetchBillsForSummary, // Retry fetching bills
                 modifier = Modifier.padding(horizontal = 0.dp) // Section manages its internal padding
             )

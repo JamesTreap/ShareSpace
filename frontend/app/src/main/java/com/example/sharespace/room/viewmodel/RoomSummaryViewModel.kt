@@ -435,13 +435,6 @@ class RoomSummaryViewModel(
         }
     }
 
-    fun onPayBillClicked(billId: Int, amount: Double) {
-        // Implement navigation or payment processing logic here
-        Log.d(TAG, "Pay Bill Clicked: ID=$billId, Amount=$amount. Navigate to payment screen or show dialog.")
-        // Example: viewModelScope.launch { financeRepository.createPayment(...) }
-        // Or: _navigationEvents.trySend(NavigateToPaymentScreen(billId, amount))
-    }
-
     fun updateSelectedDate(date: LocalDate) {
         _selectedDate.value = date
         fetchCalendarData()

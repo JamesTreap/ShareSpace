@@ -35,7 +35,7 @@ fun RecentBillsSection(
     roommatesUiState: RoomSummaryRoommatesUiState,
     currentUserId: Int?,
     onAddBill: () -> Unit,
-    onPayBill: (billId: Int, amount: Double) -> Unit,
+    onPayBill: () -> Unit,
     onViewAllBills: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
@@ -131,7 +131,7 @@ fun RecentBillsSection(
                         bills = adaptedBills,
                         roommates = uiRoommates,
                         currentUserId = currentUserId,
-                        onPayClick = onPayBill // Pass the onPayBill from ViewModel
+                        onPayClick = onPayBill
                     )
                 }
 
@@ -244,7 +244,7 @@ fun BillsLazyRow( // Takes UiBill, UiRoommate
     bills: List<UiBill>,
     roommates: List<UiRoommate>,
     currentUserId: Int,
-    onPayClick: (billId: Int, amount: Double) -> Unit,
+    onPayClick: () -> Unit,
     modifier: Modifier = Modifier // Added modifier
 ) {
     val roommateMap = remember(roommates) { roommates.associateBy { it.id } }
@@ -274,7 +274,7 @@ fun BillsLazyRow( // Takes UiBill, UiRoommate
                 title = bill.title,
                 amount = share.amountDue, // This is the amount the current user owes for this bill
                 owingTo = payerName,
-                onPayClick = { onPayClick(bill.id, share.amountDue) }
+                onPayClick = onPayClick
             )
         }
     }
