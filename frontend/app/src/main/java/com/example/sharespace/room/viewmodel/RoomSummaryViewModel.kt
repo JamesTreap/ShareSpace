@@ -122,7 +122,6 @@ class RoomSummaryViewModel(
     private var currentRoomIdInternal: Int? = null
 
     init {
-        refreshAllData()
     }
 
     fun refreshAllData() {

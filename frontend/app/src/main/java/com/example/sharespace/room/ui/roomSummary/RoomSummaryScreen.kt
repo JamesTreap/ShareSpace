@@ -104,7 +104,7 @@ fun RoomSummaryScreen(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(vertical = 16.dp)
+                .padding(12.dp)
                 .fillMaxSize()
         ) {
 //            // Add Finance Manager Button here
@@ -135,10 +135,8 @@ fun RoomSummaryScreen(
                 roommatesUiState = roommatesUiState,
                 onAdd = onAddRoommateClick,
                 onRetry = viewModel::fetchRoomMembers,
-                modifier = Modifier.padding(horizontal = 12.dp)
+                modifier = Modifier
             )
-
-            Spacer(Modifier.height(16.dp)) // Spacing between sections
 
             // Recent Bills Section
             RecentBillsSection(
@@ -149,11 +147,8 @@ fun RoomSummaryScreen(
                 onPayBill = onFinanceManagerClick,
                 onViewAllBills = onFinanceManagerClick,
                 onRetry = viewModel::fetchBillsForSummary, // Retry fetching bills
-                modifier = Modifier.padding(horizontal = 0.dp) // Section manages its internal padding
+                modifier = Modifier
             )
-
-            Spacer(Modifier.height(16.dp)) // Spacing between sections
-
             // Upcoming Tasks Section
             UpcomingTasksSection(
                 tasksUiState = tasksUiState,
@@ -167,10 +162,7 @@ fun RoomSummaryScreen(
                 onRetry = viewModel::fetchTasks,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 12.dp)
             )
-
-            Spacer(Modifier.height(16.dp))
 
 //            CalendarSection(
 //                calendarUiState = calendarUiState,

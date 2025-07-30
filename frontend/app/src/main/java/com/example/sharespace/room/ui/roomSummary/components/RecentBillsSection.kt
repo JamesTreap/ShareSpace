@@ -1,17 +1,30 @@
 package com.example.sharespace.room.ui.roomSummary.components
 
 import android.util.Log
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.sharespace.core.ui.components.SectionHeader
 import com.example.sharespace.core.ui.components.StyledButton
 import com.example.sharespace.room.viewmodel.BillsUiState
 import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
@@ -40,22 +53,18 @@ fun RecentBillsSection(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
         SectionHeader(
             title = "Recent Bills You Owe",
             actionText = "+ Add Bill",
             onAction = onAddBill,
             modifier = Modifier.fillMaxWidth()
         )
-
-        Spacer(Modifier.height(8.dp))
-
         when (billsUiState) {
             is BillsUiState.Loading -> Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(212.dp), // Approx height for BillCard in LazyRow + padding
-                contentAlignment = Alignment.Center
+                Modifier.fillMaxWidth(), contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
             }
@@ -69,8 +78,7 @@ fun RecentBillsSection(
                     Box(
                         Modifier
                             .fillMaxWidth()
-                            .height(212.dp),
-                        contentAlignment = Alignment.Center
+                            .height(100.dp), contentAlignment = Alignment.Center
                     ) { Text("User information not available.") }
                     return@Column
                 }
@@ -80,11 +88,13 @@ fun RecentBillsSection(
                         // userFromViewModel is of type com.example.sharespace.core.domain.model.User
                         UiRoommate(id = userFromViewModel.id, name = userFromViewModel.name)
                     }
+
                     is RoomSummaryRoommatesUiState.Error -> {
                         // Optionally handle error state for roommates, e.g., show a message or use empty list
                         Log.e("RecentBillsSection", "Error loading roommates.")
                         emptyList()
                     }
+
                     is RoomSummaryRoommatesUiState.Loading -> {
                         // Optionally handle loading state for roommates, e.g., show a placeholder or use empty list
                         Log.d("RecentBillsSection", "Roommates are loading.")
@@ -134,20 +144,14 @@ fun RecentBillsSection(
                         onPayClick = onPayBill
                     )
                 }
-
-
+                Spacer(Modifier.height(8.dp))
                 val relevantBillsExist = adaptedBills.any { bill ->
-                    bill.payerUserId != currentUserId &&
-                            bill.users.any { it.userId == currentUserId && it.amountDue > 0.0 }
+                    bill.payerUserId != currentUserId && bill.users.any { it.userId == currentUserId && it.amountDue > 0.0 }
                 }
-
                 if (!relevantBillsExist && adaptedBills.isNotEmpty()) {
                     // Bills exist in the room and were adapted, but none are owed by the current user.
                     Column(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 24.dp) // Appears below the (empty) LazyRow
-                            .heightIn(min = 100.dp), // Give some space if LazyRow is empty
+                        Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -160,17 +164,12 @@ fun RecentBillsSection(
                     // This case is already handled by BillsUiState.Empty, but as a fallback.
                     // BillsEmptyMini is shown above.
                 }
-
-
                 // "View All Room Bills" button
                 if (billsUiState.bills.isNotEmpty()) { // Show if any bills exist in the room
-                    Spacer(Modifier.height(16.dp))
                     Button(
                         onClick = onViewAllBills,
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("View All Room Bills")
                     }
@@ -185,8 +184,7 @@ private fun BillsErrorMini(onRetry: () -> Unit, message: String) {
     Column(
         Modifier
             .fillMaxWidth()
-            .height(150.dp)
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .height(150.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -205,37 +203,13 @@ private fun BillsEmptyMini(onAdd: () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
-            .height(150.dp)
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .height(150.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text("No bills added to the room yet.", style = MaterialTheme.typography.bodyLarge)
         Spacer(Modifier.height(12.dp))
         StyledButton(onClick = onAdd, text = "Add First Bill")
-    }
-}
-
-@Composable
-fun SectionHeader(
-    title: String,
-    actionText: String,
-    onAction: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
-        )
-        TextButton(onClick = onAction) {
-            Text(actionText, fontWeight = FontWeight.SemiBold)
-        }
     }
 }
 
@@ -251,8 +225,7 @@ fun BillsLazyRow( // Takes UiBill, UiRoommate
 
     val relevantBills = remember(bills, currentUserId) {
         bills.filter { bill ->
-            bill.payerUserId != currentUserId &&
-                    bill.users.any { it.userId == currentUserId && it.amountDue > 0.0 }
+            bill.payerUserId != currentUserId && bill.users.any { it.userId == currentUserId && it.amountDue > 0.0 }
         }
     }
 
@@ -262,8 +235,8 @@ fun BillsLazyRow( // Takes UiBill, UiRoommate
 
     LazyRow(
         modifier = modifier, // Apply modifier
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 8.dp)
     ) {
         items(relevantBills, key = { it.id }) { bill ->
             // Find the current user's share. It's guaranteed to exist due to the filter.
@@ -282,51 +255,44 @@ fun BillsLazyRow( // Takes UiBill, UiRoommate
 
 @Composable
 private fun BillCard(
-    title: String,
-    amount: Double, // This is the specific amount owed by the current user
-    owingTo: String,
-    onPayClick: () -> Unit,
-    modifier: Modifier = Modifier
+    title: String, amount: Double, // This is the specific amount owed by the current user
+    owingTo: String, onPayClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Card(
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp), // Added subtle elevation
-        modifier = modifier
-            .width(160.dp)
-            .height(180.dp) // Consistent with your BillsUiState.Loading placeholder
+        shape = RoundedCornerShape(8.dp), modifier = modifier, colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface // Set the container color here
+        )
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.SpaceBetween // This might need adjustment if the content height varies
         ) {
-            Column {
+            Column { // This inner column groups the text content
                 Text(
                     title,
-                    style = MaterialTheme.typography.titleMedium, // Slightly larger for card title
+                    style = MaterialTheme.typography.titleSmall,
                     maxLines = 2,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis // Handle long titles
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "$" + "%.2f".format(amount), // Format to 2 decimal places
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
+                    text = "$" + "%.2f".format(amount),
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
                     text = "Owing to $owingTo",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant // Text color should provide good contrast
                 )
             }
+            Spacer(Modifier.height(8.dp)) // Add some space before the button, especially if content above is short
             Button(
                 onClick = onPayClick,
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Pay User") // Changed from "Pay" for clarity as per reference
+                Text("Pay User")
             }
         }
     }
