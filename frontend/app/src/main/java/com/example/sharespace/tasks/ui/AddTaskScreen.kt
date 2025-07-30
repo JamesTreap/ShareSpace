@@ -38,6 +38,12 @@ import com.example.sharespace.core.data.repository.dto.tasks.ApiCreateTaskReques
 import com.example.sharespace.core.data.repository.dto.users.ApiUser
 import com.example.sharespace.core.ui.components.Avatar
 import com.example.sharespace.core.ui.components.ButtonType
+import com.example.sharespace.core.ui.components.DatePickerSelector
+import com.example.sharespace.core.ui.components.StyledButton
+import com.example.sharespace.core.ui.components.StyledCheckbox
+import com.example.sharespace.core.ui.components.StyledCircleLoader
+import com.example.sharespace.core.ui.components.StyledSelect
+import com.example.sharespace.core.ui.components.StyledTextField
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,12 +52,6 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import com.example.sharespace.core.ui.components.StyledTextField
-import com.example.sharespace.core.ui.components.StyledCheckbox
-import com.example.sharespace.core.ui.components.StyledCircleLoader
-import com.example.sharespace.core.ui.components.StyledButton
-import com.example.sharespace.core.ui.components.StyledSelect
-import com.example.sharespace.core.ui.components.DatePickerSelector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,7 +59,8 @@ fun AddTaskScreen(
     onNavigateBack: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
-    val userSessionRepository = (context.applicationContext as ShareSpaceApplication).container.userSessionRepository
+    val userSessionRepository =
+        (context.applicationContext as ShareSpaceApplication).container.userSessionRepository
     var token by remember { mutableStateOf<String?>(null) }
     var title by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
@@ -87,7 +88,8 @@ fun AddTaskScreen(
         token?.let { authToken ->
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    val response = roomId?.let { ApiClient.apiService.getRoomMembers(it, authToken) }
+                    val response =
+                        roomId?.let { ApiClient.apiService.getRoomMembers(it, authToken) }
                     if (response != null) {
                         if (response.isSuccessful) {
                             val roommates = response.body()?.roommates ?: emptyList()
@@ -113,16 +115,12 @@ fun AddTaskScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Add Task") },
-                navigationIcon = {
-                    IconButton(onClick = { onNavigateBack?.invoke() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
+            TopAppBar(title = { Text("Add Task") }, navigationIcon = {
+                IconButton(onClick = { onNavigateBack?.invoke() }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                 }
-            )
-        }
-    ) { innerPadding ->
+            })
+        }) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -163,15 +161,18 @@ fun AddTaskScreen(
             )
 
             Row(modifier = Modifier.fillMaxWidth()) {
-                Box(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
+                ) {
                     StyledSelect(
                         options = (0..10).map { it.toString() },
                         label = "Number of repeats",
                         initialSelected = repeats,
                         onOptionSelected = { selected ->
                             repeats = selected.toString()
-                        }
-                    )
+                        })
                 }
 
                 Box(modifier = Modifier.weight(1f)) {
@@ -181,8 +182,7 @@ fun AddTaskScreen(
                         initialSelected = occurs,
                         onOptionSelected = { selected ->
                             occurs = selected.toString()
-                        }
-                    )
+                        })
                 }
             }
 
@@ -209,15 +209,13 @@ fun AddTaskScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(user.name, modifier = Modifier.weight(1f))
                         StyledCheckbox(
-                            checked = selectedUserIds.contains(user.id),
-                            onCheckedChange = {
+                            checked = selectedUserIds.contains(user.id), onCheckedChange = {
                                 selectedUserIds = if (it) {
                                     selectedUserIds + user.id
                                 } else {
                                     selectedUserIds - user.id
                                 }
-                            }
-                        )
+                            })
                     }
                 }
             }
@@ -248,8 +246,7 @@ fun AddTaskScreen(
                                 description = description,
                                 assignees = selectedUserIds.map {
                                     ApiAssignee(
-                                        it.toString(),
-                                        "todo"
+                                        it.toString(), "todo"
                                     )
                                 },
                                 frequency = occurs,
@@ -262,9 +259,7 @@ fun AddTaskScreen(
 
                             val res = roomId?.let {
                                 ApiClient.apiService.createTask(
-                                    it,
-                                    request = request,
-                                    token = authToken
+                                    it, request = request, token = authToken
                                 )
                             }
                             if (res != null) {
@@ -288,7 +283,9 @@ fun AddTaskScreen(
                 text = "Create Task",
                 buttonType = ButtonType.Primary,
                 enabled = !isLoading,
-                modifier = Modifier.fillMaxWidth().height(48.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
             )
         }
     }

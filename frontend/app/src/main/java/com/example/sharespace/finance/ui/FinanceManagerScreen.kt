@@ -1,14 +1,57 @@
 package com.example.sharespace.ui.screens.finance
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.MailOutline
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -17,18 +60,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sharespace.R
 import com.example.sharespace.core.data.repository.dto.finance.ApiBill
-import com.example.sharespace.core.ui.components.NavigationHeader
-import com.example.sharespace.core.ui.components.SectionHeader
-import com.example.sharespace.core.ui.components.StyledButton
 import com.example.sharespace.core.ui.components.ButtonType
-import com.example.sharespace.ui.screens.finance.components.DebtSummarySection
+import com.example.sharespace.core.ui.components.NavigationHeader
+import com.example.sharespace.core.ui.components.StyledButton
 import com.example.sharespace.ui.screens.finance.components.DebtDetailsDialog
+import com.example.sharespace.ui.screens.finance.components.DebtSummarySection
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 // Define your app's specific colors
 val TealPrimary = Color(0xFF4DB6AC)
@@ -54,7 +98,11 @@ fun FinanceManagerScreen(
     var showAllTransactions by remember { mutableStateOf(false) }
 
     // State for payment dialog
-    var selectedPayee by remember { mutableStateOf<com.example.sharespace.core.data.repository.dto.users.ApiUser?>(null) }
+    var selectedPayee by remember {
+        mutableStateOf<com.example.sharespace.core.data.repository.dto.users.ApiUser?>(
+            null
+        )
+    }
 
     // State for debt details dialog
     var showDebtDetailsDialog by remember { mutableStateOf(false) }
@@ -79,9 +127,7 @@ fun FinanceManagerScreen(
     Scaffold(
         topBar = {
             NavigationHeader(
-                title = "Finance Manager",
-                onNavigateBack = onNavigateBack,
-                actions = {
+                title = "Finance Manager", onNavigateBack = onNavigateBack, actions = {
                     // Debt details button
                     IconButton(onClick = { showDebtDetailsDialog = true }) {
                         Icon(
@@ -101,10 +147,8 @@ fun FinanceManagerScreen(
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
-                }
-            )
-        },
-        modifier = Modifier.fillMaxSize()
+                })
+        }, modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         if (isLoading) {
             Box(
@@ -127,8 +171,7 @@ fun FinanceManagerScreen(
                 // Debt Summary Section (NEW - replaces old balance calculation)
                 item {
                     DebtSummarySection(
-                        debtSummaries = debtSummaries,
-                        onPayUser = { userId, userName ->
+                        debtSummaries = debtSummaries, onPayUser = { userId, userName ->
                             // Find the actual user object for the payment dialog
                             val payeeUser = roommates.find { it.id == userId }
                             if (payeeUser != null) {
@@ -136,8 +179,7 @@ fun FinanceManagerScreen(
                                 preselectedPayeeId = userId
                                 preselectedPayeeName = userName
                             }
-                        }
-                    )
+                        })
                 }
 
                 item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -185,8 +227,7 @@ fun FinanceManagerScreen(
                         showAllTransactions = showAllTransactions,
                         onDeleteTransaction = { transactionId, transactionType ->
                             viewModel.deleteTransaction(transactionId, transactionType)
-                        }
-                    )
+                        })
                 }
 
                 // View More Button
@@ -195,8 +236,7 @@ fun FinanceManagerScreen(
                     ViewMoreButton(
                         transactions = transactions,
                         showAllTransactions = showAllTransactions,
-                        onToggleShowAll = { showAllTransactions = !showAllTransactions }
-                    )
+                        onToggleShowAll = { showAllTransactions = !showAllTransactions })
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
@@ -256,112 +296,97 @@ fun PaymentDialog(
         it.name ?: it.username
     } ?: "Unknown User"
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text("Make Payment")
-        },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Payee selection dropdown
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded }
-                ) {
-                    OutlinedTextField(
-                        value = selectedPayeeName,
-                        onValueChange = { },
-                        readOnly = true,
-                        label = { Text("Pay to") },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
+    AlertDialog(onDismissRequest = onDismiss, title = {
+        Text("Make Payment")
+    }, text = {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Payee selection dropdown
+            ExposedDropdownMenuBox(
+                expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                OutlinedTextField(
+                    value = selectedPayeeName,
+                    onValueChange = { },
+                    readOnly = true,
+                    label = { Text("Pay to") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
 
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        roommates.forEach { roommate ->
-                            DropdownMenuItem(
-                                text = { Text(roommate.name ?: roommate.username) },
-                                onClick = {
-                                    selectedPayeeId = roommate.id
-                                    expanded = false
-                                }
-                            )
-                        }
+                ExposedDropdownMenu(
+                    expanded = expanded, onDismissRequest = { expanded = false }) {
+                    roommates.forEach { roommate ->
+                        DropdownMenuItem(
+                            text = { Text(roommate.name ?: roommate.username) },
+                            onClick = {
+                                selectedPayeeId = roommate.id
+                                expanded = false
+                            })
                     }
                 }
-
-                // Amount field
-                OutlinedTextField(
-                    value = amount,
-                    onValueChange = { value ->
-                        // Allow numbers with optional decimal places
-                        if (value.isEmpty() || value.matches(Regex("^\\d*\\.?\\d*$"))) {
-                            amount = value
-                        }
-                    },
-                    label = { Text("Amount") },
-                    placeholder = { Text("Enter amount") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    leadingIcon = {
-                        Text(
-                            text = "$",
-                            modifier = Modifier.padding(start = 12.dp)
-                        )
-                    }
-                )
-
-                // Description field
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Description (Optional)") },
-                    placeholder = { Text("What's this payment for?") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
             }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    if (amount.isNotBlank()) {
-                        val finalDescription = if (description.isBlank()) {
-                            "Payment to $selectedPayeeName"
-                        } else {
-                            description
-                        }
-                        onPayment(selectedPayeeId, amount, finalDescription)
+
+            // Amount field
+            OutlinedTextField(
+                value = amount,
+                onValueChange = { value ->
+                    // Allow numbers with optional decimal places
+                    if (value.isEmpty() || value.matches(Regex("^\\d*\\.?\\d*$"))) {
+                        amount = value
                     }
                 },
-                enabled = amount.isNotBlank() && !isLoading
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
+                label = { Text("Amount") },
+                placeholder = { Text("Enter amount") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                leadingIcon = {
+                    Text(
+                        text = "$", modifier = Modifier.padding(start = 12.dp)
                     )
-                } else {
-                    Text("Send Payment")
+                })
+
+            // Description field
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Description (Optional)") },
+                placeholder = { Text("What's this payment for?") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+        }
+    }, confirmButton = {
+        Button(
+            onClick = {
+                if (amount.isNotBlank()) {
+                    val finalDescription = if (description.isBlank()) {
+                        "Payment to $selectedPayeeName"
+                    } else {
+                        description
+                    }
+                    onPayment(selectedPayeeId, amount, finalDescription)
                 }
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
+            }, enabled = amount.isNotBlank() && !isLoading
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp), color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text("Send Payment")
             }
         }
-    )
+    }, dismissButton = {
+        TextButton(onClick = onDismiss) {
+            Text("Cancel")
+        }
+    })
 }
 
 @Composable
@@ -413,8 +438,7 @@ fun TransactionHistorySection(
             transactionsToShow.forEach { transaction ->
                 TransactionItem(
                     transaction = transaction,
-                    onDelete = { onDeleteTransaction(transaction.id, transaction.type) }
-                )
+                    onDelete = { onDeleteTransaction(transaction.id, transaction.type) })
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
@@ -440,20 +464,16 @@ fun TransactionHistorySection(
 
 @Composable
 fun ViewMoreButton(
-    transactions: List<ApiBill>,
-    showAllTransactions: Boolean,
-    onToggleShowAll: () -> Unit
+    transactions: List<ApiBill>, showAllTransactions: Boolean, onToggleShowAll: () -> Unit
 ) {
     // Only show the button if there are more than 5 transactions
     if (transactions.size <= 5) return
 
     StyledButton(
         onClick = onToggleShowAll,
-        text = if (showAllTransactions)
-            "Show Less" else "View More (${transactions.size - 5} more)",
+        text = if (showAllTransactions) "Show Less" else "View More (${transactions.size - 5} more)",
         buttonType = if (showAllTransactions) ButtonType.Secondary else ButtonType.Primary,
-        icon = if (showAllTransactions)
-            Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+        icon = if (showAllTransactions) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -465,24 +485,20 @@ fun BillSummarySection(transactions: List<ApiBill>) {
     val totalAmount = billTransactions.sumOf { it.amount }
 
     // Group by category for breakdown - handle null categories
-    val categoryTotals = billTransactions
-        .groupBy { it.category ?: "Unknown" } // Handle null categories
-        .mapValues { (_, billTransactions) -> billTransactions.sumOf { it.amount } }
+    val categoryTotals =
+        billTransactions.groupBy { it.category ?: "Unknown" } // Handle null categories
+            .mapValues { (_, billTransactions) -> billTransactions.sumOf { it.amount } }
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
     ) {
         // Updated circular amount display to be a hollow ring
         Box(
             modifier = Modifier
                 .size(140.dp)
                 .border(
-                    width = 8.dp,
-                    color = TealPrimary,
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
+                    width = 8.dp, color = TealPrimary, shape = CircleShape
+                ), contentAlignment = Alignment.Center
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -538,8 +554,7 @@ fun BillBreakdownItem(category: String, amount: String) {
 
 @Composable
 fun TransactionItem(
-    transaction: ApiBill,
-    onDelete: () -> Unit
+    transaction: ApiBill, onDelete: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -583,28 +598,19 @@ fun TransactionItem(
         Box {
             IconButton(onClick = { expanded = true }) {
                 Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "More options"
+                    imageVector = Icons.Default.MoreVert, contentDescription = "More options"
                 )
             }
             DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Delete", color = Color.Red) },
-                    onClick = {
-                        expanded = false
-                        showDeleteDialog = true
-                    },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = Color.Red
-                        )
-                    }
-                )
+                expanded = expanded, onDismissRequest = { expanded = false }) {
+                DropdownMenuItem(text = { Text("Delete", color = Color.Red) }, onClick = {
+                    expanded = false
+                    showDeleteDialog = true
+                }, leadingIcon = {
+                    Icon(
+                        Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red
+                    )
+                })
             }
         }
     }
@@ -622,9 +628,7 @@ fun TransactionItem(
                     onClick = {
                         showDeleteDialog = false
                         onDelete()
-                    },
-                    text = "Delete",
-                    buttonType = ButtonType.Danger
+                    }, text = "Delete", buttonType = ButtonType.Danger
                 )
             },
             dismissButton = {
@@ -633,8 +637,7 @@ fun TransactionItem(
                     text = "Cancel",
                     buttonType = ButtonType.Tertiary
                 )
-            }
-        )
+            })
     }
 }
 
@@ -672,10 +675,7 @@ fun RoommatesSection(
                 val balance = debtSummary?.netBalance ?: 0.0
 
                 RoommateCard(
-                    roommate = roommate,
-                    balance = balance,
-                    onPayClick = { onPayClick(roommate) }
-                )
+                    roommate = roommate, balance = balance, onPayClick = { onPayClick(roommate) })
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
@@ -740,12 +740,9 @@ fun RoommateCard(
         // Show pay button only if current user owes this roommate money
         if (balance < 0) {
             Button(
-                onClick = onPayClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = TealPrimary,
-                    contentColor = Color.White
-                ),
-                modifier = Modifier.height(36.dp)
+                onClick = onPayClick, colors = ButtonDefaults.buttonColors(
+                    containerColor = TealPrimary, contentColor = Color.White
+                ), modifier = Modifier.height(36.dp)
             ) {
                 Text("Pay", fontSize = 14.sp)
             }

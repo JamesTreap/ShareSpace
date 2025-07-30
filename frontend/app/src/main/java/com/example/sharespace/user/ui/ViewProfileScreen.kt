@@ -9,23 +9,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sharespace.core.ui.components.ButtonType
 import com.example.sharespace.core.ui.components.StyledButton
-import com.example.sharespace.core.ui.theme.AlertRed
 import com.example.sharespace.core.ui.theme.TextSecondary
 import com.example.sharespace.user.viewmodel.ViewProfileScreenViewModel
 
@@ -39,14 +34,6 @@ fun ViewProfileScreen(
 ) {
 
     val user by viewModel.user
-    val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
-
-    // Provide token for loading data
-//    val token = TokenStorage.getToken(context)
-//    LaunchedEffect(token) {
-//        token?.let { viewModel.loadData(it) }
-//    }
     viewModel.loadData()
 
     Scaffold(
@@ -67,7 +54,8 @@ fun ViewProfileScreen(
             )
 
             HorizontalDivider(
-                color = Color.LightGray.copy(alpha = 0.8f), thickness = 1.dp,
+                color = Color.LightGray.copy(alpha = 0.8f),
+                thickness = 1.dp,
                 modifier = Modifier.padding(horizontal = 18.dp)
             )
 

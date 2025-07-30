@@ -27,16 +27,12 @@ fun BillsListScreen(
     Scaffold(
         topBar = {
             NavigationHeader(
-                title = "Bills",
-                onNavigateBack = onNavigateBack,
-                actions = {
+                title = "Bills", onNavigateBack = onNavigateBack, actions = {
                     IconButton(onClick = onAddBillClick) {
                         Icon(Icons.Default.Add, "Add Bill")
                     }
-                }
-            )
-        }
-    ) { paddingValues ->
+                })
+        }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -60,9 +56,12 @@ fun EditBillScreen(onNavigateBack: (() -> Unit)? = null) {
     Scaffold(
         topBar = {
             NavigationHeader(title = "Edit Bill", onNavigateBack = onNavigateBack)
-        }
-    ) { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        }) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             Text("Edit Bill Screen - Content Coming Soon")
         }
     }

@@ -8,11 +8,10 @@ data class User(
     val photoUrl: String? = null,
     val username: String
 ) {
-    // Secondary constructor that takes an ApiUser
     constructor(apiUser: ApiUser) : this(
         id = apiUser.id,
         name = apiUser.name,
-        photoUrl = apiUser.profilePictureUrl, // Map profilePictureUrl to photoUrl
+        photoUrl = apiUser.profilePictureUrl,
         username = apiUser.username
     )
 }

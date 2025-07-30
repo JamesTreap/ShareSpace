@@ -67,8 +67,7 @@ class EditProfileScreenViewModel(
     }
 
     fun updateProfile(
-        onNavigateBack: () -> Unit,
-        snackbarHostState: SnackbarHostState
+        onNavigateBack: () -> Unit, snackbarHostState: SnackbarHostState
     ) {
         viewModelScope.launch {
             try {
@@ -95,9 +94,7 @@ class EditProfileScreenViewModel(
     }
 
     private fun extractIndexFromUrl(url: String?): Int {
-        return url?.takeIf { it.contains("pfp") }
-            ?.substringAfterLast("pfp")
-            ?.substringBefore('.')
+        return url?.takeIf { it.contains("pfp") }?.substringAfterLast("pfp")?.substringBefore('.')
             ?.toIntOrNull() ?: 0
     }
 

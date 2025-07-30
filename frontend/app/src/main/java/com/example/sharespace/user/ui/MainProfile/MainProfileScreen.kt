@@ -1,6 +1,5 @@
 package com.example.sharespace.ui.screens.profile
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,7 +38,6 @@ import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
-// This utility function is fine, no changes needed.
 fun formatCurrency(amount: Float): String {
     return NumberFormat.getCurrencyInstance(Locale.getDefault()).format(amount)
 }
@@ -48,11 +46,11 @@ fun formatCurrency(amount: Float): String {
 fun MainProfileScreen(
     viewModel: ProfileScreenViewModel = viewModel(factory = ProfileScreenViewModel.Factory),
     onCreateRoomClick: () -> Unit,
-    onNavigateBack: () -> Unit, // This parameter is unused. Consider using it in a TopAppBar.
+    onNavigateBack: () -> Unit,
     onNavigateToRoom: () -> Unit,
     onLogOut: () -> Unit,
     onViewProfileClick: () -> Unit,
-    onFinanceManagerClick: () -> Unit, // This parameter is unused.
+    onFinanceManagerClick: () -> Unit,
 ) {
 
     val user by viewModel.user
@@ -67,15 +65,14 @@ fun MainProfileScreen(
     }
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(vertical = 24.dp) // Moved padding here to apply to the content
+                .padding(vertical = 24.dp)
         ) {
             user?.let { UserHeader(name = it.name, photoUrl = it.photoUrl, onViewProfileClick) }
             Spacer(modifier = Modifier.height(16.dp))
@@ -96,6 +93,7 @@ fun MainProfileScreen(
                             .padding(16.dp)
                     )
                 }
+
                 is RoomsUiState.Success -> {
                     val rooms = (roomsUiState as RoomsUiState.Success).rooms
                     if (rooms.isEmpty()) {
@@ -124,6 +122,7 @@ fun MainProfileScreen(
                         }
                     }
                 }
+
                 is RoomsUiState.Error -> {
                     Text(
                         text = "Failed to load rooms. Please try again.",
@@ -156,6 +155,7 @@ fun MainProfileScreen(
                             .padding(16.dp)
                     )
                 }
+
                 is InvitesUiState.Success -> {
                     val invites = (invitesUiState as InvitesUiState.Success).invites
                     if (invites.isEmpty()) {
@@ -177,12 +177,12 @@ fun MainProfileScreen(
                                 declineInvite = { viewModel.declineInvite(room.id) },
                                 // FIXED: Changed `alerts` to `numOfNotifications` and passed the size.
                                 numOfNotifications = room.alerts,
-                                navigateToRoom = { }
-                            )
+                                navigateToRoom = { })
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
                 }
+
                 is InvitesUiState.Error -> {
                     Text(
                         text = "Failed to load invites. Please try again.",
@@ -204,8 +204,7 @@ fun MainProfileScreen(
                         TokenStorage.clearToken(context)
                         onLogOut()
                     }
-                },
-                modifier = Modifier
+                }, modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {

@@ -29,19 +29,18 @@ import com.example.sharespace.core.ui.components.StyledButton
 import com.example.sharespace.room.viewmodel.BillsUiState
 import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
 
-data class UiBill( // Renamed to avoid conflict with ViewModelBill
+data class UiBill(
     val id: Int,
     val title: String,
-    val amount: Double, // This is the total bill amount, not the share
+    val amount: Double,
     val payerUserId: Int,
     val users: List<UiUserShare>
 )
 
 data class UiUserShare(val userId: Int, val amountDue: Double)
 
-data class UiRoommate(val id: Int, val name: String) // Renamed
+data class UiRoommate(val id: Int, val name: String)
 
-// --- Main Composable ---
 @Composable
 fun RecentBillsSection(
     billsUiState: BillsUiState,
@@ -85,24 +84,19 @@ fun RecentBillsSection(
 
                 val uiRoommates = when (roommatesUiState) {
                     is RoomSummaryRoommatesUiState.Success -> roommatesUiState.roommates.map { userFromViewModel ->
-                        // userFromViewModel is of type com.example.sharespace.core.domain.model.User
                         UiRoommate(id = userFromViewModel.id, name = userFromViewModel.name)
                     }
 
                     is RoomSummaryRoommatesUiState.Error -> {
-                        // Optionally handle error state for roommates, e.g., show a message or use empty list
                         Log.e("RecentBillsSection", "Error loading roommates.")
                         emptyList()
                     }
 
                     is RoomSummaryRoommatesUiState.Loading -> {
-                        // Optionally handle loading state for roommates, e.g., show a placeholder or use empty list
                         Log.d("RecentBillsSection", "Roommates are loading.")
-                        emptyList() // Or potentially show a different UI element if roommates are critical here
+                        emptyList()
                     }
                 }
-
-                // Adapt ViewModelBill to UiBill
                 val adaptedBills = billsUiState.bills.mapNotNull { viewModelBill ->
                     val userShares = viewModelBill.metadata?.users?.map { userDue ->
                         UiUserShare(userId = userDue.userId, amountDue = userDue.amountDue)
@@ -116,13 +110,12 @@ fun RecentBillsSection(
                             users = userShares
                         )
                     } else {
-                        null // Or handle bills without metadata differently
+                        null
                     }
                 }
 
 
                 if (adaptedBills.isEmpty() && billsUiState.bills.isNotEmpty()) {
-                    // This means there were bills, but none could be adapted (e.g. all missing metadata)
                     Column(
                         Modifier
                             .fillMaxWidth()
@@ -136,7 +129,6 @@ fun RecentBillsSection(
                         )
                     }
                 } else {
-                    // Call the provided BillsLazyRow with adapted data
                     BillsLazyRow(
                         bills = adaptedBills,
                         roommates = uiRoommates,
@@ -149,7 +141,6 @@ fun RecentBillsSection(
                     bill.payerUserId != currentUserId && bill.users.any { it.userId == currentUserId && it.amountDue > 0.0 }
                 }
                 if (!relevantBillsExist && adaptedBills.isNotEmpty()) {
-                    // Bills exist in the room and were adapted, but none are owed by the current user.
                     Column(
                         Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -161,11 +152,8 @@ fun RecentBillsSection(
                         )
                     }
                 } else if (adaptedBills.isEmpty() && billsUiState.bills.isEmpty()) {
-                    // This case is already handled by BillsUiState.Empty, but as a fallback.
-                    // BillsEmptyMini is shown above.
                 }
-                // "View All Room Bills" button
-                if (billsUiState.bills.isNotEmpty()) { // Show if any bills exist in the room
+                if (billsUiState.bills.isNotEmpty()) {
                     Button(
                         onClick = onViewAllBills,
                         shape = RoundedCornerShape(8.dp),
@@ -214,12 +202,12 @@ private fun BillsEmptyMini(onAdd: () -> Unit) {
 }
 
 @Composable
-fun BillsLazyRow( // Takes UiBill, UiRoommate
+fun BillsLazyRow(
     bills: List<UiBill>,
     roommates: List<UiRoommate>,
     currentUserId: Int,
     onPayClick: () -> Unit,
-    modifier: Modifier = Modifier // Added modifier
+    modifier: Modifier = Modifier
 ) {
     val roommateMap = remember(roommates) { roommates.associateBy { it.id } }
 
@@ -234,18 +222,17 @@ fun BillsLazyRow( // Takes UiBill, UiRoommate
     }
 
     LazyRow(
-        modifier = modifier, // Apply modifier
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(horizontal = 8.dp)
     ) {
         items(relevantBills, key = { it.id }) { bill ->
-            // Find the current user's share. It's guaranteed to exist due to the filter.
             val share = bill.users.first { it.userId == currentUserId }
             val payerName = roommateMap[bill.payerUserId]?.name ?: "Roommate" // Default name
 
             BillCard(
                 title = bill.title,
-                amount = share.amountDue, // This is the amount the current user owes for this bill
+                amount = share.amountDue,
                 owingTo = payerName,
                 onPayClick = onPayClick
             )
@@ -255,19 +242,21 @@ fun BillsLazyRow( // Takes UiBill, UiRoommate
 
 @Composable
 private fun BillCard(
-    title: String, amount: Double, // This is the specific amount owed by the current user
-    owingTo: String, onPayClick: () -> Unit, modifier: Modifier = Modifier
+    title: String,
+    amount: Double,
+    owingTo: String,
+    onPayClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
         shape = RoundedCornerShape(8.dp), modifier = modifier, colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface // Set the container color here
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.SpaceBetween // This might need adjustment if the content height varies
+            modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Column { // This inner column groups the text content
+            Column {
                 Text(
                     title,
                     style = MaterialTheme.typography.titleSmall,
@@ -283,10 +272,10 @@ private fun BillCard(
                 Text(
                     text = "Owing to $owingTo",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant // Text color should provide good contrast
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Spacer(Modifier.height(8.dp)) // Add some space before the button, especially if content above is short
+            Spacer(Modifier.height(8.dp))
             Button(
                 onClick = onPayClick,
                 shape = RoundedCornerShape(8.dp),

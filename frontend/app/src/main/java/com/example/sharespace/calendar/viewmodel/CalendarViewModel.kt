@@ -13,7 +13,7 @@ import com.example.sharespace.core.data.repository.RoomRepository
 import com.example.sharespace.core.data.repository.UserSessionRepository
 import com.example.sharespace.core.domain.model.Bill
 import com.example.sharespace.core.domain.model.Task
-import com.example.sharespace.core.domain.model.User // Assuming you might need user info later
+import com.example.sharespace.core.domain.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +27,7 @@ import java.time.LocalDate
 sealed interface CalendarScreenUiState {
     object Loading : CalendarScreenUiState
     data class Success(
-        val tasks: List<Task>, val bills: List<Bill>, val roommates: List<User> // Added roommates
+        val tasks: List<Task>, val bills: List<Bill>, val roommates: List<User>
     ) : CalendarScreenUiState
 
     data class Error(val message: String) : CalendarScreenUiState
@@ -36,7 +36,7 @@ sealed interface CalendarScreenUiState {
 class CalendarViewModel(
     private val calendarRepository: CalendarRepository,
     private val userSessionRepository: UserSessionRepository,
-    private val roomRepository: RoomRepository // Added
+    private val roomRepository: RoomRepository
 ) : ViewModel() {
 
     private val _selectedDate = MutableStateFlow(LocalDate.now())
@@ -45,10 +45,10 @@ class CalendarViewModel(
     private val _uiState = MutableStateFlow<CalendarScreenUiState>(CalendarScreenUiState.Loading)
     val uiState: StateFlow<CalendarScreenUiState> = _uiState.asStateFlow()
 
-    private val _selectedRoommates = MutableStateFlow<Set<Int>>(emptySet()) // Added
-    val selectedRoommates: StateFlow<Set<Int>> = _selectedRoommates.asStateFlow() // Added
+    private val _selectedRoommates = MutableStateFlow<Set<Int>>(emptySet())
+    val selectedRoommates: StateFlow<Set<Int>> = _selectedRoommates.asStateFlow()
 
-    val currentUserIdString: StateFlow<String?> = userSessionRepository.currentUserIdFlow // Added
+    val currentUserIdString: StateFlow<String?> = userSessionRepository.currentUserIdFlow
         .map { userIdInt -> userIdInt?.toString() }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000L),

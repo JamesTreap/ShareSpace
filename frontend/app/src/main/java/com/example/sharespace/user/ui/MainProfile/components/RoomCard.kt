@@ -72,7 +72,7 @@ fun RoomCard(
                     )
                 }
 
-                Row { // Use Row for side-by-side buttons
+                Row {
                     Button(
                         onClick = acceptInvite,
                         shape = RoundedCornerShape(30),

@@ -1,13 +1,29 @@
 package com.example.sharespace.ui.screens.tasks
 
-import android.util.Log
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,31 +32,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.sharespace.ShareSpaceApplication
 import com.example.sharespace.core.data.remote.ApiClient
+import com.example.sharespace.core.data.repository.dto.tasks.ApiAssignee
 import com.example.sharespace.core.data.repository.dto.tasks.ApiTask
+import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskRequest
 import com.example.sharespace.core.data.repository.dto.users.ApiUser
+import com.example.sharespace.core.ui.components.Avatar
+import com.example.sharespace.core.ui.components.ButtonType
+import com.example.sharespace.core.ui.components.DatePickerSelector
+import com.example.sharespace.core.ui.components.StyledButton
+import com.example.sharespace.core.ui.components.StyledCircleLoader
+import com.example.sharespace.core.ui.components.StyledSelect
+import com.example.sharespace.core.ui.components.StyledTextField
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.example.sharespace.core.ui.components.Avatar
 import kotlinx.coroutines.withContext
-import com.example.sharespace.core.ui.components.StyledTextField
-import com.example.sharespace.core.ui.components.StyledButton
-import com.example.sharespace.core.ui.components.StyledSelect
-import com.example.sharespace.core.ui.components.DatePickerSelector
-import com.example.sharespace.core.ui.components.StyledCircleLoader
-import com.example.sharespace.core.data.repository.dto.tasks.ApiAssignee
-import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskRequest
-import com.example.sharespace.core.ui.components.ButtonType
-import com.google.gson.Gson
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditTaskScreen(
-    taskId: Int,
-    onNavigateBack: () -> Unit
+    taskId: Int, onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val userSessionRepository = (context.applicationContext as ShareSpaceApplication).container.userSessionRepository
+    val userSessionRepository =
+        (context.applicationContext as ShareSpaceApplication).container.userSessionRepository
     var token by remember { mutableStateOf<String?>(null) }
     var roomId by remember { mutableStateOf<Int?>(null) }
     var taskToEdit by remember { mutableStateOf<ApiTask?>(null) }
@@ -73,7 +88,8 @@ fun EditTaskScreen(
                     println("TOKEN: $token")
                     println("ROOMID: $roomId")
 
-                    val taskRes = roomId?.let { ApiClient.apiService.getTasksForRoom(it, authToken) }
+                    val taskRes =
+                        roomId?.let { ApiClient.apiService.getTasksForRoom(it, authToken) }
                     val userRes = roomId?.let { ApiClient.apiService.getRoomMembers(it, authToken) }
 
                     if (taskRes != null) {
@@ -118,16 +134,12 @@ fun EditTaskScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Edit Task") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
+            TopAppBar(title = { Text("Edit Task") }, navigationIcon = {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                 }
-            )
-        }
-    ) { innerPadding ->
+            })
+        }) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -173,7 +185,9 @@ fun EditTaskScreen(
                     onValueChange = { repeats = it },
                     label = { Text("Number of repeats") },
                     enabled = false,
-                    modifier = Modifier.weight(1f).padding(end = 8.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
 
                 )
                 StyledTextField(
@@ -194,7 +208,11 @@ fun EditTaskScreen(
 
                 userList.forEach { user ->
                     val userIdStr = user.id.toString()
-                    var statusText by remember { mutableStateOf(assigneeStatuses[userIdStr] ?: "NOT ASSIGNED") }
+                    var statusText by remember {
+                        mutableStateOf(
+                            assigneeStatuses[userIdStr] ?: "NOT ASSIGNED"
+                        )
+                    }
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -222,11 +240,11 @@ fun EditTaskScreen(
                                     label = "Status",
                                     onOptionSelected = { selected ->
                                         statusText = selected.toString()
-                                        assigneeStatuses = assigneeStatuses.toMutableMap().also { map ->
-                                            map[userIdStr] = statusText
-                                        }
-                                    }
-                                )
+                                        assigneeStatuses =
+                                            assigneeStatuses.toMutableMap().also { map ->
+                                                map[userIdStr] = statusText
+                                            }
+                                    })
                             } else {
                                 StyledTextField(
                                     value = "Not Assigned",
@@ -261,8 +279,7 @@ fun EditTaskScreen(
                             try {
                                 val assigneeList = assigneeStatuses.map { (userId, status) ->
                                     ApiAssignee(
-                                        userId = userId,
-                                        status = status.lowercase()
+                                        userId = userId, status = status.lowercase()
                                     )
                                 }
 
@@ -302,7 +319,9 @@ fun EditTaskScreen(
                 text = "Update Task",
                 buttonType = ButtonType.Primary,
                 enabled = !isLoading,
-                modifier = Modifier.fillMaxWidth().height(48.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
             )
         }
     }

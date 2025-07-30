@@ -1,6 +1,5 @@
 package com.example.sharespace.calendar.ui
 
-// Keep existing relevant imports
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,11 +43,7 @@ import com.example.sharespace.room.ui.roomSummary.components.DateSelector
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-// Import your custom components by their package path
-// Assuming they are in com.example.sharespace.room.ui.roomSummary.components
-
-
-@OptIn(ExperimentalMaterial3Api::class) // Keep if TopAppBar or other M3 components require it
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
     viewModel: CalendarViewModel = viewModel(factory = CalendarViewModel.Factory),
@@ -57,7 +52,7 @@ fun CalendarScreen(
     val uiState by viewModel.uiState.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
     val selectedRoommates by viewModel.selectedRoommates.collectAsState()
-    val currentUserId by viewModel.currentUserIdString.collectAsState() // If needed by BillRow/TaskRow
+    val currentUserId by viewModel.currentUserIdString.collectAsState()
 
     Scaffold(
         topBar = {
@@ -122,7 +117,6 @@ fun CalendarScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    // Filter bills (Your existing logic for filtering is fine)
                     val filteredBills = if (selectedRoommates.isEmpty()) {
                         currentUiState.bills
                     } else {
@@ -172,7 +166,7 @@ fun CalendarScreen(
                                 items(tasksToDisplay, key = { "task-${it.id}" }) { task ->
                                     CalendarTaskRow(
                                         task = task,
-                                        currentUserId = currentUserId, // Pass if needed by CalendarTaskRow
+                                        currentUserId = currentUserId,
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                 }
@@ -185,7 +179,6 @@ fun CalendarScreen(
     }
 }
 
-// --- Component: SectionHeader (Simplified) --- (Retained from your previous code)
 @Composable
 fun SectionHeader(title: String, modifier: Modifier = Modifier) {
     Text(
@@ -195,7 +188,6 @@ fun SectionHeader(title: String, modifier: Modifier = Modifier) {
     )
 }
 
-// --- Component: BillRow --- (Retained from your previous code)
 @Composable
 fun BillRow(bill: Bill, modifier: Modifier = Modifier) {
     Card(
@@ -220,8 +212,6 @@ fun BillRow(bill: Bill, modifier: Modifier = Modifier) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                // Assuming your Bill model has 'deadline' or 'dueDate'.
-                // Your previous BillRow used 'bill.deadline'. If it's 'dueDate', change here.
                 bill.deadline?.let {
                     Text(
                         "Due: ${it.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))}",
@@ -239,7 +229,6 @@ fun BillRow(bill: Bill, modifier: Modifier = Modifier) {
     }
 }
 
-// --- Component: CalendarTaskRow --- (Retained from your previous code)
 @Composable
 fun CalendarTaskRow(task: Task, currentUserId: String?, modifier: Modifier = Modifier) {
     Card(

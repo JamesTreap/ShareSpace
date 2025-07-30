@@ -21,40 +21,34 @@ class PreferencesUserSessionRepository(private val dataStore: DataStore<Preferen
         val CURRENT_USER_ID = intPreferencesKey("current_user_id") // New key for User ID
     }
 
-    override val userTokenFlow: Flow<String?> = dataStore.data
-        .catch { exception ->
+    override val userTokenFlow: Flow<String?> = dataStore.data.catch { exception ->
             if (exception is IOException) {
                 emit(emptyPreferences())
             } else {
                 throw exception
             }
-        }
-        .map { preferences ->
+        }.map { preferences ->
             preferences[USER_TOKEN]
         }
 
-    override val activeRoomIdFlow: Flow<Int?> = dataStore.data
-        .catch { exception ->
+    override val activeRoomIdFlow: Flow<Int?> = dataStore.data.catch { exception ->
             if (exception is IOException) {
                 emit(emptyPreferences())
             } else {
                 throw exception
             }
-        }
-        .map { preferences ->
+        }.map { preferences ->
             preferences[ACTIVE_ROOM_ID]
         }
 
     // New Flow for Current User ID
-    override val currentUserIdFlow: Flow<Int?> = dataStore.data
-        .catch { exception ->
+    override val currentUserIdFlow: Flow<Int?> = dataStore.data.catch { exception ->
             if (exception is IOException) {
                 emit(emptyPreferences())
             } else {
                 throw exception
             }
-        }
-        .map { preferences ->
+        }.map { preferences ->
             preferences[CURRENT_USER_ID]
         }
 

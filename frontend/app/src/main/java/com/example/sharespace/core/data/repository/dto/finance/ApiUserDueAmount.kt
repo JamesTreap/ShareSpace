@@ -4,9 +4,9 @@ import com.google.gson.annotations.SerializedName
 
 
 data class ApiUserDueAmount(
-    @SerializedName("user_id") // <--- CRITICAL: Add this
+    @SerializedName("user_id")
     val userId: Int,
 
-    @SerializedName("amount_due") // <--- CRITICAL: Add this
+    @SerializedName("amount_due")
     val amountDue: Double
 )

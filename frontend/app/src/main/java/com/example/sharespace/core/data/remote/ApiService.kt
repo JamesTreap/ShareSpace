@@ -53,12 +53,12 @@ interface ApiService {
     ): Response<ApiCreateAccountResponse>
 
     // --- Users ---
-    @GET("users/user_details") // This seems to be for the currently authenticated user
-    suspend fun getCurrentUserDetails( // Renamed for clarity from your existing `getUserDetails`
+    @GET("users/user_details")
+    suspend fun getCurrentUserDetails(
         @Header("Authorization") token: String
     ): Response<ApiUser>
 
-    @GET("users/user_details/{userId}") // This is for getting any user by ID
+    @GET("users/user_details/{userId}")
     suspend fun getUserDetailsById(
         @Path("userId") userId: Int, @Header("Authorization") token: String
     ): Response<ApiUser>
@@ -113,7 +113,7 @@ interface ApiService {
         @Body request: ApiRespondToRoomInviteRequest
     ): Response<ApiRespondToRoomInviteResponse>
 
-    @PATCH("rooms/update/{room_id}") // {{baseURL}} is handled by Retrofit's .baseUrl()
+    @PATCH("rooms/update/{room_id}")
     suspend fun updateRoomDetails(
         @Header("Authorization") token: String,
         @Path("room_id") roomId: Int,
@@ -146,19 +146,12 @@ interface ApiService {
         @Header("Authorization") token: String
     ): Response<ApiDeleteTaskResponse>
 
-//    @PATCH("tasks/{task_id}")
-//    suspend fun updateTask(
-//        @Path("task_id") taskId: Int,
-//        @Header("Authorization") token: String,
-//        @Body request: UpdateTaskRequest
-//    ): Response<UpdateTaskResponse>
-//
     // --- Finance ---
     @GET("finance/transaction_list/{room_id}")
     suspend fun getTransactionList(
         @Path("room_id") roomId: Int,
         @Header("Authorization") token: String
-    ): Response<List<ApiTransaction>> // Backend returns array directly, not wrapped
+    ): Response<List<ApiTransaction>>
 
     @POST("finance/create_bill/{room_id}")
     suspend fun createBill(
@@ -190,7 +183,7 @@ interface ApiService {
     suspend fun getRoomMembersWithDebts(
         @Path("room_id") roomId: Int,
         @Header("Authorization") token: String
-    ): Response<List<ApiUserWithDebts>> // Backend returns array directly
+    ): Response<List<ApiUserWithDebts>>
 
     @POST("users/cleanup_room_debts/{room_id}")
     suspend fun cleanupRoomDebts(

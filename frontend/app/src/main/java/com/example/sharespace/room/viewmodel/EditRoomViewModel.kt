@@ -19,7 +19,6 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
-// UI State remains the same
 data class EditRoomUiState(
     val currentRoomDetails: ApiRoom? = null,
     val roomName: String = "",
@@ -40,7 +39,7 @@ class EditRoomViewModel(
     var uiState by mutableStateOf(EditRoomUiState())
         private set
 
-    private var currentRoomId: Int? = null // Will be fetched from UserSessionRepository
+    private var currentRoomId: Int? = null
 
     init {
         viewModelScope.launch {
@@ -64,7 +63,6 @@ class EditRoomViewModel(
         viewModelScope.launch {
             uiState = uiState.copy(isLoadingCurrentDetails = true, initialLoadError = null)
             try {
-                // Token is also fetched from UserSessionRepository
                 val token = userSessionRepository.userTokenFlow.first() // Wait for non-null
                 if (token == null) {
                     uiState = uiState.copy(
@@ -118,7 +116,7 @@ class EditRoomViewModel(
     }
 
     fun saveRoomChanges() {
-        val roomIdToUpdate = currentRoomId // Use the class property
+        val roomIdToUpdate = currentRoomId
         if (roomIdToUpdate == null) {
             uiState = uiState.copy(updateError = "Error: Active room ID is missing.")
             Log.w(TAG, "Attempted to save changes with no active room ID.")
@@ -147,7 +145,7 @@ class EditRoomViewModel(
         viewModelScope.launch {
             uiState = uiState.copy(isUpdating = true, updateError = null, updateSuccess = false)
             try {
-                val token = userSessionRepository.userTokenFlow.first() // Wait for non-null
+                val token = userSessionRepository.userTokenFlow.first()
                 if (token == null) {
                     uiState = uiState.copy(
                         isUpdating = false, updateError = "Authentication error. Please try again."
@@ -162,8 +160,8 @@ class EditRoomViewModel(
                 // Construct the request object with all fields
                 val updateRequest = ApiUpdateRoomRequest(
                     name = name,
-                    description = if (description.isNotEmpty()) description else null, // Send null if description is empty
-                    address = if (address.isNotEmpty()) address else null     // Send null if address is empty
+                    description = if (description.isNotEmpty()) description else null,
+                    address = if (address.isNotEmpty()) address else null
                 )
 
                 roomRepository.updateRoomDetails(
@@ -203,8 +201,6 @@ class EditRoomViewModel(
 
     companion object {
         private const val TAG = "EditRoomViewModel"
-
-        // Factory no longer needs SavedStateHandle for roomId
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application =

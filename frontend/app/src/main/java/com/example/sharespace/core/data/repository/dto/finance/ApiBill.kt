@@ -6,17 +6,17 @@ data class ApiBill(
     override val id: Int,
     override val amount: Double,
     override val type: String,
-    @SerializedName("created_at") // Good practice, though policy should cover
+    @SerializedName("created_at")
     override val createdAt: String,
-    @SerializedName("payer_user_id") // Good practice
+    @SerializedName("payer_user_id")
     override val payerUserId: Int,
 
     val title: String,
     val category: String,
-    @SerializedName("scheduled_date") // Good practice
+    @SerializedName("scheduled_date")
     val scheduledDate: String,
 
-    @SerializedName("meta_data") // <--- CRITICAL: Add this
+    @SerializedName("meta_data")
     val metadata: ApiBillMetadata?,
 
     val deadline: String?

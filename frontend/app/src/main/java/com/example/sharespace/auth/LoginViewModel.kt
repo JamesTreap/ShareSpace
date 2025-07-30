@@ -126,8 +126,6 @@ class LoginViewModel(
      * Call this after navigation has been handled by the UI to reset the state.
      */
     fun onLoginHandled() {
-        // Reset to Stable state. You can choose to clear inputs or preserve them.
-        // Clearing them is often standard after a successful action and navigation.
         loginUiState = LoginUiState.Stable()
     }
 

@@ -14,10 +14,9 @@ import com.example.sharespace.core.data.repository.RoomRepository
 import com.example.sharespace.core.data.repository.UserRepository
 import com.example.sharespace.core.data.repository.UserSessionRepository
 import com.example.sharespace.core.data.repository.dto.finance.ApiBill
-import com.example.sharespace.core.data.repository.dto.finance.ApiCreateBillRequest
 import com.example.sharespace.core.data.repository.dto.finance.ApiBillUser
+import com.example.sharespace.core.data.repository.dto.finance.ApiCreateBillRequest
 import com.example.sharespace.core.data.repository.dto.finance.ApiCreatePaymentRequest
-import com.example.sharespace.core.data.repository.dto.finance.ApiTransaction
 import com.example.sharespace.core.data.repository.dto.users.ApiUser
 import com.example.sharespace.core.data.repository.dto.users.ApiUserWithDebts
 import com.example.sharespace.core.data.repository.dto.users.DebtSummary
@@ -27,11 +26,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
-// ADD THIS DATA CLASS HERE (from AddBillViewModel)
 data class RoommateSplit(
-    val user: ApiUser,
-    val amount: String = "0",
-    val currentBalance: Double = 0.0
+    val user: ApiUser, val amount: String = "0", val currentBalance: Double = 0.0
 )
 
 class FinanceManagerViewModel(
@@ -115,7 +111,10 @@ class FinanceManagerViewModel(
 
                 if (token == null || activeRoomId == null) {
                     _errorMessage.value = "Authentication or room information is missing."
-                    Log.w(TAG, "Token or activeRoomId is null. Token present: ${token != null}, RoomId present: ${activeRoomId != null}. Aborting.")
+                    Log.w(
+                        TAG,
+                        "Token or activeRoomId is null. Token present: ${token != null}, RoomId present: ${activeRoomId != null}. Aborting."
+                    )
                     return@launch
                 }
                 Log.d(TAG, "Token and activeRoomId retrieved. RoomId: $activeRoomId.")
@@ -134,7 +133,10 @@ class FinanceManagerViewModel(
                 // You could also log roommates here if needed, similar to transactions
                 _roommates.value = roommatesList
 
-                Log.d(TAG, "✅ Successfully loaded ${transactionList.size} transactions and ${roommatesList.size} roommates.")
+                Log.d(
+                    TAG,
+                    "✅ Successfully loaded ${transactionList.size} transactions and ${roommatesList.size} roommates."
+                )
 
                 Log.d(TAG, "Calling loadRoomMembersWithDebtsInternal...")
                 loadRoomMembersWithDebtsInternal(token, activeRoomId)
@@ -202,7 +204,8 @@ class FinanceManagerViewModel(
                 val currentUserDebts = membersWithDebts.find { it.id == currentUserId }
 
                 _addBillRoommates.value = roommatesList.map { user ->
-                    val currentBalance = calculateCurrentBalance(currentUserId, user.id, currentUserDebts)
+                    val currentBalance =
+                        calculateCurrentBalance(currentUserId, user.id, currentUserDebts)
                     RoommateSplit(user = user, currentBalance = currentBalance)
                 }
 //                Log.d(TAG, "✅ Loaded ${roommatesList.size} roommates for bill creation.")
@@ -216,7 +219,9 @@ class FinanceManagerViewModel(
         }
     }
 
-    private fun calculateCurrentBalance(currentUserId: Int, roommateId: Int, currentUserDebts: ApiUserWithDebts?): Double {
+    private fun calculateCurrentBalance(
+        currentUserId: Int, roommateId: Int, currentUserDebts: ApiUserWithDebts?
+    ): Double {
         if (currentUserDebts == null || currentUserId == roommateId) return 0.0
         val roommateIdStr = roommateId.toString()
         val owesToRoommate = currentUserDebts.owes[roommateIdStr] ?: 0.0
@@ -239,11 +244,7 @@ class FinanceManagerViewModel(
     }
 
     fun createBill(
-        title: String,
-        category: String,
-        totalAmount: String,
-        frequency: String,
-        repeats: String
+        title: String, category: String, totalAmount: String, frequency: String, repeats: String
     ) {
         viewModelScope.launch {
             try {
@@ -274,8 +275,7 @@ class FinanceManagerViewModel(
                     val userAmount = split.amount.toDoubleOrNull()
                     if (userAmount != null && userAmount > 0) {
                         ApiBillUser(
-                            userId = split.user.id.toString(),
-                            amountDue = userAmount.toString()
+                            userId = split.user.id.toString(), amountDue = userAmount.toString()
                         )
                     } else null
                 }
@@ -341,10 +341,12 @@ class FinanceManagerViewModel(
                         financeRepository.deleteBill(token, transactionId)
                         Log.d(TAG, "✅ Bill deleted successfully: $transactionId")
                     }
+
                     "payment" -> {
                         financeRepository.deletePayment(token, transactionId)
                         Log.d(TAG, "✅ Payment deleted successfully: $transactionId")
                     }
+
                     else -> {
                         _errorMessage.value = "Unknown transaction type: $transactionType"
                         return@launch
@@ -367,7 +369,10 @@ class FinanceManagerViewModel(
     fun clearError() {
         _errorMessage.value = null
     }
-    private fun calculateDebtSummaries(membersWithDebts: List<ApiUserWithDebts>, currentUserId: Int): List<DebtSummary> {
+
+    private fun calculateDebtSummaries(
+        membersWithDebts: List<ApiUserWithDebts>, currentUserId: Int
+    ): List<DebtSummary> {
         val summaries = mutableListOf<DebtSummary>()
 
         // Find current user's debt data
@@ -385,9 +390,12 @@ class FinanceManagerViewModel(
         membersWithDebts.forEach { member ->
             if (member.id != currentUserId) {
                 val memberIdStr = member.id.toString()
-                val owesAmount = currentUserData.owes[memberIdStr] ?: 0.0  // What current user owes TO this member
-                val owedAmount = currentUserData.debts[memberIdStr] ?: 0.0 // What this member owes TO current user
-                val netBalance = owedAmount - owesAmount // Positive = they owe you, Negative = you owe them
+                val owesAmount = currentUserData.owes[memberIdStr]
+                    ?: 0.0  // What current user owes TO this member
+                val owedAmount = currentUserData.debts[memberIdStr]
+                    ?: 0.0 // What this member owes TO current user
+                val netBalance =
+                    owedAmount - owesAmount // Positive = they owe you, Negative = you owe them
 
                 Log.d(TAG, "🔍 CALCULATE_DEBT_SUMMARIES: Member ${member.name} (ID: ${member.id})")
                 Log.d(TAG, "🔍 CALCULATE_DEBT_SUMMARIES: - Current user owes them: $owesAmount")
@@ -418,9 +426,7 @@ class FinanceManagerViewModel(
     }
 
     fun createPayment(
-        payeeId: Int,
-        amount: String,
-        description: String
+        payeeId: Int, amount: String, description: String
     ) {
         viewModelScope.launch {
             try {

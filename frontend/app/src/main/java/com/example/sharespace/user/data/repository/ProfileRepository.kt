@@ -4,7 +4,6 @@ import com.example.sharespace.core.data.remote.ApiService
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRespondToRoomInviteRequest
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRespondToRoomInviteResponse
 import com.example.sharespace.core.data.repository.dto.rooms.ApiRoom
-import com.example.sharespace.core.data.repository.dto.rooms.ApiRoomInvitation
 import com.example.sharespace.core.data.repository.dto.users.ApiPatchProfileRequest
 import com.example.sharespace.core.data.repository.dto.users.ApiUser
 import retrofit2.HttpException
@@ -31,9 +30,7 @@ class ProfileRepository(var api: ApiService) {
     }
 
     suspend fun respondToRoomInvite(
-        token: String,
-        roomIdFromInvite: Int,
-        status: String
+        token: String, roomIdFromInvite: Int, status: String
     ): ApiRespondToRoomInviteResponse {
         val request = ApiRespondToRoomInviteRequest(status = status)
         val response = api.respondToRoomInvite("Bearer $token", roomIdFromInvite, request)
@@ -44,11 +41,9 @@ class ProfileRepository(var api: ApiService) {
             throw HttpException(response)
         }
     }
+
     suspend fun patchProfile(
-        token: String?,
-        name: String,
-        username: String,
-        profilePictureUrl: String
+        token: String?, name: String, username: String, profilePictureUrl: String
     ): ApiUser {
         val request = ApiPatchProfileRequest(name, username, profilePictureUrl)
         val response = api.patchUserProfile("Bearer $token", request)

@@ -1,6 +1,5 @@
 package com.example.sharespace.room.ui.roomSummary.components
 
-// Import your theme colors (adjust path if necessary)
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -48,7 +47,7 @@ fun DateSelector(
     ) {
         Text(
             text = "Date: ${selectedDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))}",
-            style = androidx.compose.material3.MaterialTheme.typography.bodyLarge, // Explicitly use M3 MaterialTheme
+            style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
             modifier = Modifier.weight(1f)
         )
 
@@ -57,7 +56,7 @@ fun DateSelector(
             onClick = { showDatePicker = true },
             text = "Change",
             icon = Icons.Default.DateRange,
-            buttonType = ButtonType.Secondary // Using secondary type as requested
+            buttonType = ButtonType.Secondary
         )
     }
 

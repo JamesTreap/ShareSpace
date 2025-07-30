@@ -14,11 +14,10 @@ fun CreateRoomScreen(onNavigateBack: (() -> Unit)? = null) {
     Scaffold(
         topBar = {
             NavigationHeader(
-                title = "Create Room",
-                onNavigateBack = onNavigateBack
+                title = "Create Room", onNavigateBack = onNavigateBack
             )
-        },
-        modifier = Modifier.fillMaxSize()) { innerPadding ->
+        }, modifier = Modifier.fillMaxSize()
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)

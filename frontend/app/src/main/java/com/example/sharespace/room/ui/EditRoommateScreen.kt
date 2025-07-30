@@ -14,11 +14,10 @@ fun EditRoommateScreen(onNavigateBack: (() -> Unit)? = null) {
     Scaffold(
         topBar = {
             NavigationHeader(
-                title = "Edit Roommate",
-                onNavigateBack = onNavigateBack
+                title = "Edit Roommate", onNavigateBack = onNavigateBack
             )
-        },
-        modifier = Modifier.fillMaxSize()) { innerPadding ->
+        }, modifier = Modifier.fillMaxSize()
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)

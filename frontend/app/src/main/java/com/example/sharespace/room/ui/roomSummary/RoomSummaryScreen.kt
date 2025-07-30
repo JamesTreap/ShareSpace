@@ -2,13 +2,9 @@
 
 package com.example.sharespace.room.ui.roomSummary
 
-// import androidx.compose.material.icons.filled.Person // Not used directly in this screen
-// import com.example.sharespace.room.ui.roomSummary.components.CalendarSection // Keep if re-added
 import android.util.Log
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -49,20 +45,13 @@ fun RoomSummaryScreen(
     val tasksUiState: TasksUiState = viewModel.tasksUiState
     val billsUiState: BillsUiState = viewModel.billsUiState
 
-    // Collect both String and Int versions of currentUserId
     val currentUserIdString: String? by viewModel.currentUserIdString.collectAsState()
     val currentUserIdInt: Int? by viewModel.currentUserIdInt.collectAsState()
 
-    val calendarUiState by viewModel.calendarUiState.collectAsState()
-    val selectedDate by viewModel.selectedDate.collectAsState()
-    val selectedRoommates by viewModel.selectedRoommates.collectAsState()
-
-    val lifecycleOwner = LocalLifecycleOwner.current // Get the lifecycle owner
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            // This block will execute when the lifecycle is RESUMED
-            // and cancel when it's PAUSED.
             Log.d("RoomSummaryScreen", "Lifecycle RESUMED, refreshing data.")
             viewModel.refreshAllData()
         }
@@ -109,30 +98,6 @@ fun RoomSummaryScreen(
                 .padding(12.dp)
                 .fillMaxSize()
         ) {
-//            // Add Finance Manager Button here
-//            Button(
-//                onClick = onFinanceManagerClick,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(horizontal = 16.dp, vertical = 8.dp),
-//                colors = ButtonDefaults.buttonColors(
-//                    containerColor = MaterialTheme.colorScheme.primary,
-//                    contentColor = MaterialTheme.colorScheme.onPrimary
-//                ),
-//                shape = RoundedCornerShape(12.dp),
-//                elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.Star,
-//                    contentDescription = "Finance Manager",
-//                    modifier = Modifier.size(20.dp)
-//                )
-//                Spacer(modifier = Modifier.width(8.dp))
-//                Text(
-//                    text = "Finance Manager",
-//                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
-//                )
-//            }
             RoommatesSection(
                 roommatesUiState = roommatesUiState,
                 onAdd = onAddRoommateClick,
@@ -144,42 +109,26 @@ fun RoomSummaryScreen(
             RecentBillsSection(
                 billsUiState = billsUiState,
                 roommatesUiState = roommatesUiState,
-                currentUserId = currentUserIdInt, // Pass the Int version
+                currentUserId = currentUserIdInt,
                 onAddBill = onAddBillClick,
                 onPayBill = onFinanceManagerClick,
                 onViewAllBills = onFinanceManagerClick,
-                onRetry = viewModel::fetchBillsForSummary, // Retry fetching bills
+                onRetry = viewModel::fetchBillsForSummary,
                 modifier = Modifier
             )
             // Upcoming Tasks Section
             UpcomingTasksSection(
                 tasksUiState = tasksUiState,
-                roommatesUiState = roommatesUiState, // Pass roommates state
-                currentUserId = currentUserIdString, // Tasks section might use String ID
+                roommatesUiState = roommatesUiState,
+                currentUserId = currentUserIdString,
                 onAdd = onAddTaskClick,
                 onToggleDone = { task, newStatus ->
                     viewModel.updateTaskStatus(task, newStatus)
                 },
                 onViewAll = onViewTasksClick,
                 onRetry = viewModel::fetchTasks,
-                modifier = Modifier
-                    .weight(1f)
+                modifier = Modifier.weight(1f)
             )
-
-//            CalendarSection(
-//                calendarUiState = calendarUiState,
-//                selectedDate = selectedDate,
-//                onDateSelected = viewModel::updateSelectedDate,
-//                roommates = if (roommatesUiState is RoomSummaryRoommatesUiState.Success)
-//                    roommatesUiState.roommates else emptyList(),
-//                selectedRoommates = selectedRoommates,
-//                onRoommateSelectionChanged = viewModel::updateSelectedRoommates,
-//                currentUserId = currentUserId,
-//                onRetry = viewModel::fetchCalendarData,
-//                modifier = Modifier
-//                    .weight(1f)
-//                    .padding(horizontal = 12.dp)
-//            )
         }
     }
 }

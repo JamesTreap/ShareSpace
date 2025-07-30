@@ -33,8 +33,7 @@ fun BillRow(bill: Bill) {
     }
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
@@ -63,8 +62,7 @@ fun BillRow(bill: Bill) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                "Category: ${bill.category}",
-                style = MaterialTheme.typography.bodySmall
+                "Category: ${bill.category}", style = MaterialTheme.typography.bodySmall
             )
         }
 
@@ -83,8 +81,7 @@ fun CalendarTaskRow(task: Task, currentUserId: String?) {
     } ?: false
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
@@ -120,7 +117,7 @@ fun CalendarTaskRow(task: Task, currentUserId: String?) {
             Text(
                 status,
                 style = MaterialTheme.typography.bodySmall,
-                color = when(status.uppercase()) {
+                color = when (status.uppercase()) {
                     "COMPLETE" -> MaterialTheme.colorScheme.primary
                     "IN-PROGRESS" -> MaterialTheme.colorScheme.tertiary
                     else -> MaterialTheme.colorScheme.onSurface

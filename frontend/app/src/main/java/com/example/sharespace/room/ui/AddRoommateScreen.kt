@@ -1,9 +1,7 @@
-@file:OptIn(ExperimentalMaterial3Api::class) // Keep if using M3 components
+@file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.example.sharespace.room.ui // Or your preferred UI package
+package com.example.sharespace.room.ui
 
-// Import AddRoommateUiState if it's in a different package and needed directly
-// import com.example.sharespace.room.viewmodel.AddRoommateUiState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -63,7 +61,7 @@ fun AddRoommateScreen(
     LaunchedEffect(uiState.inviteSuccess) {
         if (uiState.inviteSuccess) {
             scope.launch {
-                keyboardController?.hide() // Hide keyboard before showing snackbar/navigating
+                keyboardController?.hide()
                 snackbarHostState.showSnackbar(
                     message = "Invite sent successfully!", duration = SnackbarDuration.Short
                 )
@@ -73,10 +71,10 @@ fun AddRoommateScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
-            NavigationHeader(
-                title = "Add Roommate", onNavigateBack = onNavigateBack
-            )
-        }, modifier = Modifier.fillMaxSize()
+        NavigationHeader(
+            title = "Add Roommate", onNavigateBack = onNavigateBack
+        )
+    }, modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -90,7 +88,7 @@ fun AddRoommateScreen(
                 label = { Text("Username") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                isError = uiState.inviteError != null && !uiState.isSendingInvite, // Show error only if not loading
+                isError = uiState.inviteError != null && !uiState.isSendingInvite,
                 trailingIcon = {
                     if (uiState.username.isNotEmpty()) {
                         IconButton(onClick = { viewModel.clearUsername() }) {

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -36,16 +35,16 @@ import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
 
 @Composable
 fun RoommatesSection(
-    roommatesUiState: RoomSummaryRoommatesUiState, // Changed to accept UiState
-    onAdd: () -> Unit, onRetry: () -> Unit, // Add a retry callback
+    roommatesUiState: RoomSummaryRoommatesUiState,
+    onAdd: () -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         SectionHeader(
             title = "Roommates",
 //            actionText = "View All",
-            onAction = { },
-            modifier = Modifier.fillMaxWidth()
+            onAction = { }, modifier = Modifier.fillMaxWidth()
         )
 
         when (roommatesUiState) {
@@ -53,8 +52,9 @@ fun RoommatesSection(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(80.dp) // Give a fixed height during loading
-                        .padding(vertical = 8.dp), contentAlignment = Alignment.Center
+                        .height(80.dp)
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
                 }
@@ -93,7 +93,6 @@ fun RoommatesSection(
                             .clip(RoundedCornerShape(8.dp))
                             .background(MaterialTheme.colorScheme.surface)
                     ) {
-                        // "Add roommate" button as the first item for consistency
                         item {
                             OutlinedCard(
                                 modifier = Modifier
@@ -108,7 +107,7 @@ fun RoommatesSection(
                                     Icon(Icons.Default.Add, contentDescription = "Add roommate")
                                 }
                             }
-                            Spacer(modifier = Modifier.width(8.dp)) // Add space after the button
+                            Spacer(modifier = Modifier.width(8.dp))
                         }
                         items(roommates) { user ->
                             AvatarSquare(
@@ -123,7 +122,7 @@ fun RoommatesSection(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(80.dp) // Give a fixed height for error state
+                        .height(80.dp)
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center

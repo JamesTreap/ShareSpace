@@ -3,9 +3,9 @@ package com.example.sharespace.core.data.repository.network
 import android.util.Log
 import com.example.sharespace.core.data.remote.ApiService
 import com.example.sharespace.core.data.repository.UserRepository
+import com.example.sharespace.core.data.repository.dto.finance.ApiDeleteResponse
 import com.example.sharespace.core.data.repository.dto.users.ApiUser
 import com.example.sharespace.core.data.repository.dto.users.ApiUserWithDebts
-import com.example.sharespace.core.data.repository.dto.finance.ApiDeleteResponse
 
 class NetworkUserRepository(
     private val apiService: ApiService
@@ -41,7 +41,10 @@ class NetworkUserRepository(
         }
     }
 
-    override suspend fun getRoomMembersWithDebts(token: String, roomId: Int): List<ApiUserWithDebts> {
+    override suspend fun getRoomMembersWithDebts(
+        token: String,
+        roomId: Int
+    ): List<ApiUserWithDebts> {
         return try {
             val response = apiService.getRoomMembersWithDebts(roomId, "Bearer $token")
             if (response.isSuccessful) {

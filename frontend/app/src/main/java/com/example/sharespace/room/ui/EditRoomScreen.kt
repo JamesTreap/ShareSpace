@@ -56,9 +56,8 @@ fun EditRoomScreen(
             scope.launch {
                 snackbarHostState.showSnackbar(
                     message = error,
-                    duration = SnackbarDuration.Long // Long duration for initial load errors
+                    duration = SnackbarDuration.Long
                 )
-                // Optionally navigate back if it's a critical error like missing room ID
             }
         }
     }
@@ -70,7 +69,7 @@ fun EditRoomScreen(
                 snackbarHostState.showSnackbar(
                     message = error, duration = SnackbarDuration.Short
                 )
-                viewModel.consumeUpdateError() // Consume error after showing
+                viewModel.consumeUpdateError()
             }
         }
     }
@@ -84,7 +83,7 @@ fun EditRoomScreen(
                     message = "Room details updated successfully!",
                     duration = SnackbarDuration.Short
                 )
-                viewModel.consumeUpdateSuccess() // Consume success state
+                viewModel.consumeUpdateSuccess()
 //                onUpdateSuccessAndNavigateBack() // Navigate back after success
             }
         }
@@ -92,10 +91,10 @@ fun EditRoomScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
-            NavigationHeader(
-                title = "Edit Room Details", onNavigateBack = onNavigateBack
-            )
-        }, modifier = Modifier.fillMaxSize()
+        NavigationHeader(
+            title = "Edit Room Details", onNavigateBack = onNavigateBack
+        )
+    }, modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         if (uiState.isLoadingCurrentDetails) {
             Box(
@@ -149,7 +148,7 @@ fun EditRoomScreen(
                     label = { Text("Description (Optional)") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 80.dp), // Make it a bit taller for description
+                        .heightIn(min = 80.dp),
                     isError = uiState.updateError?.contains(
                         "description", ignoreCase = true
                     ) == true,
@@ -178,7 +177,7 @@ fun EditRoomScreen(
                         keyboardController?.hide()
                         viewModel.saveRoomChanges()
                     },
-                    enabled = !uiState.isUpdating && uiState.initialLoadError == null, // Enable if not updating and no initial fatal error
+                    enabled = !uiState.isUpdating && uiState.initialLoadError == null,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     if (uiState.isUpdating) {

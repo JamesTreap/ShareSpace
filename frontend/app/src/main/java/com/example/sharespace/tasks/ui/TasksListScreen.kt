@@ -21,16 +21,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,65 +49,54 @@ import androidx.compose.ui.zIndex
 import com.example.sharespace.ShareSpaceApplication
 import com.example.sharespace.core.data.remote.ApiClient
 import com.example.sharespace.core.data.repository.dto.tasks.ApiTask
+import com.example.sharespace.core.ui.components.Avatar
+import com.example.sharespace.core.ui.components.ButtonType
 import com.example.sharespace.core.ui.components.NavigationHeader
+import com.example.sharespace.core.ui.components.StyledButton
+import com.example.sharespace.core.ui.components.StyledCircleLoader
+import com.example.sharespace.core.ui.components.StyledLineLoader
+import com.example.sharespace.core.ui.theme.AquaAccent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 import java.time.LocalDate
-import com.example.sharespace.core.ui.components.StyledButton
-import com.example.sharespace.core.ui.components.ButtonType
-import com.example.sharespace.core.ui.components.StyledCircleLoader
-import com.example.sharespace.core.ui.components.StyledLineLoader
-import com.example.sharespace.core.ui.theme.AquaAccent
-import com.example.sharespace.core.ui.components.Avatar
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.IconButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TasksListScreen(
-    onNavigateBack: () -> Unit,
-    onAddTaskClick: () -> Unit = {},
-    onEditTaskClick: (Int) -> Unit
-)
- {
-     val context = LocalContext.current
-     val userSessionRepository = (context.applicationContext as ShareSpaceApplication).container.userSessionRepository
-     val roomId by userSessionRepository.activeRoomIdFlow.collectAsState(initial = null)
-     val authToken by userSessionRepository.userTokenFlow.collectAsState(initial = null)
-     var taskSummary by remember { mutableStateOf(listOf<String>()) }
-     var allTasks by remember { mutableStateOf(listOf<ApiTask>()) }
-     var inProgressTasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
-     var completedTasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
-     var error by remember { mutableStateOf<String?>(null) }
-     var isLoading by remember { mutableStateOf(true) }
-     var profilePicMap by remember { mutableStateOf<Map<Int, String>>(emptyMap()) }
+    onNavigateBack: () -> Unit, onAddTaskClick: () -> Unit = {}, onEditTaskClick: (Int) -> Unit
+) {
+    val context = LocalContext.current
+    val userSessionRepository =
+        (context.applicationContext as ShareSpaceApplication).container.userSessionRepository
+    val roomId by userSessionRepository.activeRoomIdFlow.collectAsState(initial = null)
+    val authToken by userSessionRepository.userTokenFlow.collectAsState(initial = null)
+    var taskSummary by remember { mutableStateOf(listOf<String>()) }
+    var allTasks by remember { mutableStateOf(listOf<ApiTask>()) }
+    var inProgressTasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
+    var completedTasks by remember { mutableStateOf<List<TaskData>>(emptyList()) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    var profilePicMap by remember { mutableStateOf<Map<Int, String>>(emptyMap()) }
 
-     if (roomId == null) {
-         StyledCircleLoader()
-         return
-     }
+    if (roomId == null) {
+        StyledCircleLoader()
+        return
+    }
     // Fetch task data from API
-
     LaunchedEffect(Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 Log.e("token is ", "Fis is is  $authToken")
-                // ← Replace with real token or maybe just ignore it
-                //Log.d("ID", "Fetched ROOMID: $roomId")
-                val response = roomId?.let { authToken?.let { it1 ->
-                    ApiClient.apiService.getTasksForRoom(it,
-                        it1
-                    )
-                } }
-//                if (response != null) {
-//                    Log.d("TASKS", "Fetched tasks: ${response.body()}")
-//                }
-
+                val response = roomId?.let {
+                    authToken?.let { it1 ->
+                        ApiClient.apiService.getTasksForRoom(
+                            it, it1
+                        )
+                    }
+                }
                 if (response != null) {
                     if (response.isSuccessful) {
                         val apiTasks = response.body() ?: emptyList()
@@ -128,17 +115,15 @@ fun TasksListScreen(
                         allTasks = filteredTasks
 
                         // Extract all unique user IDs from the task statuses
-                        val userIds =
-                            filteredTasks.flatMap { it.statuses.keys }.mapNotNull { it.toIntOrNull() }
-                                .toSet()
+                        val userIds = filteredTasks.flatMap { it.statuses.keys }
+                            .mapNotNull { it.toIntOrNull() }.toSet()
 
                         // Fetch user details for each ID
                         val userIdToName = mutableMapOf<String, String>()
                         val userIdToProfilePicUrl = mutableMapOf<Int, String>()
 
                         //Count how many tasks each user has in total & how many they completed
-                        val userTaskMap =
-                            mutableMapOf<String, Pair<Int, Int>>()
+                        val userTaskMap = mutableMapOf<String, Pair<Int, Int>>()
 
                         for (task in filteredTasks) {
                             for ((userId, status) in task.statuses) {
@@ -151,12 +136,11 @@ fun TasksListScreen(
                         // After fetching user details
                         for (id in userIds) {
                             try {
-                                val userResp =
-                                    authToken?.let {
-                                        ApiClient.apiService.getUserDetailsById(id,
-                                            it
-                                        )
-                                    }
+                                val userResp = authToken?.let {
+                                    ApiClient.apiService.getUserDetailsById(
+                                        id, it
+                                    )
+                                }
                                 if (userResp != null) {
                                     if (userResp.isSuccessful) {
                                         userResp.body()?.let {
@@ -185,15 +169,15 @@ fun TasksListScreen(
 
                         for (id in userIds) {
                             try {
-                                val userResp =
-                                    authToken?.let {
-                                        ApiClient.apiService.getUserDetailsById(id,
-                                            it
-                                        )
-                                    }
+                                val userResp = authToken?.let {
+                                    ApiClient.apiService.getUserDetailsById(
+                                        id, it
+                                    )
+                                }
                                 if (userResp != null) {
                                     if (userResp.isSuccessful) {
-                                        userResp.body()?.let { userIdToName[id.toString()] = it.name }
+                                        userResp.body()
+                                            ?.let { userIdToName[id.toString()] = it.name }
                                     }
                                 }
                             } catch (_: Exception) {
@@ -246,73 +230,71 @@ fun TasksListScreen(
         }
     }
 
-     fun updateTaskLists(apiTasks: List<ApiTask>) {
-         val today = LocalDate.now()
-         val thirtyDaysAgo = today.minusDays(30)
+    fun updateTaskLists(apiTasks: List<ApiTask>) {
+        val today = LocalDate.now()
+        val thirtyDaysAgo = today.minusDays(30)
 
-         val filteredTasks = apiTasks.filter { task ->
-             try {
-                 val deadline = LocalDate.parse(task.deadline.substringBefore("T"))
-                 !deadline.isAfter(today) && !deadline.isBefore(thirtyDaysAgo)
-             } catch (e: Exception) {
-                 false
-             }
-         }
+        val filteredTasks = apiTasks.filter { task ->
+            try {
+                val deadline = LocalDate.parse(task.deadline.substringBefore("T"))
+                !deadline.isAfter(today) && !deadline.isBefore(thirtyDaysAgo)
+            } catch (e: Exception) {
+                false
+            }
+        }
 
-         allTasks = filteredTasks
+        allTasks = filteredTasks
 
-         // Recalculate status summaries
-         val userTaskMap = mutableMapOf<String, Pair<Int, Int>>()
-         for (task in filteredTasks) {
-             for ((userId, status) in task.statuses) {
-                 val (completed, total) = userTaskMap[userId] ?: (0 to 0)
-                 val newCompleted = if (status == "COMPLETE") completed + 1 else completed
-                 userTaskMap[userId] = (newCompleted to total + 1)
-             }
-         }
+        // Recalculate status summaries
+        val userTaskMap = mutableMapOf<String, Pair<Int, Int>>()
+        for (task in filteredTasks) {
+            for ((userId, status) in task.statuses) {
+                val (completed, total) = userTaskMap[userId] ?: (0 to 0)
+                val newCompleted = if (status == "COMPLETE") completed + 1 else completed
+                userTaskMap[userId] = (newCompleted to total + 1)
+            }
+        }
 
-         val generatedSummary = userTaskMap.entries.map { (userId, pair) ->
-             val name = userId // If you want to show userId or retrieve real name, modify this
-             "$name - ${pair.first}/${pair.second} Complete"
-         }
-         taskSummary = generatedSummary
+        val generatedSummary = userTaskMap.entries.map { (userId, pair) ->
+            val name = userId // If you want to show userId or retrieve real name, modify this
+            "$name - ${pair.first}/${pair.second} Complete"
+        }
+        taskSummary = generatedSummary
 
-         // Recompute UI list
-         val mapped = filteredTasks.map { task ->
-             val statusValues = task.statuses.values.toSet()
+        // Recompute UI list
+        val mapped = filteredTasks.map { task ->
+            val statusValues = task.statuses.values.toSet()
 
-             val finalStatus = when {
-                 statusValues.isEmpty() -> "ASSIGNED"
-                 statusValues.all { it == "COMPLETE" } -> "COMPLETE"
-                 statusValues.any { it == "IN-PROGRESS" } -> "IN-PROGRESS"
-                 else -> "ASSIGNED"
-             }
+            val finalStatus = when {
+                statusValues.isEmpty() -> "ASSIGNED"
+                statusValues.all { it == "COMPLETE" } -> "COMPLETE"
+                statusValues.any { it == "IN-PROGRESS" } -> "IN-PROGRESS"
+                else -> "ASSIGNED"
+            }
 
-             val assigneeNames = task.statuses.keys.map { it }
-             val assigneeIds = task.statuses.keys.mapNotNull { it.toIntOrNull() }
+            val assigneeNames = task.statuses.keys.map { it }
+            val assigneeIds = task.statuses.keys.mapNotNull { it.toIntOrNull() }
 
-             TaskData(
-                 id = task.id,
-                 title = task.title,
-                 status = finalStatus,
-                 assignees = assigneeNames,
-                 assigneeIds = assigneeIds
-             )
-         }
-
-         inProgressTasks = mapped.filter { it.status != "COMPLETE" }
-         completedTasks = mapped.filter { it.status == "COMPLETE" }
-     }
-
-
-     Scaffold(
-        topBar = {
-            NavigationHeader(
-                title = "Task Overview",
-                onNavigateBack = onNavigateBack
+            TaskData(
+                id = task.id,
+                title = task.title,
+                status = finalStatus,
+                assignees = assigneeNames,
+                assigneeIds = assigneeIds
             )
         }
-    ) { innerPadding ->
+
+        inProgressTasks = mapped.filter { it.status != "COMPLETE" }
+        completedTasks = mapped.filter { it.status == "COMPLETE" }
+    }
+
+
+    Scaffold(
+        topBar = {
+            NavigationHeader(
+                title = "Task Overview", onNavigateBack = onNavigateBack
+            )
+        }) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -321,12 +303,12 @@ fun TasksListScreen(
         ) {
             // Task Summary
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
             ) {
                 if (isLoading) {
-                    StyledCircleLoader(modifier = Modifier
-                        .size(80.dp))
+                    StyledCircleLoader(
+                        modifier = Modifier.size(80.dp)
+                    )
                 } else {
                     Box(
                         modifier = Modifier
@@ -364,9 +346,7 @@ fun TasksListScreen(
                     } else {
                         taskSummary.forEach {
                             Text(
-                                text = it,
-                                fontSize = 12.sp,
-                                lineHeight = 14.sp
+                                text = it, fontSize = 12.sp, lineHeight = 14.sp
                             )
                         }
                     }
@@ -445,17 +425,25 @@ fun TasksListScreen(
                                     try {
                                         Log.e("token is ", "is is is  $authToken")
                                         val token = "Bearer ${authToken ?: ""}"
-                                        val response = ApiClient.apiService.deleteTask(taskId, token)
+                                        val response =
+                                            ApiClient.apiService.deleteTask(taskId, token)
                                         if (response.isSuccessful) {
                                             // After successful deletion, reload tasks
-                                            val updatedTasks = roomId?.let { ApiClient.apiService.getTasksForRoom(it, token) }
+                                            val updatedTasks = roomId?.let {
+                                                ApiClient.apiService.getTasksForRoom(
+                                                    it, token
+                                                )
+                                            }
                                             if (updatedTasks != null && updatedTasks.isSuccessful) {
                                                 val apiTasks = updatedTasks.body() ?: emptyList()
                                                 updateTaskLists(apiTasks)
                                                 isLoading = false
                                             }
                                         } else {
-                                            Log.e("DELETE_TASK", "Failed to delete task: ${response.code()}")
+                                            Log.e(
+                                                "DELETE_TASK",
+                                                "Failed to delete task: ${response.code()}"
+                                            )
                                         }
                                     } catch (e: Exception) {
                                         Log.e("DELETE_TASK", "Error during deletion: ${e.message}")
@@ -479,24 +467,31 @@ fun TasksListScreen(
                                     try {
                                         Log.e("token is ", "is is is  $authToken")
                                         val token = "Bearer ${authToken ?: ""}"
-                                        val response = ApiClient.apiService.deleteTask(taskId, token)
+                                        val response =
+                                            ApiClient.apiService.deleteTask(taskId, token)
                                         if (response.isSuccessful) {
                                             // After successful deletion, reload tasks
-                                            val updatedTasks = roomId?.let { ApiClient.apiService.getTasksForRoom(it, token) }
+                                            val updatedTasks = roomId?.let {
+                                                ApiClient.apiService.getTasksForRoom(
+                                                    it, token
+                                                )
+                                            }
                                             if (updatedTasks != null && updatedTasks.isSuccessful) {
                                                 val apiTasks = updatedTasks.body() ?: emptyList()
                                                 updateTaskLists(apiTasks)
                                                 isLoading = false
                                             }
                                         } else {
-                                            Log.e("DELETE_TASK", "Failed to delete task: ${response.code()}")
+                                            Log.e(
+                                                "DELETE_TASK",
+                                                "Failed to delete task: ${response.code()}"
+                                            )
                                         }
                                     } catch (e: Exception) {
                                         Log.e("DELETE_TASK", "Error during deletion: ${e.message}")
                                     }
                                 }
-                            }
-                        )
+                            })
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
@@ -511,10 +506,7 @@ fun TasksListScreen(
                         .height(48.dp),
                     buttonType = ButtonType.Primary
                 )
-
             }
-
-
         }
     }
 }
@@ -554,13 +546,11 @@ fun CompletedTaskRow(
     var menuExpanded by remember { mutableStateOf(false) }
 
     Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
+        verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
     ) {
         // Overlapping Avatars
         Row(
-            modifier = Modifier.height(36.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.height(36.dp), verticalAlignment = Alignment.CenterVertically
         ) {
             val maxAvatars = 2
             val displayedMembers = task.assigneeIds.take(maxAvatars)
@@ -597,23 +587,15 @@ fun CompletedTaskRow(
             }
 
             DropdownMenu(
-                expanded = menuExpanded,
-                onDismissRequest = { menuExpanded = false }
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Edit") },
-                    onClick = {
-                        menuExpanded = false
-                        onEditTaskClick(task.id)
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Delete") },
-                    onClick = {
-                        menuExpanded = false
-                        onDeleteTaskClick(task.id)
-                    }
-                )
+                expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                DropdownMenuItem(text = { Text("Edit") }, onClick = {
+                    menuExpanded = false
+                    onEditTaskClick(task.id)
+                })
+                DropdownMenuItem(text = { Text("Delete") }, onClick = {
+                    menuExpanded = false
+                    onDeleteTaskClick(task.id)
+                })
             }
         }
     }

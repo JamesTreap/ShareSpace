@@ -22,10 +22,7 @@ import com.example.sharespace.core.ui.theme.TextSecondary
 
 @Composable
 fun RoomSectionHeader(
-    title: String,
-    actionText: String,
-    onAction: () -> Unit,
-    modifier: Modifier = Modifier
+    title: String, actionText: String, onAction: () -> Unit, modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
@@ -34,20 +31,14 @@ fun RoomSectionHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // The title text on the left
         Text(
-            text = title,
-            style = MaterialTheme.typography.bodyMedium,
-            color = TextSecondary
+            text = title, style = MaterialTheme.typography.bodyMedium, color = TextSecondary
         )
-
-        // The clickable action text on the right
         Button(
             modifier = Modifier.height(30.dp),
             onClick = onAction,
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.White,
-                contentColor = AquaAccent
+                containerColor = Color.White, contentColor = AquaAccent
             ),
             shape = RoundedCornerShape(25),
             border = BorderStroke(1.dp, Color.LightGray),
@@ -55,8 +46,7 @@ fun RoomSectionHeader(
             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 3.dp),
         ) {
             Text(
-                text = "+ Create Room",
-                style = MaterialTheme.typography.bodyMedium
+                text = "+ Create Room", style = MaterialTheme.typography.bodyMedium
             )
         }
     }

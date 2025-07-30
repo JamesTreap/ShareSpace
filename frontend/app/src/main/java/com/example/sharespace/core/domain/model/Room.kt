@@ -12,7 +12,6 @@ data class Room(
     val address: String,
     val description: String
 ) {
-    // Secondary constructor that takes an ApiRoom object
     constructor(apiRoom: ApiRoom) : this(
         id = apiRoom.id,
         name = apiRoom.name,

@@ -97,9 +97,6 @@ class SignupViewModel(
         viewModelScope.launch {
             signupUiState = currentInputState.copy(isLoggingIn = true, errorMessage = null)
             try {
-                // Ensure authRepository is available and used here
-                // I passed in the username for the email field so that
-                // the unique requirement is met for the email field
                 val response = authRepository.createAccount(username, password, username)
                 val token =
                     response.token
@@ -151,8 +148,6 @@ class SignupViewModel(
      * Call this after navigation has been handled by the UI to reset the state.
      */
     fun onSignupHandled() {
-        // Reset to Stable state. You can choose to clear inputs or preserve them.
-        // Clearing them is often standard after a successful action and navigation.
         signupUiState = SignupUiState.Stable()
     }
 
