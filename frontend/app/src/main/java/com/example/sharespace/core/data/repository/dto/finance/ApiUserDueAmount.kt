@@ -1,6 +1,12 @@
 package com.example.sharespace.core.data.repository.dto.finance
 
+import com.google.gson.annotations.SerializedName
+
+
 data class ApiUserDueAmount(
-    val user_id: String,
-    val amount_due: Double
+    @SerializedName("user_id") // <--- CRITICAL: Add this
+    val userId: Int,
+
+    @SerializedName("amount_due") // <--- CRITICAL: Add this
+    val amountDue: Double
 )

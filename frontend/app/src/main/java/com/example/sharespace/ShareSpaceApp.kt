@@ -124,7 +124,9 @@ fun ShareSpaceApp(
         composable(route = ShareSpaceScreens.RoomSummary.name) {
             RoomSummaryScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onViewBillsClick = { navController.navigate(ShareSpaceScreens.BillsList.name) },
+                // onViewBillsClick is now onNavigateToAllBills
+                onNavigateToAllBills = { navController.navigate(ShareSpaceScreens.BillsList.name) },
+                onNavigateToAddBill = { navController.navigate(ShareSpaceScreens.AddBill.name) }, // New: Navigate to AddBill screen
                 onAddRoommateClick = { navController.navigate(ShareSpaceScreens.AddRoommate.name) },
                 onAddTaskClick = { navController.navigate(ShareSpaceScreens.AddTask.name) },
                 onViewTasksClick = { navController.navigate(ShareSpaceScreens.TasksList.name) },

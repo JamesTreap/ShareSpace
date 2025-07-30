@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState // Import for scrollable column
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll // Import for scrollable column
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
+// import androidx.compose.material.icons.filled.Person // Not used directly in this screen
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -28,10 +30,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.sharespace.room.ui.roomSummary.components.CalendarSection
+// import com.example.sharespace.room.ui.roomSummary.components.CalendarSection // Keep if re-added
+import com.example.sharespace.room.ui.roomSummary.components.RecentBillsSection // Import new section
 import com.example.sharespace.room.ui.roomSummary.components.RoomSummaryTopAppBar
 import com.example.sharespace.room.ui.roomSummary.components.RoommatesSection
 import com.example.sharespace.room.ui.roomSummary.components.UpcomingTasksSection
+import com.example.sharespace.room.viewmodel.BillsUiState // Import BillsUiState
 import com.example.sharespace.room.viewmodel.RoomDetailsUiState
 import com.example.sharespace.room.viewmodel.RoomSummaryRoommatesUiState
 import com.example.sharespace.room.viewmodel.RoomSummaryViewModel
@@ -40,21 +44,23 @@ import com.example.sharespace.room.viewmodel.TasksUiState
 @Composable
 fun RoomSummaryScreen(
     viewModel: RoomSummaryViewModel = viewModel(factory = RoomSummaryViewModel.Factory),
-    onViewBillsClick: () -> Unit, // Keep if RecentBillsSection is re-added
+    // onViewBillsClick: () -> Unit, // Replaced by onNavigateToAllBills
     onAddRoommateClick: () -> Unit,
     onAddTaskClick: () -> Unit,
     onViewTasksClick: () -> Unit,
-    onFinanceManagerClick: () -> Unit, // Assuming this is for a future feature
-    onNavigateBack: () -> Unit
+    onFinanceManagerClick: () -> Unit,
+    onNavigateBack: () -> Unit,
+    onNavigateToAddBill: () -> Unit, // New: For navigating to add bill screen
+    onNavigateToAllBills: () -> Unit // New: For navigating to the full bills list
 ) {
-    // val bills by viewModel.bills.collectAsState() // Keep if used
-
     val roomDetailsState: RoomDetailsUiState = viewModel.roomDetailsUiState
     val roommatesUiState: RoomSummaryRoommatesUiState = viewModel.roommatesUiState
     val tasksUiState: TasksUiState = viewModel.tasksUiState
+    val billsUiState: BillsUiState = viewModel.billsUiState
 
-    // Correctly collect StateFlow
-    val currentUserId: String? by viewModel.currentUserIdString.collectAsState()
+    // Collect both String and Int versions of currentUserId
+    val currentUserIdString: String? by viewModel.currentUserIdString.collectAsState()
+    val currentUserIdInt: Int? by viewModel.currentUserIdInt.collectAsState()
 
     val calendarUiState by viewModel.calendarUiState.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
@@ -131,12 +137,29 @@ fun RoomSummaryScreen(
                 modifier = Modifier.padding(horizontal = 12.dp)
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp)) // Spacing between sections
 
+            // Recent Bills Section
+            RecentBillsSection(
+                billsUiState = billsUiState,
+                roommatesUiState = roommatesUiState,
+                currentUserId = currentUserIdInt, // Pass the Int version
+                onAddBill = onNavigateToAddBill,
+                onPayBill = { billId, amount ->
+                    viewModel.onPayBillClicked(billId, amount) // Handle via ViewModel
+                },
+                onViewAllBills = onNavigateToAllBills,
+                onRetry = viewModel::fetchBillsForSummary, // Retry fetching bills
+                modifier = Modifier.padding(horizontal = 0.dp) // Section manages its internal padding
+            )
+
+            Spacer(Modifier.height(16.dp)) // Spacing between sections
+
+            // Upcoming Tasks Section
             UpcomingTasksSection(
                 tasksUiState = tasksUiState,
-                roommatesUiState = roommatesUiState,
-                currentUserId = currentUserId,
+                roommatesUiState = roommatesUiState, // Pass roommates state
+                currentUserId = currentUserIdString, // Tasks section might use String ID
                 onAdd = onAddTaskClick,
                 onToggleDone = { task, newStatus ->
                     viewModel.updateTaskStatus(task, newStatus)

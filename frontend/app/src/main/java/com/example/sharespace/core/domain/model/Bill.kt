@@ -1,6 +1,15 @@
 package com.example.sharespace.core.domain.model
 
 import com.example.sharespace.core.data.repository.dto.finance.ApiBill
+
+data class UserDueAmount(
+    val userId: Int, val amountDue: Double
+)
+
+data class BillMetadata(
+    val users: List<UserDueAmount>
+)
+
 data class Bill(
     val id: Int,
     val title: String,
@@ -23,24 +32,12 @@ data class Bill(
         payerUserId = apiBill.payerUserId,
         scheduledDate = apiBill.scheduledDate,
         type = apiBill.type,
-        metadata = apiBill.metadata?.let {
+        metadata = apiBill.metadata?.let { apiMetadata ->
             BillMetadata(
-                users = it.users.map { user ->
+                users = apiMetadata.users.map { apiUserDue ->
                     UserDueAmount(
-                        userId = user.user_id,
-                        amountDue = user.amount_due
+                        userId = apiUserDue.userId, amountDue = apiUserDue.amountDue
                     )
-                }
-            )
-        }
-    )
+                })
+        })
 }
-
-data class BillMetadata(
-    val users: List<UserDueAmount>
-)
-
-data class UserDueAmount(
-    val userId: String,
-    val amountDue: Double
-)

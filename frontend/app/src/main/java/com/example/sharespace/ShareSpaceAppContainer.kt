@@ -68,19 +68,6 @@ class DefaultShareSpaceAppContainer(applicationContext: Context) : ShareSpaceApp
         NetworkCalendarRepository(apiService = apiService)
     }
 
-//    val userRepository: UserRepository = UserRepository(
-//        apiService = apiService,
-//        tokenStorage = tokenStorage
-//    )
-//
-
-//
-//    val financeRepository: FinanceRepository = FinanceRepository(
-//        apiService = apiService,
-//        tokenStorage = tokenStorage
-//    )
-
-    // Add this new repository
     override val userRepository: UserRepository by lazy {
         NetworkUserRepository(apiService = apiService)
     }

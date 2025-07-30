@@ -12,13 +12,14 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.sharespace.ShareSpaceApplication
 import com.example.sharespace.core.data.repository.CalendarRepository
+import com.example.sharespace.core.data.repository.FinanceRepository
 import com.example.sharespace.core.data.repository.RoomRepository
 import com.example.sharespace.core.data.repository.TaskRepository
 import com.example.sharespace.core.data.repository.UserSessionRepository
 import com.example.sharespace.core.data.repository.dto.tasks.ApiAssignee
 import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskRequest
 import com.example.sharespace.core.data.repository.dto.tasks.ApiUpdateTaskResponse
-import com.example.sharespace.core.domain.model.Bill // Keep if bills are used
+import com.example.sharespace.core.domain.model.Bill
 import com.example.sharespace.core.domain.model.Room
 import com.example.sharespace.core.domain.model.Task
 import com.example.sharespace.core.domain.model.User
@@ -62,11 +63,22 @@ sealed class CalendarUiState {
     data class Error(val message: String) : CalendarUiState()
 }
 
+// Ensure this matches the definition in your RecentBillsSection
+// If it's from com.example.sharespace.finance.viewmodel.BillsUiState,
+// ensure that definition is:
+sealed interface BillsUiState { // This definition should be the single source of truth
+    data object Loading : BillsUiState
+    data class Error(val message: String) : BillsUiState
+    data object Empty : BillsUiState
+    data class Success(val bills: List<Bill>) : BillsUiState
+}
+
 class RoomSummaryViewModel(
     private val roomRepository: RoomRepository,
     private val userSessionRepository: UserSessionRepository,
     private val taskRepository: TaskRepository,
-    private val calendarRepository: CalendarRepository
+    private val calendarRepository: CalendarRepository,
+    private val financeRepository: FinanceRepository,
 ) : ViewModel() {
 
     // Properties for UI states
@@ -79,6 +91,9 @@ class RoomSummaryViewModel(
     var tasksUiState: TasksUiState by mutableStateOf(TasksUiState.Loading) // Start as Loading
         private set
 
+    var billsUiState: BillsUiState by mutableStateOf(BillsUiState.Loading) // Already added by you
+        private set
+
     private val _selectedDate = MutableStateFlow(LocalDate.now())
     val selectedDate: StateFlow<LocalDate> = _selectedDate.asStateFlow()
 
@@ -88,56 +103,56 @@ class RoomSummaryViewModel(
     private val _calendarUiState = MutableStateFlow<CalendarUiState>(CalendarUiState.Loading)
     val calendarUiState: StateFlow<CalendarUiState> = _calendarUiState.asStateFlow()
 
-
-    // StateFlows for bills (if needed)
-    private val _bills = MutableStateFlow<List<Bill>>(emptyList())
-    val bills: StateFlow<List<Bill>> = _bills.asStateFlow()
-
-    // Exposed currentUserId as a String StateFlow for the UI
     val currentUserIdString: StateFlow<String?> = userSessionRepository.currentUserIdFlow
         .map { userIdInt -> userIdInt?.toString() }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000L),
-            initialValue = null // Initially null until the flow emits
+            initialValue = null
         )
 
-    private var currentRoomIdInternal: Int? = null // For internal ViewModel use
+    // Exposed currentUserId as Int StateFlow for BillsLazyRow compatibility
+    val currentUserIdInt: StateFlow<Int?> = userSessionRepository.currentUserIdFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            initialValue = null
+        )
+
+    private var currentRoomIdInternal: Int? = null
 
     init {
         viewModelScope.launch {
-            // Set initial loading states for all sections
             roomDetailsUiState = RoomDetailsUiState.Loading
             roommatesUiState = RoomSummaryRoommatesUiState.Loading
             tasksUiState = TasksUiState.Loading
+            billsUiState = BillsUiState.Loading // Initialize bills state to Loading
 
-            // 1. Wait for a non-null activeRoomIdFlow
             val roomId = userSessionRepository.activeRoomIdFlow.first { it != null }
-            currentRoomIdInternal = roomId // Store it for use in fetch functions
+            currentRoomIdInternal = roomId
             Log.i(TAG, "Active Room ID received: $roomId")
 
-            // 2. Wait for a non-null currentUserIdString
-            //    currentUserIdString itself depends on userSessionRepository.currentUserIdFlow
-            val userId = currentUserIdString.first { it != null }
-            Log.i(TAG, "Current User ID received: $userId")
+            // Wait for currentUserIdInt for bill-related operations if they need Int
+            val userIdInt = currentUserIdInt.first { it != null } // Using Int version for bills
+            Log.i(TAG, "Current User ID (Int) received: $userIdInt")
 
-            // 3. Now that both critical IDs are available, proceed to fetch data
-            //    If any of these fetches can proceed with only one ID, you can move them up.
-            //    For this example, we assume all three need both (or at least roomID, and tasks need userID).
-            if (roomId != null && userId != null) { // Double check, though `first { it != null }` should ensure this
+            // Wait for currentUserIdString for other operations
+            val userIdString = currentUserIdString.first { it != null }
+            Log.i(TAG, "Current User ID (String) received: $userIdString")
+
+
+            if (roomId != null && userIdInt != null && userIdString != null) {
                 fetchRoomDetails()
                 fetchRoomMembers()
-                fetchTasks()
-                fetchCalendarData()
+                fetchTasks() // Uses userIdString implicitly via currentUserIdString.value
+                fetchCalendarData() // Uses _selectedDate, token, roomId
+                fetchBillsForSummary() // Add call to fetch bills
             } else {
-                // This case should ideally not be reached if `first { it != null }` works as expected
-                // and UserSessionRepository correctly provides these IDs.
-                // If it is reached, it indicates a problem upstream (e.g., user not logged in, error in session repo)
-                Log.e(TAG, "Critical error: RoomID or UserID is null after waiting. RoomId: $roomId, UserId: $userId")
+                Log.e(TAG, "Critical error: RoomID or UserID is null after waiting. RoomId: $roomId, UserIdInt: $userIdInt, UserIdString: $userIdString")
                 roomDetailsUiState = RoomDetailsUiState.Error
                 roommatesUiState = RoomSummaryRoommatesUiState.Error
                 tasksUiState = TasksUiState.Error
-                // Consider navigating away or showing a global error message
+                billsUiState = BillsUiState.Error("User or room info missing.") // Set bills error state
             }
         }
     }
@@ -145,23 +160,18 @@ class RoomSummaryViewModel(
     fun fetchRoomDetails() {
         val roomId = currentRoomIdInternal ?: run {
             Log.w(TAG, "Cannot fetch room details, Room ID not yet available.")
-            roomDetailsUiState = RoomDetailsUiState.Error // Or keep Loading if init is still running
+            roomDetailsUiState = RoomDetailsUiState.Error
             return
         }
-
         viewModelScope.launch {
-            roomDetailsUiState = RoomDetailsUiState.Loading // Set loading for this specific fetch
+            roomDetailsUiState = RoomDetailsUiState.Loading
             try {
                 val token = userSessionRepository.userTokenFlow.first()
                 if (token == null) {
-                    Log.w(TAG, "No token available. Cannot fetch room details.")
-                    roomDetailsUiState = RoomDetailsUiState.Error
-                    return@launch
+                    roomDetailsUiState = RoomDetailsUiState.Error; return@launch
                 }
                 val apiRoomDetails = roomRepository.getRoomDetails(token = token, roomId = roomId)
-                val domainRoomDetails = Room(apiRoomDetails)
-                roomDetailsUiState = RoomDetailsUiState.Success(domainRoomDetails)
-                Log.i(TAG, "Room details fetched successfully for roomId: $roomId")
+                roomDetailsUiState = RoomDetailsUiState.Success(Room(apiRoomDetails))
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching room details for roomId: $roomId", e)
                 roomDetailsUiState = RoomDetailsUiState.Error
@@ -175,20 +185,15 @@ class RoomSummaryViewModel(
             roommatesUiState = RoomSummaryRoommatesUiState.Error
             return
         }
-
         viewModelScope.launch {
             roommatesUiState = RoomSummaryRoommatesUiState.Loading
             try {
                 val token = userSessionRepository.userTokenFlow.first()
                 if (token == null) {
-                    Log.w(TAG, "No token available. Cannot fetch room members.")
-                    roommatesUiState = RoomSummaryRoommatesUiState.Error
-                    return@launch
+                    roommatesUiState = RoomSummaryRoommatesUiState.Error; return@launch
                 }
                 val apiMembers = roomRepository.getRoomMembers(token = token, roomId = roomId)
-                val domainMembers = apiMembers.map { apiUser -> User(apiUser) }
-                roommatesUiState = RoomSummaryRoommatesUiState.Success(domainMembers)
-                Log.i(TAG, "Room members fetched successfully for roomId: $roomId, Count: ${domainMembers.size}")
+                roommatesUiState = RoomSummaryRoommatesUiState.Success(apiMembers.map { User(it) })
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching room members for roomId: $roomId", e)
                 roommatesUiState = RoomSummaryRoommatesUiState.Error
@@ -235,31 +240,152 @@ class RoomSummaryViewModel(
         }
     }
 
-    fun updateTaskStatus(taskToUpdate: Task, newIndividualStatus: String) {
-        val currentLoggedInUserId = currentUserIdString.value
-        if (currentLoggedInUserId == null) {
-            Log.w(TAG, "Cannot update task status, current user ID is not available.")
-            // Optionally, show a transient error to the user
+//    fun fetchBillsForSummary() {
+//        val roomId = currentRoomIdInternal ?: run {
+//            Log.w(TAG, "Cannot fetch bills, Room ID not yet available.")
+//            billsUiState = BillsUiState.Error("Room ID not available.")
+//            return
+//        }
+//        // currentUserIdInt is used by RecentBillsSection for filtering logic with bills.
+//        // The fetch itself might not need userId, but the display logic does.
+//        if (currentUserIdInt.value == null) {
+//            Log.w(TAG, "Cannot fetch bills for display, User ID (Int) not yet available.")
+//            billsUiState = BillsUiState.Loading // Or Error, depending on whether it's recoverable
+//            return
+//        }
+//
+//        viewModelScope.launch {
+//            billsUiState = BillsUiState.Loading
+//            try {
+//                val token = userSessionRepository.userTokenFlow.first()
+//                if (token == null) {
+//                    Log.w(TAG, "No token available. Cannot fetch bills.")
+//                    billsUiState = BillsUiState.Error("Authentication required.")
+//                    return@launch
+//                }
+//
+//                // Use the dedicated getBillList method from FinanceRepository
+//                val apiBillDtos = financeRepository.getBillList(token, roomId)
+//
+//                // Map ApiBill DTOs to domain Bill model
+//                val domainBills = apiBillDtos.map { apiBillDto -> Bill(apiBillDto) }
+//
+//                billsUiState = if (domainBills.isEmpty()) {
+//                    BillsUiState.Empty
+//                } else {
+//                    BillsUiState.Success(domainBills)
+//                }
+//                Log.i(TAG, "Bills for summary fetched successfully using getBillList for roomId: $roomId, Count: ${domainBills.size}")
+//
+//            } catch (e: HttpException) {
+//                val errorBody = e.response()?.errorBody()?.string()
+//                Log.e(TAG, "HTTP error fetching bills: ${e.code()}, $errorBody", e)
+//                billsUiState = BillsUiState.Error("Network error: ${e.code()}")
+//            } catch (e: IOException) {
+//                Log.e(TAG, "Network error fetching bills", e)
+//                billsUiState = BillsUiState.Error("Network connection issue.")
+//            } catch (e: Exception) {
+//                Log.e(TAG, "Error fetching bills", e)
+//                billsUiState = BillsUiState.Error(e.message ?: "Unknown error fetching bills.")
+//            }
+//        }
+//    }
+
+    // ... (existing imports)
+// import com.example.sharespace.core.domain.model.Bill // Make sure Bill is imported
+
+// ... (inside your RoomSummaryViewModel class)
+
+    fun fetchBillsForSummary() {
+        val roomId = currentRoomIdInternal ?: run {
+            Log.w(TAG, "Cannot fetch bills, Room ID not yet available.")
+            billsUiState = BillsUiState.Error("Room ID not available.") // Kept your original assignment
             return
         }
-
-        val currentTasks = tasksUiState
-        val tasksBeforeThisUpdate: List<Task> = if (currentTasks is TasksUiState.Success) {
-            currentTasks.tasks
-        } else {
-            Log.w(TAG, "Cannot update task, current tasks state is not Success: $currentTasks")
-            // Potentially show error or prevent update if tasks aren't even loaded
+        // currentUserIdInt is used by RecentBillsSection for filtering logic with bills.
+        // The fetch itself might not need userId, but the display logic does.
+        if (currentUserIdInt.value == null) {
+            Log.w(TAG, "Cannot fetch bills for display, User ID (Int) not yet available.")
+            billsUiState = BillsUiState.Loading // Kept your original assignment (Or Error, depending on whether it's recoverable)
             return
         }
 
         viewModelScope.launch {
-            val token = userSessionRepository.userTokenFlow.first()
-            if (token == null) {
+            billsUiState = BillsUiState.Loading // Kept your original assignment
+            try {
+                val token = userSessionRepository.userTokenFlow.first()
+                if (token == null) {
+                    Log.w(TAG, "No token available. Cannot fetch bills.")
+                    billsUiState = BillsUiState.Error("Authentication required.") // Kept your original assignment
+                    return@launch
+                }
+
+                Log.d(TAG, "Fetching bills for summary for roomId: $roomId") // Logging
+                val apiBillDtos = financeRepository.getBillList(token, roomId)
+                Log.d(TAG, "Received ${apiBillDtos.size} ApiBill DTOs from repository.") // Logging
+
+                // Map ApiBill DTOs to domain Bill model
+                val domainBills = apiBillDtos.map { apiBillDto ->
+                    // Optional: Log each DTO before mapping if you suspect mapping issues
+                    // Log.v(TAG, "Mapping ApiBill DTO: $apiBillDto")
+                    Bill(apiBillDto)
+                }
+
+                // *** ADDED LOGGING FOR EACH BILL ***
+                if (domainBills.isNotEmpty()) {
+                    Log.i(TAG, "Successfully mapped ${domainBills.size} bills. Details for roomId: $roomId:")
+                    domainBills.forEachIndexed { index, bill ->
+                        // Using bill.toString(). Override toString() in your Bill, BillMetadata,
+                        // and UserDueAmount domain models for more readable output.
+                        Log.d(TAG, "Bill ${index + 1}: $bill")
+
+                        // Example of more detailed manual logging if toString() isn't customized:
+                        // Log.d(TAG, "Bill ${index + 1}: id=${bill.id}, title='${bill.title}', amount=${bill.amount}, payerUserId=${bill.payerUserId}, metadataUsersCount=${bill.metadata?.users?.size ?: 0}")
+                    }
+                } else {
+                    Log.i(TAG, "No bills found or mapped for roomId: $roomId.")
+                }
+                // *** END OF ADDED LOGGING ***
+
+                billsUiState = if (domainBills.isEmpty()) { // Kept your original assignment
+                    BillsUiState.Empty
+                } else {
+                    BillsUiState.Success(domainBills)
+                }
+                Log.i(TAG, "Bills for summary fetched successfully using getBillList for roomId: $roomId, Count: ${domainBills.size}")
+
+            } catch (e: HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                Log.e(TAG, "HTTP error fetching bills: ${e.code()}, $errorBody", e)
+                billsUiState = BillsUiState.Error("Network error: ${e.code()}") // Kept your original assignment
+            } catch (e: IOException) {
+                Log.e(TAG, "Network error fetching bills", e)
+                billsUiState = BillsUiState.Error("Network connection issue.") // Kept your original assignment
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching bills", e)
+                billsUiState = BillsUiState.Error(e.message ?: "Unknown error fetching bills.") // Kept your original assignment
+            }
+        }
+    }
+
+
+    fun updateTaskStatus(taskToUpdate: Task, newIndividualStatus: String) {
+        val currentLoggedInUserId = currentUserIdString.value ?: run {
+            Log.w(TAG, "Cannot update task status, current user ID (String) is not available.")
+            return
+        }
+        val currentTasksState = tasksUiState
+        val tasksBeforeUpdate = if (currentTasksState is TasksUiState.Success) currentTasksState.tasks else {
+            Log.w(TAG, "Cannot update task, current tasks state is not Success: $currentTasksState")
+            return
+        }
+
+        viewModelScope.launch {
+            val token = userSessionRepository.userTokenFlow.first() ?: run {
                 Log.w(TAG, "Cannot update task, missing token.")
                 return@launch
             }
 
-            // --- Optimistic UI Update ---
             val modifiedStatusesMap = taskToUpdate.statuses.toMutableMap()
             if (modifiedStatusesMap[currentLoggedInUserId] == newIndividualStatus) {
                 Log.d(TAG, "No change in status for user $currentLoggedInUserId, task ${taskToUpdate.id}. Skipping update.")
@@ -267,134 +393,76 @@ class RoomSummaryViewModel(
             }
             modifiedStatusesMap[currentLoggedInUserId] = newIndividualStatus
             val optimisticallyUpdatedTask = taskToUpdate.copy(statuses = modifiedStatusesMap)
-            val updatedTasksList = tasksBeforeThisUpdate.map { task ->
-                if (task.id == optimisticallyUpdatedTask.id) optimisticallyUpdatedTask else task
-            }
-            tasksUiState = TasksUiState.Success(updatedTasksList)
-            Log.d(TAG, "Optimistically updated task ${taskToUpdate.id} for user $currentLoggedInUserId to $newIndividualStatus")
-            // --- End Optimistic UI Update ---
+            tasksUiState = TasksUiState.Success(tasksBeforeUpdate.map { if (it.id == optimisticallyUpdatedTask.id) optimisticallyUpdatedTask else it })
 
             try {
-                val finalApiAssigneesList = modifiedStatusesMap.map { (userId, status) ->
-                    ApiAssignee(userId = userId, status = status.lowercase()) // Ensure lowercase for API
-                }
                 val requestBody = ApiUpdateTaskRequest(
-                    title = taskToUpdate.title,
-                    date = taskToUpdate.deadline,
+                    title = taskToUpdate.title, date = taskToUpdate.deadline,
                     description = taskToUpdate.description,
-                    assignees = finalApiAssigneesList
+                    assignees = modifiedStatusesMap.map { (userId, status) -> ApiAssignee(userId, status.lowercase()) }
                 )
-
-                Log.d(TAG, "Updating task ${taskToUpdate.id} on backend for user $currentLoggedInUserId. Request: $requestBody")
-                val successResponse: ApiUpdateTaskResponse = taskRepository.updateTask(
-                    token = token, taskId = taskToUpdate.id, request = requestBody
-                )
-                Log.i(TAG, "Task ${taskToUpdate.id} status update for user $currentLoggedInUserId successful: ${successResponse.message}")
-
-            } catch (e: HttpException) {
-                val errorBody = e.response()?.errorBody()?.string() ?: "Unknown HTTP error"
-                Log.e(TAG, "HTTP error updating task ${taskToUpdate.id}. Code: ${e.code()}, Body: $errorBody", e)
-                tasksUiState = TasksUiState.Success(tasksBeforeThisUpdate) // Revert
-            } catch (e: IOException) {
-                Log.e(TAG, "Network error updating task ${taskToUpdate.id}: ${e.message}", e)
-                tasksUiState = TasksUiState.Success(tasksBeforeThisUpdate) // Revert
-            } catch (e: IllegalStateException) {
-                Log.e(TAG, "IllegalStateException updating task ${taskToUpdate.id}: ${e.message}", e)
-                tasksUiState = TasksUiState.Success(tasksBeforeThisUpdate) // Revert
+                taskRepository.updateTask(token, taskToUpdate.id, requestBody)
+                Log.i(TAG, "Task ${taskToUpdate.id} status update for user $currentLoggedInUserId successful.")
             } catch (e: Exception) {
-                Log.e(TAG, "Generic exception updating task ${taskToUpdate.id}: ${e.message}", e)
-                tasksUiState = TasksUiState.Success(tasksBeforeThisUpdate) // Revert
+                Log.e(TAG, "Error updating task ${taskToUpdate.id} on backend", e)
+                tasksUiState = TasksUiState.Success(tasksBeforeUpdate) // Revert
             }
         }
     }
-
-    // Add this function to fetch calendar data
-    // In your RoomSummaryViewModel.kt or wherever fetchCalendarData is located
-
-// Ensure you have a TAG in your ViewModel
-// companion object {
-//     private const val TAG = "YourViewModelName"
-// }
 
     fun fetchCalendarData() {
         Log.d(TAG, "fetchCalendarData called. Current selectedDate: ${_selectedDate.value}")
         viewModelScope.launch {
             _calendarUiState.value = CalendarUiState.Loading
-            Log.d(TAG, "Set CalendarUiState to Loading.")
             try {
                 val token = userSessionRepository.userTokenFlow.first()
                 if (token == null) {
-                    Log.w(TAG, "Token is null. Aborting fetchCalendarData.")
-                    _calendarUiState.value = CalendarUiState.Error("Authentication token not found.")
-                    return@launch
+                    _calendarUiState.value = CalendarUiState.Error("Authentication token not found."); return@launch
                 }
-                Log.d(TAG, "Token retrieved successfully.") // Avoid logging the token itself for security
-
                 val roomId = userSessionRepository.activeRoomIdFlow.first()
                 if (roomId == null) {
-                    Log.w(TAG, "RoomId is null. Aborting fetchCalendarData.")
-                    _calendarUiState.value = CalendarUiState.Error("Active room not found.")
-                    return@launch
+                    _calendarUiState.value = CalendarUiState.Error("Active room not found."); return@launch
                 }
-                Log.d(TAG, "RoomId retrieved: $roomId")
-
-                Log.d(TAG, "Calling calendarRepository.getCalendarData with roomId: $roomId, date: ${_selectedDate.value}")
                 val calendarData = calendarRepository.getCalendarData(token, roomId, _selectedDate.value)
-                Log.i(TAG, "Calendar data received from repository: $calendarData")
-
-                val tasks = calendarData.tasks.map { Task(it) } // Assuming Task(ApiTask) constructor
-                val bills = calendarData.bills.map { Bill(it) } // Assuming Bill(ApiBill) constructor
-                Log.d(TAG, "Mapped tasks count: ${tasks.size}, Mapped bills count: ${bills.size}")
-
-                _calendarUiState.value = CalendarUiState.Success(tasks, bills)
-                Log.i(TAG, "Set CalendarUiState to Success with ${tasks.size} tasks and ${bills.size} bills.")
-
-            } catch (e: HttpException) {
-                val errorBody = e.response()?.errorBody()?.string()
-                Log.e(TAG, "HttpException in fetchCalendarData. Code: ${e.code()}, Response: ${e.message()}, ErrorBody: $errorBody", e)
-                _calendarUiState.value = CalendarUiState.Error("HTTP Error: ${e.code()} - ${e.message()} ${errorBody?.let { "- $it" } ?: ""}")
-            } catch (e: IOException) {
-                Log.e(TAG, "IOException in fetchCalendarData: ${e.message}", e)
-                _calendarUiState.value = CalendarUiState.Error("Network Error: ${e.message}")
-            } catch (e: IllegalStateException) {
-                // Catching the specific exception from the repository if body is null
-                Log.e(TAG, "IllegalStateException in fetchCalendarData: ${e.message}", e)
-                _calendarUiState.value = CalendarUiState.Error("Data Error: ${e.message}")
-            }
-            catch (e: Exception) {
-                Log.e(TAG, "Generic exception in fetchCalendarData: ${e.message}", e)
+                _calendarUiState.value = CalendarUiState.Success(
+                    tasks = calendarData.tasks.map { Task(it) },
+                    bills = calendarData.bills.map { Bill(it) }
+                )
+            } catch (e: Exception) { // Simplified error handling for brevity
+                Log.e(TAG, "Error in fetchCalendarData: ${e.message}", e)
                 _calendarUiState.value = CalendarUiState.Error(e.message ?: "An unknown error occurred")
             }
         }
     }
 
+    fun onPayBillClicked(billId: Int, amount: Double) {
+        // Implement navigation or payment processing logic here
+        Log.d(TAG, "Pay Bill Clicked: ID=$billId, Amount=$amount. Navigate to payment screen or show dialog.")
+        // Example: viewModelScope.launch { financeRepository.createPayment(...) }
+        // Or: _navigationEvents.trySend(NavigateToPaymentScreen(billId, amount))
+    }
 
-    // Update date and trigger data fetch
     fun updateSelectedDate(date: LocalDate) {
         _selectedDate.value = date
         fetchCalendarData()
     }
 
-    // Update selected roommates for filtering
     fun updateSelectedRoommates(roommates: Set<Int>) {
         _selectedRoommates.value = roommates
+        // Potentially re-filter calendar data or other relevant data if needed
     }
 
     companion object {
         private const val TAG = "RoomSummaryViewModel"
-
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = (this[APPLICATION_KEY] as ShareSpaceApplication)
-                val roomRepository = application.container.roomRepository
-                val userSessionRepository = application.container.userSessionRepository
-                val taskRepository = application.container.taskRepository
-                val calendarRepository = application.container.calendarRepository
                 RoomSummaryViewModel(
-                    roomRepository = roomRepository,
-                    userSessionRepository = userSessionRepository,
-                    taskRepository = taskRepository,
-                    calendarRepository = calendarRepository
+                    application.container.roomRepository,
+                    application.container.userSessionRepository,
+                    application.container.taskRepository,
+                    application.container.calendarRepository,
+                    application.container.financeRepository
                 )
             }
         }
