@@ -9,33 +9,34 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.sharespace.ShareSpaceApplication
 import com.example.sharespace.core.data.repository.CalendarRepository
+import com.example.sharespace.core.data.repository.RoomRepository
 import com.example.sharespace.core.data.repository.UserSessionRepository
 import com.example.sharespace.core.domain.model.Bill
 import com.example.sharespace.core.domain.model.Task
 import com.example.sharespace.core.domain.model.User // Assuming you might need user info later
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-// UI State for the Calendar Screen
 sealed interface CalendarScreenUiState {
     object Loading : CalendarScreenUiState
     data class Success(
-        val tasks: List<Task>,
-        val bills: List<Bill>,
-        // You might also want to include roommates here if filtering by user is needed directly on this screen
-        // val roommates: List<User> = emptyList()
+        val tasks: List<Task>, val bills: List<Bill>, val roommates: List<User> // Added roommates
     ) : CalendarScreenUiState
+
     data class Error(val message: String) : CalendarScreenUiState
 }
 
 class CalendarViewModel(
     private val calendarRepository: CalendarRepository,
-    private val userSessionRepository: UserSessionRepository
-    // Potentially RoomRepository if you need fresh roommate list specifically for this screen
+    private val userSessionRepository: UserSessionRepository,
+    private val roomRepository: RoomRepository // Added
 ) : ViewModel() {
 
     private val _selectedDate = MutableStateFlow(LocalDate.now())
@@ -44,18 +45,24 @@ class CalendarViewModel(
     private val _uiState = MutableStateFlow<CalendarScreenUiState>(CalendarScreenUiState.Loading)
     val uiState: StateFlow<CalendarScreenUiState> = _uiState.asStateFlow()
 
-    // If you need to filter by specific roommates on this dedicated calendar screen
-    // private val _selectedRoommates = MutableStateFlow<Set<Int>>(emptySet())
-    // val selectedRoommates: StateFlow<Set<Int>> = _selectedRoommates.asStateFlow()
+    private val _selectedRoommates = MutableStateFlow<Set<Int>>(emptySet()) // Added
+    val selectedRoommates: StateFlow<Set<Int>> = _selectedRoommates.asStateFlow() // Added
+
+    val currentUserIdString: StateFlow<String?> = userSessionRepository.currentUserIdFlow // Added
+        .map { userIdInt -> userIdInt?.toString() }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            initialValue = null
+        )
 
     private var currentRoomIdInternal: Int? = null
 
     init {
-        // Initialize and fetch data
         viewModelScope.launch {
             try {
                 currentRoomIdInternal = userSessionRepository.activeRoomIdFlow.first { it != null }
-                fetchCalendarData()
+                // Fetch initial data which now includes roommates
+                fetchCalendarDataAndRoommates()
             } catch (e: Exception) {
                 Log.e(TAG, "Error initializing CalendarViewModel: ${e.message}", e)
                 _uiState.value = CalendarScreenUiState.Error("Failed to load initial room data.")
@@ -63,14 +70,18 @@ class CalendarViewModel(
         }
     }
 
-    fun fetchCalendarData() {
+    // Combined fetch function
+    fun fetchCalendarDataAndRoommates() {
         val roomId = currentRoomIdInternal ?: run {
-            Log.w(TAG, "Cannot fetch calendar data, Room ID not available.")
+            Log.w(TAG, "Cannot fetch data, Room ID not available.")
             _uiState.value = CalendarScreenUiState.Error("Room information not available.")
             return
         }
 
-        Log.d(TAG, "fetchCalendarData called for date: ${_selectedDate.value} and roomId: $roomId")
+        Log.d(
+            TAG,
+            "fetchCalendarDataAndRoommates called for date: ${_selectedDate.value} and roomId: $roomId"
+        )
         viewModelScope.launch {
             _uiState.value = CalendarScreenUiState.Loading
             try {
@@ -80,31 +91,48 @@ class CalendarViewModel(
                     return@launch
                 }
 
-                val calendarData = calendarRepository.getCalendarData(token, roomId, _selectedDate.value)
+                // Fetch calendar data
+                val calendarData =
+                    calendarRepository.getCalendarData(token, roomId, _selectedDate.value)
+                // Fetch roommates
+                val apiMembers = roomRepository.getRoomMembers(token, roomId)
+                val domainRoommates = apiMembers.map { User(it) }
+
                 _uiState.value = CalendarScreenUiState.Success(
-                    tasks = calendarData.tasks.map { Task(it) }, // Assuming Task constructor from ApiTask
-                    bills = calendarData.bills.map { Bill(it) }   // Assuming Bill constructor from ApiBill
+                    tasks = calendarData.tasks.map { Task(it) },
+                    bills = calendarData.bills.map { Bill(it) },
+                    roommates = domainRoommates
                 )
-                Log.i(TAG, "Calendar data fetched successfully for $roomId on ${_selectedDate.value}")
+                Log.i(
+                    TAG,
+                    "Calendar data and roommates fetched successfully for $roomId on ${_selectedDate.value}"
+                )
             } catch (e: Exception) {
-                Log.e(TAG, "Error in fetchCalendarData: ${e.message}", e)
-                _uiState.value = CalendarScreenUiState.Error(e.message ?: "An unknown error occurred")
+                Log.e(TAG, "Error in fetchCalendarDataAndRoommates: ${e.message}", e)
+                _uiState.value =
+                    CalendarScreenUiState.Error(e.message ?: "An unknown error occurred")
             }
         }
     }
 
+
     fun updateSelectedDate(date: LocalDate) {
         if (_selectedDate.value != date) {
             _selectedDate.value = date
-            fetchCalendarData() // Re-fetch data for the new date
+            // Fetch data for the new date, roommates list might not need to be refetched unless it changes frequently
+            fetchCalendarDataAndRoommates()
         }
     }
 
-    // Example if you add roommate filtering
-    // fun updateSelectedRoommates(roommates: Set<Int>) {
-    //     _selectedRoommates.value = roommates
-    //     fetchCalendarData() // Or apply a client-side filter if data is already fetched
-    // }
+    fun updateSelectedRoommates(roommateIds: Set<Int>) { // Renamed parameter for clarity
+        _selectedRoommates.value = roommateIds
+        // No need to refetch from network, filtering is client-side in the Composable
+    }
+
+    // Retry function to be called from UI
+    fun retryDataFetch() {
+        fetchCalendarDataAndRoommates()
+    }
 
     companion object {
         private const val TAG = "CalendarViewModel"
@@ -114,8 +142,8 @@ class CalendarViewModel(
                 val application = (this[APPLICATION_KEY] as ShareSpaceApplication)
                 CalendarViewModel(
                     calendarRepository = application.container.calendarRepository,
-                    userSessionRepository = application.container.userSessionRepository
-                    // roomRepository = application.container.roomRepository // if needed
+                    userSessionRepository = application.container.userSessionRepository,
+                    roomRepository = application.container.roomRepository // Added
                 )
             }
         }

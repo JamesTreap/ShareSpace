@@ -7,12 +7,13 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults // Import this
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-
+import com.example.sharespace.core.ui.theme.AquaAccent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,41 +24,43 @@ fun RoomSummaryTopAppBar(
     showRetry: Boolean = false,
     onRetry: () -> Unit = {},
     onEditClick: () -> Unit = {},
-    onCalendarClick: () -> Unit // New callback for calendar icon
+    onCalendarClick: () -> Unit
 ) {
-    TopAppBar(
-        title = {
-            Column {
-                Text(text = address, style = MaterialTheme.typography.titleLarge)
-                Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
-            }
-        },
-        navigationIcon = {
-            IconButton(onClick = onNavigateBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
-                )
-            }
-        },
-        actions = {
-            // Calendar Icon Button
-            IconButton(onClick = onCalendarClick) {
-                Icon(
-                    imageVector = Icons.Filled.DateRange,
-                    contentDescription = "Open Calendar"
-                )
-            }
-            // Edit Button
-            TextButton(onClick = onEditClick) { // Or IconButton as preferred
-                Text("Edit")
-            }
-            // Retry Button (conditionally displayed)
-            if (showRetry) {
-                TextButton(onClick = onRetry) {
-                    Text("Retry")
-                }
+    TopAppBar(title = {
+        Column {
+            Text(text = address, style = MaterialTheme.typography.titleLarge)
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
+        }
+    }, navigationIcon = {
+        IconButton(onClick = onNavigateBack) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back"
+                // Default IconButton colors will usually be MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }, actions = {
+        // Calendar Icon Button - Styled for content color
+        IconButton(
+            onClick = onCalendarClick, colors = IconButtonDefaults.iconButtonColors(
+                contentColor = AquaAccent // Use AquaAccent for the icon color
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Filled.DateRange, contentDescription = "Open Calendar"
+            )
+        }
+
+        // Edit Button
+        TextButton(onClick = onEditClick) {
+            Text("Edit")
+        }
+
+        // Retry Button (conditionally displayed)
+        if (showRetry) {
+            TextButton(onClick = onRetry) {
+                Text("Retry")
             }
         }
-    )
+    })
 }
+

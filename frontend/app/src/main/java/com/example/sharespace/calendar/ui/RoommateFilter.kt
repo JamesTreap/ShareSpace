@@ -1,4 +1,4 @@
-package com.example.sharespace.room.ui.roomSummary.components
+package com.example.sharespace.calendar.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
